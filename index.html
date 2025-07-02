@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Seen & Red</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    function openModal() {
+      document.getElementById('popup').classList.remove('hidden');
+    }
+    function closeModal() {
+      document.getElementById('popup').classList.add('hidden');
+    }
+  </script>
+</head>
+<body class="bg-white text-gray-900">
+  <header class="p-4 border-b bg-white">
+    <div class="text-3xl font-bold text-red-600">SEEN & RED</div>
+    <nav class="mt-2 space-x-4 text-sm">
+      <a href="#blog" class="hover:underline">Blog</a>
+      <a href="#testimonials" class="hover:underline">Testimonials</a>
+      <a href="#faq" class="hover:underline">FAQ</a>
+    </nav>
+  </header>
+
+  <main class="p-6">
+    <section class="text-center my-12">
+      <h1 class="text-4xl font-extrabold mb-2">Still replaying that message?</h1>
+      <p class="mb-4 text-lg">Let’s decode it.</p>
+      <button onclick="openModal()" class="bg-black text-white px-6 py-2 rounded-full">Start Your Decode</button>
+    </section>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <section id="blog">
+<h2 class="text-2xl font-bold mb-2">Backed by Psych. Written Like a Bestie.</h2>
+<article class="mb-4">
+  <h3 class="text-xl font-semibold">Why You Missed the Green Flags</h3>
+  <p class="text-sm text-gray-700">Sometimes we’re so conditioned to chase chaos that stability feels boring. Our attachment styles — especially anxious or avoidant — can cloud what healthy even looks like...</p>
+</article>
+<article class="mb-4">
+  <h3 class="text-xl font-semibold">Why Men Act Like That (and Why We Can’t See It)</h3>
+  <p class="text-sm text-gray-700">After sex, oxytocin bonds us. But for many men, that emotional bond doesn’t deepen the same way. Combine that with love bombing, ghosting culture, and you’ve got a recipe for emotional confusion...</p>
+</article>
+</section>
+      <section id="testimonials">
+<h2 class="text-2xl font-bold mb-2">Glow Ups with Clarity</h2>
+<ul class="list-disc list-inside text-sm text-gray-800">
+  <li>“This decode saved me from texting back.”</li>
+  <li>“I stopped overthinking. Now I’m done.”</li>
+  <li>“My bestie sent it to me. I sent it to three more.”</li>
+</ul>
+</section>
+    </div>
+
+    <section id="faq" class="mt-12 border-t pt-6">
+      <h2 class="text-xl font-semibold mb-2">FAQs</h2>
+      <p class="text-sm">We’re not licensed therapists. Just your clarity-besties giving you non-clinical insights to help you read between the red flags. All data is private unless you give us permission to use your message for testimonials — email us at support@seenandred.com.</p>
+    </section>
+  </main>
+
+  <div id="popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white p-8 rounded shadow-lg max-w-xl w-full relative">
+      <button onclick="closeModal()" class="absolute top-2 right-2 text-sm">✖</button>
+      <h2 class="text-xl font-semibold mb-4">Decode Form</h2>
+      <iframe src="https://tally.so/r/mJbgaz" class="w-full h-96 border rounded"></iframe>
+    </div>
+  </div>
+</body>
+</html>
