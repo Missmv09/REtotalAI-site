@@ -22,3 +22,7 @@ header .logo{font-size:1.8rem;font-weight:bold;background:linear-gradient(45deg,
   .nav-links{flex-direction:column;gap:1rem;}
   .container{padding:0 1rem;}
 }
+
+/* Form Elements */
+.input-group{margin-bottom:1rem;}
+input,select{width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;}
