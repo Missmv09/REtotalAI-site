@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rental Pricing Optimizer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    #results {
+      display: none;
+      margin-top: 20px;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .card {
+      background: #e9ecef;
+      padding: 15px;
+      border-radius: 6px;
+    }
+
+    .comps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    @media (min-width: 600px) {
+      .input-row {
+        flex-direction: row;
+      }
+      .input-row .input-group {
+        flex: 1;
+      }
+      .comps {
+        flex-direction: row;
+      }
+      .comp-card {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Rental Pricing Optimizer</h1>
+    <div class="input-group">
+      <label for="address">Property Address</label>
+      <input type="text" id="address" placeholder="123 Main St" />
+    </div>
+    <div class="input-group">
+      <label for="sqft">Square Footage</label>
+      <input type="number" id="sqft" placeholder="1500" />
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label for="beds">Bedrooms</label>
+        <input type="number" id="beds" placeholder="3" />
+      </div>
+      <div class="input-group">
+        <label for="baths">Bathrooms</label>
+        <input type="number" id="baths" placeholder="2" />
+      </div>
+    </div>
+    <button id="optimize">Optimize</button>
+
+    <div id="results">
+      <div class="card">
+        <h2>Suggested Rent Range</h2>
+        <p id="rentRange">AI-generated rent range will appear here.</p>
+      </div>
+      <h2>Comparable Listings</h2>
+      <div class="comps" id="comps"></div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('optimize').addEventListener('click', function() {
+      // Placeholder for AI-generated rent range
+      document.getElementById('rentRange').textContent = '$1,500 - $1,700';
+
+      const comps = [
+        { address: '101 Oak St', rent: '$1,600/mo', beds: 2, baths: 1, sqft: 900 },
+        { address: '202 Maple Ave', rent: '$1,550/mo', beds: 3, baths: 2, sqft: 1100 },
+        { address: '303 Pine Rd', rent: '$1,700/mo', beds: 3, baths: 2, sqft: 1200 }
+      ];
+
+      const compsContainer = document.getElementById('comps');
+      compsContainer.innerHTML = '';
+      comps.forEach(comp => {
+        const div = document.createElement('div');
+        div.className = 'card comp-card';
+        div.innerHTML = `
+          <strong>${comp.address}</strong>
+          <p>${comp.beds} bd / ${comp.baths} ba • ${comp.sqft} sqft</p>
+          <p>${comp.rent}</p>
+        `;
+        compsContainer.appendChild(div);
+      });
+
+      document.getElementById('results').style.display = 'flex';
+    });
+  </script>
+</body>
+</html>
