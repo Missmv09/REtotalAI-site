@@ -11,7 +11,7 @@ Modular AI tool suite for real estate professionals.
 ## Folder Structure
 ```
 / (root)
-├── Index.HTML                 # Landing page
+├── index.html                 # Landing page
 └── tools/
     ├── deal-analyzer/
     │   └── index.html         # Deal analysis tool
