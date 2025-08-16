@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rental Pricing Tool</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <style>
+    main{margin-top:100px;}
+    h1{margin-bottom:1rem;}
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="container">
+      <div class="logo">ToolTime Pro</div>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/tools/deal-analyzer/">Deal Analyzer</a></li>
+        <li><a href="/tools/listing-generator/">Listing Generator</a></li>
+        <li><a href="/tools/rental-pricing/">Rental Pricing</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="tile">
+      <h1>Rental Pricing Tool</h1>
+      <div class="input-group">
+        <label for="purchasePrice">Purchase Price ($)</label>
+        <input type="number" id="purchasePrice" />
+      </div>
+      <div class="input-group">
+        <label for="rentMultiplier">Rent Multiplier (%)</label>
+        <input type="number" id="rentMultiplier" value="1" />
+      </div>
+      <button class="btn" id="calculate">Calculate</button>
+      <p id="result" style="margin-top:1rem;"></p>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('calculate').addEventListener('click', function () {
+      const price = parseFloat(document.getElementById('purchasePrice').value);
+      const multiplier = parseFloat(document.getElementById('rentMultiplier').value);
+      if (isNaN(price) || isNaN(multiplier)) {
+        document.getElementById('result').textContent = 'Please enter valid numbers.';
+        return;
+      }
+      const rent = price * multiplier / 100;
+      document.getElementById('result').textContent = 'Estimated Monthly Rent: $' + rent.toFixed(2);
+    });
+  </script>
+</body>
+</html>
