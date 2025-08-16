@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rental Pricing Tool</title>
+  <link rel="stylesheet" href="../../css/styles.css" />
+</head>
+<body>
+  <div class="card">
+    <h1>Rental Pricing Tool</h1>
+    <div class="input-group">
+      <label for="address">Address</label>
+      <input type="text" id="address" placeholder="123 Main St" />
+    </div>
+    <div class="row">
+      <div class="input-group">
+        <label for="beds">Beds</label>
+        <input type="number" id="beds" min="0" placeholder="3" />
+      </div>
+      <div class="input-group">
+        <label for="baths">Baths</label>
+        <input type="number" id="baths" min="0" placeholder="2" />
+      </div>
+      <div class="input-group">
+        <label for="sqft">Sqft</label>
+        <input type="number" id="sqft" min="0" placeholder="1500" />
+      </div>
+    </div>
+    <button id="estimate">Estimate Rent</button>
+  </div>
+
+  <div id="results" class="card hidden">
+    <div id="rentRange" class="result-range"></div>
+    <div id="comps" class="comps"></div>
+  </div>
+
+  <script>
+    document.getElementById('estimate').addEventListener('click', function () {
+      document.getElementById('rentRange').innerHTML = '<h2>Estimated Rent Range</h2><p>$1,800 - $2,200</p>';
+      const comps = [
+        { address: '456 Elm St', rent: '$1,950', sqft: 1400 },
+        { address: '789 Oak Ave', rent: '$2,100', sqft: 1600 },
+        { address: '101 Pine Rd', rent: '$1,875', sqft: 1350 },
+      ];
+      const compsHTML =
+        '<h2>Comparable Rentals</h2>' +
+        comps
+          .map(
+            (c) =>
+              '<div class="comp-card"><strong>' +
+              c.address +
+              '</strong><br>Rent: ' +
+              c.rent +
+              ' • ' +
+              c.sqft +
+              ' sqft</div>'
+          )
+          .join('');
+      document.getElementById('comps').innerHTML = compsHTML;
+      document.getElementById('results').classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>
