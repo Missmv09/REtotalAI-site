@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deal Analyzer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    #results {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .result-box {
+      background: #e9ecef;
+      padding: 15px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    @media (min-width: 600px) {
+      #results {
+        flex-direction: row;
+      }
+      .result-box {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Deal Analyzer</h1>
+    <div class="input-group">
+      <label for="purchase">Purchase Price</label>
+      <input type="number" id="purchase" placeholder="e.g. 150000" />
+    </div>
+    <div class="input-group">
+      <label for="rent">Monthly Rent</label>
+      <input type="number" id="rent" placeholder="e.g. 1500" />
+    </div>
+    <div class="input-group">
+      <label for="expenses">Annual Operating Expenses</label>
+      <input type="number" id="expenses" placeholder="e.g. 5000" />
+    </div>
+    <div class="input-group">
+      <label for="vacancy">Vacancy Rate (%)</label>
+      <input type="number" id="vacancy" placeholder="e.g. 5" />
+    </div>
+    <button id="analyze">Analyze</button>
+    <div id="results">
+      <div class="result-box">
+        <h2>Cap Rate</h2>
+        <p id="capRate">-</p>
+      </div>
+      <div class="result-box">
+        <h2>ROI</h2>
+        <p id="roi">-</p>
+      </div>
+      <div class="result-box">
+        <h2>Monthly Cash Flow</h2>
+        <p id="cashFlow">-</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('analyze').addEventListener('click', function() {
+      const purchase = parseFloat(document.getElementById('purchase').value) || 0;
+      const rent = parseFloat(document.getElementById('rent').value) || 0;
+      const expenses = parseFloat(document.getElementById('expenses').value) || 0;
+      const vacancy = parseFloat(document.getElementById('vacancy').value) || 0;
+
+      const grossAnnualRent = rent * 12;
+      const effectiveRent = grossAnnualRent * (1 - vacancy / 100);
+      const noi = effectiveRent - expenses;
+      const capRate = purchase ? (noi / purchase) * 100 : 0;
+      const roi = purchase ? (noi / purchase) * 100 : 0;
+      const monthlyCashFlow = noi / 12;
+
+      document.getElementById('capRate').textContent = capRate.toFixed(2) + '%';
+      document.getElementById('roi').textContent = roi.toFixed(2) + '%';
+      document.getElementById('cashFlow').textContent = '$' + monthlyCashFlow.toFixed(2);
+    });
+  </script>
+</body>
+</html>
