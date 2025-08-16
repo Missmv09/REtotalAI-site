@@ -3,75 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Property Listing Form</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Listing Generator</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-xl mx-auto bg-white p-8 rounded shadow">
-    <h1 class="text-2xl font-bold mb-4">Property Listing Form</h1>
-    <form id="listingForm" class="space-y-4">
-      <div>
-        <label for="propertyType" class="block text-sm font-medium text-gray-700">Property Type</label>
-        <select id="propertyType" name="propertyType" class="mt-1 block w-full border-gray-300 rounded">
-          <option value="apartment">Apartment</option>
-          <option value="duplex">Duplex</option>
-          <option value="commercial">Commercial</option>
-          <option value="single_family">Single Family</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-      <div class="flex space-x-4">
-        <div class="w-1/2">
-          <label for="beds" class="block text-sm font-medium text-gray-700">Beds</label>
-          <input type="number" id="beds" name="beds" class="mt-1 block w-full border-gray-300 rounded" min="0" />
-        </div>
-        <div class="w-1/2">
-          <label for="baths" class="block text-sm font-medium text-gray-700">Baths</label>
-          <input type="number" id="baths" name="baths" class="mt-1 block w-full border-gray-300 rounded" min="0" />
-        </div>
-      </div>
-      <div>
-        <label for="sqft" class="block text-sm font-medium text-gray-700">Square Footage</label>
-        <input type="number" id="sqft" name="sqft" class="mt-1 block w-full border-gray-300 rounded" min="0" />
-      </div>
-      <div>
-        <label for="details" class="block text-sm font-medium text-gray-700">Neighborhood & Features</label>
-        <textarea id="details" name="details" class="mt-1 block w-full border-gray-300 rounded" rows="4" placeholder="Describe the neighborhood and notable features"></textarea>
-      </div>
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded">Submit</button>
-    </form>
-  </div>
-
-  <script>
-    document.getElementById('listingForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const data = {
-        propertyType: document.getElementById('propertyType').value,
-        beds: document.getElementById('beds').value,
-        baths: document.getElementById('baths').value,
-        sqft: document.getElementById('sqft').value,
-        details: document.getElementById('details').value,
-      };
-
-      try {
-        const response = await fetch('Paste your OpenAI API URL here', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
-        if (response.ok) {
-          alert('Listing submitted successfully!');
-          e.target.reset();
-        } else {
-          alert('Failed to submit listing.');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred.');
-      }
-    });
-  </script>
+<body>
+  <h1>Listing Generator</h1>
+  <script src="../../scripts/openai-zap-handler.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
