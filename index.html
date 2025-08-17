@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - REtotalAI</title>
+    <title>REtotalAI - Revolutionary Real Estate Intelligence Platform</title>
     <style>
         * {
             margin: 0;
@@ -12,190 +12,87 @@
         }
 
         :root {
-            --primary: #1E3A5F;
-            --primary-dark: #0F2238;
-            --accent: #D4AF37;
-            --accent-hover: #B8941F;
-            --sage: #7C9885;
-            --warm-gray: #8B8680;
-            --dark: #2C2926;
-            --light: #FAFAF8;
-            --cream: #F7F3ED;
+            --primary: #1E3A5F;      /* Deep navy blue - trust, stability */
+            --primary-dark: #0F2238;  /* Darker navy */
+            --accent: #D4AF37;        /* Luxury gold */
+            --accent-hover: #B8941F;  /* Darker gold */
+            --sage: #7C9885;          /* Sage green - growth, prosperity */
+            --warm-gray: #8B8680;     /* Warm gray */
+            --dark: #2C2926;          /* Warm black */
+            --light: #FAFAF8;         /* Warm white */
+            --cream: #F7F3ED;         /* Soft cream */
             --gray: #6B6B6B;
             --success: #7C9885;
             --warning: #D4AF37;
-            --danger: #C73E1D;
             --card-bg: #FFFFFF;
             --border: #E5E1DB;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+            font-family: 'Georgia', 'Playfair Display', 'Times New Roman', serif;
             background: var(--light);
             color: var(--dark);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        h1, h2, h3, h4 {
+        /* Typography - Mix of serif for headers, sans for body */
+        h1, h2, h3 {
             font-family: 'Georgia', 'Playfair Display', serif;
+            letter-spacing: -0.02em;
         }
-
-        /* Layout Structure */
-        .dashboard-container {
-            display: flex;
-            height: 100vh;
+        
+        p, .nav-link, .btn, label, li {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
         }
+        
+        h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
+        h2 { font-size: clamp(2rem, 4vw, 3rem); }
+        h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
 
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: var(--primary);
-            color: white;
-            padding: 2rem 0;
-            overflow-y: auto;
+        /* Navigation */
+        nav {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             position: fixed;
-            height: 100vh;
-            left: 0;
+            width: 100%;
             top: 0;
+            z-index: 1000;
         }
 
-        .logo-section {
-            padding: 0 1.5rem 2rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 2rem;
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .logo {
             font-size: 1.5rem;
             font-weight: 800;
+            color: var(--primary);
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        .logo span {
-            color: var(--accent);
-        }
-
-        .user-info {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background: rgba(255,255,255,0.05);
-            border-radius: 0.5rem;
-        }
-
-        .user-name {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .user-plan {
-            font-size: 0.875rem;
-            color: var(--accent);
-        }
-
-        .nav-section {
-            margin-bottom: 2rem;
-        }
-
-        .nav-title {
-            padding: 0 1.5rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: rgba(255,255,255,0.5);
-            margin-bottom: 0.5rem;
-        }
-
-        .nav-item {
+        .nav-links {
             display: flex;
+            gap: 2rem;
             align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: rgba(255,255,255,0.8);
+        }
+
+        .nav-link {
+            color: var(--gray);
             text-decoration: none;
-            transition: all 0.2s;
-            cursor: pointer;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
+            font-weight: 500;
+            transition: color 0.2s;
         }
 
-        .nav-item:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
-
-        .nav-item.active {
-            background: rgba(212,175,55,0.2);
-            color: var(--accent);
-            border-left: 3px solid var(--accent);
-        }
-
-        .nav-icon {
-            margin-right: 0.75rem;
-            font-size: 1.25rem;
-        }
-
-        .nav-badge {
-            margin-left: auto;
-            background: var(--accent);
-            color: white;
-            padding: 0.125rem 0.5rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 280px;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        /* Top Bar */
-        .topbar {
-            background: white;
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .page-title {
-            font-size: 1.75rem;
-            color: var(--dark);
-        }
-
-        .topbar-actions {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .search-bar {
-            position: relative;
-        }
-
-        .search-bar input {
-            padding: 0.625rem 1rem 0.625rem 2.5rem;
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            width: 300px;
-            font-size: 0.875rem;
-        }
-
-        .search-bar::before {
-            content: '🔍';
-            position: absolute;
-            left: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
+        .nav-link:hover {
+            color: var(--primary);
         }
 
         .btn {
@@ -203,378 +100,568 @@
             border-radius: 0.5rem;
             font-weight: 600;
             text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+            display: inline-block;
             transition: all 0.2s;
             cursor: pointer;
             border: none;
-            font-size: 0.875rem;
+            font-size: 0.95rem;
         }
 
         .btn-primary {
-            background: var(--accent);
+            background: var(--primary);
             color: white;
         }
 
         .btn-primary:hover {
-            background: var(--accent-hover);
+            background: var(--primary-dark);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(212,175,55,0.3);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
 
-        .notification-btn {
+        .btn-outline {
+            border: 2px solid var(--border);
+            background: white;
+            color: var(--dark);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 2rem 5rem;
+            background: linear-gradient(135deg, #1E3A5F 0%, #2C4B6F 50%, #7C9885 100%);
             position: relative;
-            background: none;
-            border: none;
-            font-size: 1.25rem;
-            cursor: pointer;
-            padding: 0.5rem;
+            overflow: hidden;
         }
-
-        .notification-badge {
+        
+        .hero::before {
+            content: '';
             position: absolute;
             top: 0;
+            left: 0;
             right: 0;
-            background: var(--danger);
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="0" y="0" width="1" height="1" fill="white" opacity="0.03"/><rect x="10" y="10" width="1" height="1" fill="white" opacity="0.03"/></svg>');
+            background-size: 10px 10px;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .hero-content {
+            max-width: 1280px;
+            margin: 0 auto;
             color: white;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+            text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Dashboard Content */
-        .dashboard-content {
-            padding: 2rem;
+        .hero h1 {
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
         }
 
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.95;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid var(--border);
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .stat-header {
+        .hero-cta {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hero-cta .btn {
+            padding: 0.875rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-white {
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+        }
+
+        .btn-white:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-ghost {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: white;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            background: var(--cream);
+            padding: 3rem 2rem;
+            border-top: 4px solid var(--accent);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .stats-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat {
+            padding: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-family: 'Georgia', serif;
         }
 
         .stat-label {
             color: var(--gray);
             font-size: 0.875rem;
-            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .stat-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--accent), var(--sage));
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--dark);
-            font-family: 'Georgia', serif;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-change {
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .stat-change.positive {
-            color: var(--success);
-        }
-
-        .stat-change.negative {
-            color: var(--danger);
-        }
-
-        /* Quick Actions */
-        .quick-actions {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid var(--border);
-            margin-bottom: 2rem;
+        /* Tools Section */
+        .tools-section {
+            padding: 5rem 2rem;
+            background: linear-gradient(180deg, var(--light) 0%, var(--cream) 100%);
         }
 
         .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1rem;
-        }
-
-        .tool-quick {
-            background: var(--cream);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            padding: 1rem;
             text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
+            max-width: 800px;
+            margin: 0 auto 4rem;
+        }
+
+        .section-header h2 {
+            font-weight: 800;
+            margin-bottom: 1rem;
             color: var(--dark);
         }
 
-        .tool-quick:hover {
-            background: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-color: var(--accent);
-        }
-
-        .tool-quick-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .tool-quick-name {
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        /* Recent Activity & Properties Grid */
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .content-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid var(--border);
-        }
-
-        .activity-list {
-            list-style: none;
-        }
-
-        .activity-item {
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-
-        .activity-content {
-            flex: 1;
-        }
-
-        .activity-title {
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 0.25rem;
-        }
-
-        .activity-meta {
-            font-size: 0.875rem;
+        .section-header p {
             color: var(--gray);
-        }
-
-        .activity-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: var(--cream);
-            color: var(--sage);
-        }
-
-        /* Property Cards */
-        .property-grid {
-            display: grid;
-            gap: 1rem;
-        }
-
-        .property-card {
-            display: flex;
-            gap: 1rem;
-            padding: 1rem;
-            background: var(--cream);
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .property-card:hover {
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .property-image {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--sage), var(--accent));
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-        }
-
-        .property-details {
-            flex: 1;
-        }
-
-        .property-address {
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 0.25rem;
-        }
-
-        .property-price {
-            color: var(--accent);
-            font-weight: 700;
             font-size: 1.125rem;
         }
 
-        .property-meta {
-            font-size: 0.875rem;
-            color: var(--gray);
-            margin-top: 0.25rem;
-        }
-
-        /* Market Insights */
-        .insights-card {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 2rem;
-            border-radius: 0.75rem;
-            margin-bottom: 2rem;
-        }
-
-        .insights-grid {
+        .tools-grid {
+            max-width: 1280px;
+            margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 2rem;
-            margin-top: 1.5rem;
         }
 
-        .insight-item {
-            text-align: center;
-        }
-
-        .insight-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--accent);
-            font-family: 'Georgia', serif;
-        }
-
-        .insight-label {
-            font-size: 0.875rem;
-            opacity: 0.9;
-            margin-top: 0.5rem;
-        }
-
-        /* Usage Meter */
-        .usage-meter {
+        .tool-card {
             background: white;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--sage));
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+
+        .tool-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .tool-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent), var(--sage));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+        }
+
+        .tool-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .tool-users {
+            color: var(--sage);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .tool-description {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .tool-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .tool-features li {
+            padding: 0.5rem 0;
+            color: var(--gray);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .tool-features li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .tool-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .tool-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-live {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .badge-new {
+            background: var(--accent);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .badge-beta {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        /* Demo Section */
+        .demo-section {
+            padding: 5rem 2rem;
+            background: white;
+            position: relative;
+        }
+        
+        .demo-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .demo-content h3 {
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        .demo-content p {
+            color: var(--gray);
+            margin-bottom: 2rem;
+            font-size: 1.125rem;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 1rem 0;
+            display: flex;
+            align-items: center;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #F7F3ED, #E5E1DB);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: var(--accent);
+        }
+
+        .demo-form {
+            background: var(--cream);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             border: 1px solid var(--border);
         }
 
-        .usage-bar {
-            background: var(--cream);
-            height: 8px;
-            border-radius: 9999px;
-            overflow: hidden;
-            margin: 1rem 0;
+        .form-group {
+            margin-bottom: 1.5rem;
         }
 
-        .usage-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--sage), var(--accent));
-            border-radius: 9999px;
-            transition: width 0.5s ease;
-        }
-
-        .usage-text {
-            display: flex;
-            justify-content: space-between;
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            font-weight: 600;
             font-size: 0.875rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn-large {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+        }
+
+        /* Pricing Section */
+        .pricing-section {
+            padding: 5rem 2rem;
+            background: linear-gradient(180deg, var(--cream) 0%, var(--light) 100%);
+        }
+
+        .pricing-grid {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .pricing-card.featured {
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px rgba(30, 58, 95, 0.15);
+            border: 2px solid var(--accent);
+        }
+
+        .pricing-card.featured::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .pricing-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 1.5rem 0;
+            font-family: 'Georgia', serif;
+        }
+
+        .pricing-price span {
+            font-size: 1rem;
             color: var(--gray);
+            font-weight: 400;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin: 2rem 0;
+        }
+
+        .pricing-features li {
+            padding: 0.75rem 0;
+            color: var(--gray);
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 4rem 2rem 2rem;
+        }
+
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .footer-section a {
+            color: #94A3B8;
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem 0;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid #334155;
+            color: #94A3B8;
         }
 
         /* Responsive */
-        @media (max-width: 1024px) {
-            .content-grid {
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero {
+                padding: 6rem 1.5rem 4rem;
+            }
+            
+            .demo-container {
                 grid-template-columns: 1fr;
             }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
+            
+            .pricing-card.featured {
+                transform: scale(1);
             }
             
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .search-bar input {
-                width: 150px;
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
         /* Animations */
-        @keyframes slideIn {
+        @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -582,409 +669,555 @@
             }
         }
 
-        .animate-in {
-            animation: slideIn 0.3s ease-out;
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
         }
+
+        /* Results Box */
+        .results-box {
+            background: linear-gradient(135deg, #F8F6F0, #E8E5DE);
+            border: 2px solid var(--sage);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .results-box.show {
+            display: block;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .result-value {
+            color: var(--sage);
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+
+        .hamburger {
+            width: 24px;
+            height: 20px;
+            position: relative;
+        }
+
+        .hamburger span {
+            display: block;
+            position: absolute;
+            height: 3px;
+            width: 100%;
+            background: var(--dark);
+            border-radius: 3px;
+            left: 0;
+            transition: 0.25s;
+        }
+
+        .hamburger span:nth-child(1) { top: 0; }
+        .hamburger span:nth-child(2) { top: 8px; }
+        .hamburger span:nth-child(3) { bottom: 0; }
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo-section">
-                <div class="logo">
-                    🏠 REtotal<span>AI</span>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                🏠 REtotal<span style="color: var(--accent);">AI</span>
+            </div>
+            <div class="nav-links">
+                <a href="#tools" class="nav-link">Tools</a>
+                <a href="#demo" class="nav-link">Demo</a>
+                <a href="#pricing" class="nav-link">Pricing</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#signup" class="btn btn-primary">Start Free Trial</a>
+            </div>
+            <button class="mobile-menu-btn">
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </div>
-                <div class="user-info">
-                    <div class="user-name">Sarah Johnson</div>
-                    <div class="user-plan">Professional Plan</div>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="fade-in-up">The Future of Real Estate<br>Powered by AI</h1>
+            <p class="fade-in-up" style="animation-delay: 0.1s;">
+                Revolutionary intelligence tools that solve every challenge in modern real estate
+            </p>
+            <div class="hero-cta fade-in-up" style="animation-delay: 0.2s;">
+                <a href="#demo" class="btn btn-white">Try Live Demo</a>
+                <a href="#tools" class="btn btn-ghost">Explore Tools</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <section class="stats-bar">
+        <div class="stats-container">
+            <div class="stat">
+                <div class="stat-value">$94B</div>
+                <div class="stat-label">Market by 2030</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Power Tools</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">35%+</div>
+                <div class="stat-label">Annual Growth</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">24/7</div>
+                <div class="stat-label">Smart Support</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section id="tools" class="tools-section">
+        <div class="section-header">
+            <h2>Professional Tools Suite</h2>
+            <p>Industry-leading solutions addressing critical gaps in real estate technology</p>
+        </div>
+
+        <div class="tools-grid">
+            <!-- Tool Cards -->
+            <div class="tool-card">
+                <div class="tool-icon">📊</div>
+                <h3 class="tool-title">Deal Analyzer</h3>
+                <div class="tool-users">For Investors & Flippers</div>
+                <p class="tool-description">
+                    Professional-grade analysis for BRRRR, flips, and rentals with real-time MLS integration.
+                </p>
+                <ul class="tool-features">
+                    <li>Real-time MLS data sync</li>
+                    <li>Advanced ROI calculations</li>
+                    <li>Market comparison engine</li>
+                </ul>
+                <div class="tool-footer">
+                    <button class="btn btn-outline">Launch Tool</button>
+                    <span class="tool-badge badge-live">Live</span>
                 </div>
             </div>
 
-            <nav>
-                <div class="nav-section">
-                    <div class="nav-title">Main</div>
-                    <a href="#" class="nav-item active">
-                        <span class="nav-icon">📊</span>
-                        Dashboard
-                    </a>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">🏘️</span>
-                        My Properties
-                        <span class="nav-badge">12</span>
-                    </a>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">📈</span>
-                        Analytics
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-title">Tools</div>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">💰</span>
-                        Deal Analyzer
-                    </a>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">🏷️</span>
-                        Price Optimizer
-                    </a>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">🤝</span>
-                        Realtor Assistant
-                    </a>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">👥</span>
-                        Tenant Screening
-                    </a>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">🗺️</span>
-                        Zoning & Permits
-                    </a>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">🏡</span>
-                        Home Matchmaker
-                    </a>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">📋</span>
-                        Investor CRM
-                    </a>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">📄</span>
-                        Contract Analyzer
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-title">Account</div>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">⚙️</span>
-                        Settings
-                    </a>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">💳</span>
-                        Billing
-                    </a>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">❓</span>
-                        Help Center
-                    </a>
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon">🚪</span>
-                        Log Out
-                    </a>
-                </div>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Top Bar -->
-            <div class="topbar">
-                <h1 class="page-title">Welcome back, Sarah!</h1>
-                <div class="topbar-actions">
-                    <div class="search-bar">
-                        <input type="text" placeholder="Search properties, tools...">
-                    </div>
-                    <button class="notification-btn">
-                        🔔
-                        <span class="notification-badge"></span>
-                    </button>
-                    <button class="btn btn-primary">
-                        ➕ New Analysis
-                    </button>
+            <div class="tool-card">
+                <div class="tool-icon">💰</div>
+                <h3 class="tool-title">Price Optimizer</h3>
+                <div class="tool-users">For Property Managers</div>
+                <p class="tool-description">
+                    Dynamic pricing engine with neighborhood-level precision for maximum revenue.
+                </p>
+                <ul class="tool-features">
+                    <li>Hyper-local market analysis</li>
+                    <li>Seasonal adjustments</li>
+                    <li>Competition tracking</li>
+                </ul>
+                <div class="tool-footer">
+                    <button class="btn btn-outline">Launch Tool</button>
+                    <span class="tool-badge badge-live">Live</span>
                 </div>
             </div>
 
-            <!-- Dashboard Content -->
-            <div class="dashboard-content">
-                <!-- Stats Cards -->
-                <div class="stats-grid animate-in">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-label">Portfolio Value</div>
-                            <div class="stat-icon">💼</div>
-                        </div>
-                        <div class="stat-value">$2.4M</div>
-                        <div class="stat-change positive">
-                            ↑ 12.5% this month
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-label">Active Deals</div>
-                            <div class="stat-icon">🤝</div>
-                        </div>
-                        <div class="stat-value">8</div>
-                        <div class="stat-change positive">
-                            ↑ 3 new this week
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-label">Monthly Revenue</div>
-                            <div class="stat-icon">💵</div>
-                        </div>
-                        <div class="stat-value">$18.5K</div>
-                        <div class="stat-change positive">
-                            ↑ 8.2% vs last month
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-label">ROI Average</div>
-                            <div class="stat-icon">📊</div>
-                        </div>
-                        <div class="stat-value">14.3%</div>
-                        <div class="stat-change positive">
-                            ↑ Above market avg
-                        </div>
-                    </div>
+            <div class="tool-card">
+                <div class="tool-icon">🤖</div>
+                <h3 class="tool-title">Realtor Assistant</h3>
+                <div class="tool-users">For Agents & Brokers</div>
+                <p class="tool-description">
+                    Intelligent automation for listings, emails, and client communications.
+                </p>
+                <ul class="tool-features">
+                    <li>Listing generator</li>
+                    <li>Email automation</li>
+                    <li>Follow-up scheduler</li>
+                </ul>
+                <div class="tool-footer">
+                    <button class="btn btn-outline">Launch Tool</button>
+                    <span class="tool-badge badge-new">New</span>
                 </div>
+            </div>
 
-                <!-- Market Insights -->
-                <div class="insights-card animate-in">
-                    <h2 style="margin-bottom: 0.5rem;">Today's Market Insights</h2>
-                    <p style="opacity: 0.9;">Real-time data for San Francisco Bay Area</p>
-                    <div class="insights-grid">
-                        <div class="insight-item">
-                            <div class="insight-value">$1.2M</div>
-                            <div class="insight-label">Median Home Price</div>
-                        </div>
-                        <div class="insight-item">
-                            <div class="insight-value">18</div>
-                            <div class="insight-label">Days on Market</div>
-                        </div>
-                        <div class="insight-item">
-                            <div class="insight-value">3.2%</div>
-                            <div class="insight-label">Rental Yield</div>
-                        </div>
-                        <div class="insight-item">
-                            <div class="insight-value">742</div>
-                            <div class="insight-label">New Listings</div>
-                        </div>
-                    </div>
+            <div class="tool-card">
+                <div class="tool-icon">👥</div>
+                <h3 class="tool-title">Tenant Screening</h3>
+                <div class="tool-users">For Landlords</div>
+                <p class="tool-description">
+                    Advanced behavioral analysis beyond traditional credit checks.
+                </p>
+                <ul class="tool-features">
+                    <li>Pattern recognition</li>
+                    <li>Risk assessment</li>
+                    <li>Predictive scoring</li>
+                </ul>
+                <div class="tool-footer">
+                    <button class="btn btn-outline">Launch Tool</button>
+                    <span class="tool-badge badge-live">Live</span>
                 </div>
+            </div>
 
-                <!-- Quick Actions -->
-                <div class="quick-actions animate-in">
-                    <div class="section-header">
-                        <h3 class="section-title">Quick Actions</h3>
-                        <a href="#" style="color: var(--accent); text-decoration: none; font-size: 0.875rem;">View all tools →</a>
-                    </div>
-                    <div class="tools-grid">
-                        <a href="#" class="tool-quick">
-                            <div class="tool-quick-icon">📊</div>
-                            <div class="tool-quick-name">Deal Analyzer</div>
-                        </a>
-                        <a href="#" class="tool-quick">
-                            <div class="tool-quick-icon">💰</div>
-                            <div class="tool-quick-name">Price Optimizer</div>
-                        </a>
-                        <a href="#" class="tool-quick">
-                            <div class="tool-quick-icon">🤖</div>
-                            <div class="tool-quick-name">Assistant</div>
-                        </a>
-                        <a href="#" class="tool-quick">
-                            <div class="tool-quick-icon">👥</div>
-                            <div class="tool-quick-name">Screening</div>
-                        </a>
-                        <a href="#" class="tool-quick">
-                            <div class="tool-quick-icon">🏗️</div>
-                            <div class="tool-quick-name">Zoning</div>
-                        </a>
-                        <a href="#" class="tool-quick">
-                            <div class="tool-quick-icon">🏡</div>
-                            <div class="tool-quick-name">Matchmaker</div>
-                        </a>
-                        <a href="#" class="tool-quick">
-                            <div class="tool-quick-icon">📈</div>
-                            <div class="tool-quick-name">CRM</div>
-                        </a>
-                        <a href="#" class="tool-quick">
-                            <div class="tool-quick-icon">📄</div>
-                            <div class="tool-quick-name">Contracts</div>
-                        </a>
-                    </div>
+            <div class="tool-card">
+                <div class="tool-icon">🏗️</div>
+                <h3 class="tool-title">Zoning & Permits</h3>
+                <div class="tool-users">For Developers</div>
+                <p class="tool-description">
+                    Instant analysis of building potential and regulatory compliance.
+                </p>
+                <ul class="tool-features">
+                    <li>Zoning interpretation</li>
+                    <li>Code compliance</li>
+                    <li>Permit checklists</li>
+                </ul>
+                <div class="tool-footer">
+                    <button class="btn btn-outline">Launch Tool</button>
+                    <span class="tool-badge badge-beta">Beta</span>
                 </div>
+            </div>
 
-                <!-- Recent Activity & Properties -->
-                <div class="content-grid">
-                    <div class="content-card animate-in">
-                        <div class="section-header">
-                            <h3 class="section-title">Recent Activity</h3>
-                            <a href="#" style="color: var(--accent); text-decoration: none; font-size: 0.875rem;">View all →</a>
-                        </div>
-                        <ul class="activity-list">
-                            <li class="activity-item">
-                                <div class="activity-content">
-                                    <div class="activity-title">Deal Analysis Completed</div>
-                                    <div class="activity-meta">123 Oak Street - ROI: 15.2%</div>
-                                </div>
-                                <span class="activity-badge">2 hours ago</span>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-content">
-                                    <div class="activity-title">Price Optimization</div>
-                                    <div class="activity-meta">Suggested: $3,200/mo (+$300)</div>
-                                </div>
-                                <span class="activity-badge">5 hours ago</span>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-content">
-                                    <div class="activity-title">New Tenant Application</div>
-                                    <div class="activity-meta">456 Pine Ave - Score: 8.7/10</div>
-                                </div>
-                                <span class="activity-badge">Yesterday</span>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-content">
-                                    <div class="activity-title">Contract Review</div>
-                                    <div class="activity-meta">3 risk items identified</div>
-                                </div>
-                                <span class="activity-badge">2 days ago</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="content-card animate-in">
-                        <div class="section-header">
-                            <h3 class="section-title">Hot Properties</h3>
-                            <a href="#" style="color: var(--accent); text-decoration: none; font-size: 0.875rem;">View all →</a>
-                        </div>
-                        <div class="property-grid">
-                            <div class="property-card">
-                                <div class="property-image">🏠</div>
-                                <div class="property-details">
-                                    <div class="property-address">742 Maple Drive</div>
-                                    <div class="property-price">$850,000</div>
-                                    <div class="property-meta">4 bed • 3 bath • 2,400 sqft</div>
-                                </div>
-                            </div>
-                            <div class="property-card">
-                                <div class="property-image">🏢</div>
-                                <div class="property-details">
-                                    <div class="property-address">Downtown Plaza Unit 5</div>
-                                    <div class="property-price">$425,000</div>
-                                    <div class="property-meta">2 bed • 2 bath • 1,100 sqft</div>
-                                </div>
-                            </div>
-                            <div class="property-card">
-                                <div class="property-image">🏘️</div>
-                                <div class="property-details">
-                                    <div class="property-address">Sunset Heights Triplex</div>
-                                    <div class="property-price">$1,200,000</div>
-                                    <div class="property-meta">3 units • $5,800/mo income</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="tool-card">
+                <div class="tool-icon">🏡</div>
+                <h3 class="tool-title">Home Matchmaker</h3>
+                <div class="tool-users">For Buyers</div>
+                <p class="tool-description">
+                    Intelligent property matching based on lifestyle and preferences.
+                </p>
+                <ul class="tool-features">
+                    <li>Preference learning</li>
+                    <li>Hidden gem finder</li>
+                    <li>Commute analysis</li>
+                </ul>
+                <div class="tool-footer">
+                    <button class="btn btn-outline">Launch Tool</button>
+                    <span class="tool-badge badge-live">Live</span>
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <!-- Usage Meter -->
-                <div class="usage-meter animate-in">
-                    <div class="section-header">
-                        <h3 class="section-title">Monthly Usage</h3>
-                        <button class="btn btn-primary">Upgrade Plan</button>
+    <!-- Demo Section -->
+    <section id="demo" class="demo-section">
+        <div class="demo-container">
+            <div class="demo-content">
+                <h3>Experience the Power</h3>
+                <p>
+                    See how our Deal Analyzer transforms property evaluation with instant insights and professional-grade analysis.
+                </p>
+                <ul class="feature-list">
+                    <li>
+                        <div class="feature-icon">⚡</div>
+                        <span>Instant ROI calculations</span>
+                    </li>
+                    <li>
+                        <div class="feature-icon">📈</div>
+                        <span>Market comparison analysis</span>
+                    </li>
+                    <li>
+                        <div class="feature-icon">🎯</div>
+                        <span>Investment recommendations</span>
+                    </li>
+                    <li>
+                        <div class="feature-icon">💵</div>
+                        <span>Cash flow projections</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="demo-form">
+                <h4 style="margin-bottom: 1.5rem; color: var(--dark);">Quick Analysis</h4>
+                <div class="form-group">
+                    <label>Property Address</label>
+                    <input type="text" class="form-control" id="address" placeholder="123 Main St, City, State">
+                </div>
+                <div class="form-group">
+                    <label>Purchase Price</label>
+                    <input type="number" class="form-control" id="price" placeholder="450000">
+                </div>
+                <div class="form-group">
+                    <label>Investment Strategy</label>
+                    <select class="form-control" id="strategy">
+                        <option>Buy & Hold (Rental)</option>
+                        <option>Fix & Flip</option>
+                        <option>BRRRR Strategy</option>
+                        <option>Short-term Rental</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-large" onclick="analyzeProperty()">
+                    Analyze Property
+                </button>
+                
+                <div id="results" class="results-box">
+                    <h4 style="color: var(--sage); margin-bottom: 1rem; font-family: Georgia, serif;">Analysis Complete!</h4>
+                    <div class="result-item">
+                        <span class="result-label">Expected ROI</span>
+                        <span class="result-value" id="roi">--</span>
                     </div>
-                    <div class="usage-bar">
-                        <div class="usage-fill" style="width: 65%;"></div>
+                    <div class="result-item">
+                        <span class="result-label">Monthly Cash Flow</span>
+                        <span class="result-value" id="cashflow">--</span>
                     </div>
-                    <div class="usage-text">
-                        <span>65 of 100 analyses used</span>
-                        <span>35 remaining</span>
+                    <div class="result-item">
+                        <span class="result-label">Cap Rate</span>
+                        <span class="result-value" id="caprate">--</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Investment Score</span>
+                        <span class="result-value">8.7/10</span>
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section">
+        <div class="section-header">
+            <h2>Simple, Transparent Pricing</h2>
+            <p>Start free and scale as your business grows</p>
+        </div>
+
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3 class="pricing-title">Starter</h3>
+                <div class="pricing-price">$0<span>/month</span></div>
+                <ul class="pricing-features">
+                    <li>2 tools access</li>
+                    <li>10 analyses per month</li>
+                    <li>Basic market data</li>
+                    <li>Email support</li>
+                </ul>
+                <button class="btn btn-outline btn-large">Start Free</button>
+            </div>
+
+            <div class="pricing-card featured">
+                <h3 class="pricing-title">Professional</h3>
+                <div class="pricing-price">$99<span>/month</span></div>
+                <ul class="pricing-features">
+                    <li>All 8 tools access</li>
+                    <li>Unlimited analyses</li>
+                    <li>Real-time MLS data</li>
+                    <li>Priority support</li>
+                    <li>API access</li>
+                    <li>White-label options</li>
+                </ul>
+                <button class="btn btn-primary btn-large">Start 14-Day Trial</button>
+            </div>
+
+            <div class="pricing-card">
+                <h3 class="pricing-title">Enterprise</h3>
+                <div class="pricing-price">Custom</div>
+                <ul class="pricing-features">
+                    <li>Custom solutions</li>
+                    <li>Dedicated infrastructure</li>
+                    <li>Team training</li>
+                    <li>SLA guarantee</li>
+                    <li>Custom integrations</li>
+                </ul>
+                <button class="btn btn-outline btn-large">Contact Sales</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Product</h4>
+                <a href="#">Deal Analyzer</a>
+                <a href="#">Price Optimizer</a>
+                <a href="#">All Tools</a>
+                <a href="#">API Docs</a>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <a href="#">About</a>
+                <a href="#">Careers</a>
+                <a href="#">Blog</a>
+                <a href="#">Press</a>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <a href="#">Help Center</a>
+                <a href="#">Tutorials</a>
+                <a href="#">Case Studies</a>
+                <a href="#">Community</a>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Security</a>
+                <a href="#">Compliance</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 REtotalAI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Signup/Login Modal -->
+    <div id="authModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 2rem;">
+        <div style="max-width: 500px; margin: 5% auto; background: white; border-radius: 1rem; padding: 2.5rem; position: relative;">
+            <button onclick="closeAuthModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
+            
+            <div id="signupForm">
+                <h2 style="color: var(--primary); margin-bottom: 1rem; font-family: Georgia, serif;">Start Your Free Trial</h2>
+                <p style="color: var(--gray); margin-bottom: 2rem;">Get instant access to professional real estate tools</p>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Full Name</label>
+                    <input type="text" placeholder="John Smith" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Email</label>
+                    <input type="email" placeholder="john@example.com" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Password</label>
+                    <input type="password" placeholder="••••••••" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
+                </div>
+                
+                <button onclick="handleSignup()" style="width: 100%; background: var(--accent); color: white; padding: 0.875rem; border-radius: 0.5rem; font-weight: 600; border: none; cursor: pointer; font-size: 1rem;">
+                    Start Free Trial
+                </button>
+                
+                <p style="text-align: center; margin-top: 1.5rem; color: var(--gray);">
+                    Already have an account? 
+                    <a href="#" onclick="showLogin()" style="color: var(--accent); text-decoration: none; font-weight: 600;">Log In</a>
+                </p>
+                
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                    <p style="text-align: center; color: var(--gray); font-size: 0.875rem;">
+                        ✓ 14-day free trial &nbsp;&nbsp; ✓ No credit card required &nbsp;&nbsp; ✓ Cancel anytime
+                    </p>
+                </div>
+            </div>
+            
+            <div id="loginForm" style="display: none;">
+                <h2 style="color: var(--primary); margin-bottom: 1rem; font-family: Georgia, serif;">Welcome Back</h2>
+                <p style="color: var(--gray); margin-bottom: 2rem;">Log in to access your real estate tools</p>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Email</label>
+                    <input type="email" placeholder="john@example.com" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Password</label>
+                    <input type="password" placeholder="••••••••" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
+                </div>
+                
+                <button onclick="handleLogin()" style="width: 100%; background: var(--accent); color: white; padding: 0.875rem; border-radius: 0.5rem; font-weight: 600; border: none; cursor: pointer; font-size: 1rem;">
+                    Log In
+                </button>
+                
+                <p style="text-align: center; margin-top: 1.5rem; color: var(--gray);">
+                    Don't have an account? 
+                    <a href="#" onclick="showSignup()" style="color: var(--accent); text-decoration: none; font-weight: 600;">Sign Up Free</a>
+                </p>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Animate stats on load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Animate stat values
-            const statValues = document.querySelectorAll('.stat-value');
-            statValues.forEach(stat => {
-                const finalValue = stat.textContent;
-                stat.style.opacity = '0';
-                setTimeout(() => {
-                    stat.style.transition = 'opacity 0.5s';
-                    stat.style.opacity = '1';
-                }, 100);
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
             });
-
-            // Tool quick actions
-            document.querySelectorAll('.tool-quick').forEach(tool => {
-                tool.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const toolName = this.querySelector('.tool-quick-name').textContent;
-                    console.log(`Launching ${toolName}...`);
-                    // Here you would navigate to the tool
-                });
-            });
-
-            // Sidebar navigation
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    if (!this.href || this.href === '#') {
-                        e.preventDefault();
-                    }
-                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-
-            // Property cards hover effect
-            document.querySelectorAll('.property-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    console.log('Opening property details...');
-                });
-            });
-
-            // Notification animation
-            const notificationBadge = document.querySelector('.notification-badge');
-            setInterval(() => {
-                notificationBadge.style.animation = 'pulse 1s';
-                setTimeout(() => {
-                    notificationBadge.style.animation = '';
-                }, 1000);
-            }, 5000);
-
-            // Search functionality
-            const searchInput = document.querySelector('.search-bar input');
-            searchInput.addEventListener('input', function(e) {
-                console.log('Searching for:', e.target.value);
-                // Implement search functionality
-            });
-
-            // Simulate real-time updates
-            setTimeout(() => {
-                const activityList = document.querySelector('.activity-list');
-                const newActivity = document.createElement('li');
-                newActivity.className = 'activity-item animate-in';
-                newActivity.innerHTML = `
-                    <div class="activity-content">
-                        <div class="activity-title">🔔 New Market Alert</div>
-                        <div class="activity-meta">Price drop detected in your area</div>
-                    </div>
-                    <span class="activity-badge" style="background: var(--accent); color: white;">Just now</span>
-                `;
-                activityList.insertBefore(newActivity, activityList.firstChild);
-            }, 5000);
         });
 
-        // Add pulse animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes pulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.5); }
+        // Demo functionality
+        function analyzeProperty() {
+            const address = document.getElementById('address').value;
+            const price = document.getElementById('price').value;
+            
+            if (!address || !price) {
+                alert('Please fill in all fields');
+                return;
             }
-        `;
-        document.head.appendChild(style);
+            
+            // Simulate analysis
+            const roi = (Math.random() * 20 + 8).toFixed(1);
+            const cashFlow = Math.floor(Math.random() * 2000 + 500);
+            const capRate = (Math.random() * 8 + 4).toFixed(1);
+            
+            document.getElementById('roi').textContent = roi + '%';
+            document.getElementById('cashflow').textContent = '$' + cashFlow;
+            document.getElementById('caprate').textContent = capRate + '%';
+            
+            document.getElementById('results').classList.add('show');
+        }
+
+        // Tool launch
+        document.querySelectorAll('.tool-card button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const toolName = this.closest('.tool-card').querySelector('.tool-title').textContent;
+                alert(`Launching ${toolName}...\n\nThis would open the full tool interface.`);
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements
+        document.querySelectorAll('.tool-card, .pricing-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
     </script>
 </body>
 </html>
