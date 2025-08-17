@@ -758,7 +758,8 @@
                 <a href="#demo" class="nav-link">Demo</a>
                 <a href="#pricing" class="nav-link">Pricing</a>
                 <a href="#about" class="nav-link">About</a>
-                <a href="#signup" class="btn btn-primary">Start Free Trial</a>
+                <a href="login.html" style="background: none; border: 2px solid var(--accent); color: var(--accent); padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; text-decoration: none; margin-right: 1rem;">Log In</a>
+                <a href="signup.html" class="btn btn-primary">Start Free Trial</a>
             </div>
             <button class="mobile-menu-btn">
                 <div class="hamburger">
@@ -778,7 +779,7 @@
                 Revolutionary intelligence tools that solve every challenge in modern real estate
             </p>
             <div class="hero-cta fade-in-up" style="animation-delay: 0.2s;">
-                <a href="#demo" class="btn btn-white">Try Live Demo</a>
+                <a href="signup.html" class="btn btn-white">Start Free Trial</a>
                 <a href="#tools" class="btn btn-ghost">Explore Tools</a>
             </div>
         </div>
@@ -828,7 +829,7 @@
                     <li>Market comparison engine</li>
                 </ul>
                 <div class="tool-footer">
-                    <button class="btn btn-outline">Launch Tool</button>
+                    <a href="signup.html" class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
                     <span class="tool-badge badge-live">Live</span>
                 </div>
             </div>
@@ -846,7 +847,7 @@
                     <li>Competition tracking</li>
                 </ul>
                 <div class="tool-footer">
-                    <button class="btn btn-outline">Launch Tool</button>
+                    <a href="signup.html" class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
                     <span class="tool-badge badge-live">Live</span>
                 </div>
             </div>
@@ -864,7 +865,7 @@
                     <li>Follow-up scheduler</li>
                 </ul>
                 <div class="tool-footer">
-                    <button class="btn btn-outline">Launch Tool</button>
+                    <a href="signup.html" class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
                     <span class="tool-badge badge-new">New</span>
                 </div>
             </div>
@@ -882,7 +883,7 @@
                     <li>Predictive scoring</li>
                 </ul>
                 <div class="tool-footer">
-                    <button class="btn btn-outline">Launch Tool</button>
+                    <a href="signup.html" class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
                     <span class="tool-badge badge-live">Live</span>
                 </div>
             </div>
@@ -900,7 +901,7 @@
                     <li>Permit checklists</li>
                 </ul>
                 <div class="tool-footer">
-                    <button class="btn btn-outline">Launch Tool</button>
+                    <a href="signup.html" class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
                     <span class="tool-badge badge-beta">Beta</span>
                 </div>
             </div>
@@ -918,7 +919,7 @@
                     <li>Commute analysis</li>
                 </ul>
                 <div class="tool-footer">
-                    <button class="btn btn-outline">Launch Tool</button>
+                    <a href="signup.html" class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
                     <span class="tool-badge badge-live">Live</span>
                 </div>
             </div>
@@ -1016,7 +1017,7 @@
                     <li>Basic market data</li>
                     <li>Email support</li>
                 </ul>
-                <button class="btn btn-outline btn-large">Start Free</button>
+                <a href="signup.html" class="btn btn-outline btn-large" style="text-decoration: none; display: inline-block; text-align: center;">Start Free</a>
             </div>
 
             <div class="pricing-card featured">
@@ -1030,7 +1031,7 @@
                     <li>API access</li>
                     <li>White-label options</li>
                 </ul>
-                <button class="btn btn-primary btn-large">Start 14-Day Trial</button>
+                <a href="signup.html" class="btn btn-primary btn-large" style="text-decoration: none; display: inline-block; text-align: center;">Start 14-Day Trial</a>
             </div>
 
             <div class="pricing-card">
@@ -1043,7 +1044,7 @@
                     <li>SLA guarantee</li>
                     <li>Custom integrations</li>
                 </ul>
-                <button class="btn btn-outline btn-large">Contact Sales</button>
+                <a href="mailto:sales@retotalai.com" class="btn btn-outline btn-large" style="text-decoration: none; display: inline-block; text-align: center;">Contact Sales</a>
             </div>
         </div>
     </section>
@@ -1085,71 +1086,6 @@
         </div>
     </footer>
 
-    <!-- Signup/Login Modal -->
-    <div id="authModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 2rem;">
-        <div style="max-width: 500px; margin: 5% auto; background: white; border-radius: 1rem; padding: 2.5rem; position: relative;">
-            <button onclick="closeAuthModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
-            
-            <div id="signupForm">
-                <h2 style="color: var(--primary); margin-bottom: 1rem; font-family: Georgia, serif;">Start Your Free Trial</h2>
-                <p style="color: var(--gray); margin-bottom: 2rem;">Get instant access to professional real estate tools</p>
-                
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Full Name</label>
-                    <input type="text" placeholder="John Smith" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
-                </div>
-                
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Email</label>
-                    <input type="email" placeholder="john@example.com" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Password</label>
-                    <input type="password" placeholder="••••••••" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
-                </div>
-                
-                <button onclick="handleSignup()" style="width: 100%; background: var(--accent); color: white; padding: 0.875rem; border-radius: 0.5rem; font-weight: 600; border: none; cursor: pointer; font-size: 1rem;">
-                    Start Free Trial
-                </button>
-                
-                <p style="text-align: center; margin-top: 1.5rem; color: var(--gray);">
-                    Already have an account? 
-                    <a href="#" onclick="showLogin()" style="color: var(--accent); text-decoration: none; font-weight: 600;">Log In</a>
-                </p>
-                
-                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
-                    <p style="text-align: center; color: var(--gray); font-size: 0.875rem;">
-                        ✓ 14-day free trial &nbsp;&nbsp; ✓ No credit card required &nbsp;&nbsp; ✓ Cancel anytime
-                    </p>
-                </div>
-            </div>
-            
-            <div id="loginForm" style="display: none;">
-                <h2 style="color: var(--primary); margin-bottom: 1rem; font-family: Georgia, serif;">Welcome Back</h2>
-                <p style="color: var(--gray); margin-bottom: 2rem;">Log in to access your real estate tools</p>
-                
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Email</label>
-                    <input type="email" placeholder="john@example.com" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Password</label>
-                    <input type="password" placeholder="••••••••" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
-                </div>
-                
-                <button onclick="handleLogin()" style="width: 100%; background: var(--accent); color: white; padding: 0.875rem; border-radius: 0.5rem; font-weight: 600; border: none; cursor: pointer; font-size: 1rem;">
-                    Log In
-                </button>
-                
-                <p style="text-align: center; margin-top: 1.5rem; color: var(--gray);">
-                    Don't have an account? 
-                    <a href="#" onclick="showSignup()" style="color: var(--accent); text-decoration: none; font-weight: 600;">Sign Up Free</a>
-                </p>
-            </div>
-        </div>
-    </div>
 
     <script>
         // Smooth scrolling
