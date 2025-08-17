@@ -996,7 +996,7 @@
         // Share results
         function shareResults() {
             const text = `Check out this deal:\nROI: ${document.getElementById('annualROI').textContent}\nCash Flow: ${document.getElementById('monthlyCashFlow').textContent}`;
-            
+
             if (navigator.share) {
                 navigator.share({
                     title: 'Real Estate Deal Analysis',
@@ -1008,6 +1008,22 @@
                 alert('Results copied to clipboard!');
             }
         }
+
+        async function fetchAndPopulatePropertyDetails() {
+            const addressValue = document.getElementById('address').value;
+            try {
+                const { getPropertyDetails } = await import('../../plugins/propertyValuation.js');
+                const details = await getPropertyDetails({ address: addressValue, city: '', state: '', zipcode: '' });
+                document.getElementById('yearBuilt').value = details.yearBuilt || '';
+                document.getElementById('sqft').value = details.sqft || '';
+            } catch (err) {
+                console.error('Property details lookup failed', err);
+                document.getElementById('yearBuilt').value = '';
+                document.getElementById('sqft').value = '';
+            }
+        }
+
+        document.getElementById('address').addEventListener('blur', fetchAndPopulatePropertyDetails);
 
         // Auto-calculate on input change
         document.querySelectorAll('input').forEach(input => {
