@@ -15,7 +15,8 @@
   "author": "REtotalAI Team",
   "license": "MIT",
   "dependencies": {
-    "chart.js": "^4.4.1"
+    "chart.js": "^4.4.1",
+    "lucide-react": "^0.368.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
