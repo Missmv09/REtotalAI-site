@@ -4,747 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>REtotalAI - Revolutionary Real Estate Intelligence Platform</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #1E3A5F;      /* Deep navy blue - trust, stability */
-            --primary-dark: #0F2238;  /* Darker navy */
-            --accent: #D4AF37;        /* Luxury gold */
-            --accent-hover: #B8941F;  /* Darker gold */
-            --sage: #7C9885;          /* Sage green - growth, prosperity */
-            --warm-gray: #8B8680;     /* Warm gray */
-            --dark: #2C2926;          /* Warm black */
-            --light: #FAFAF8;         /* Warm white */
-            --cream: #F7F3ED;         /* Soft cream */
-            --gray: #6B6B6B;
-            --success: #7C9885;
-            --warning: #D4AF37;
-            --card-bg: #FFFFFF;
-            --border: #E5E1DB;
-        }
-
-        body {
-            font-family: 'Georgia', 'Playfair Display', 'Times New Roman', serif;
-            background: var(--light);
-            color: var(--dark);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* Typography - Mix of serif for headers, sans for body */
-        h1, h2, h3 {
-            font-family: 'Georgia', 'Playfair Display', serif;
-            letter-spacing: -0.02em;
-        }
-        
-        p, .nav-link, .btn, label, li {
-            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
-        }
-        
-        h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
-        h2 { font-size: clamp(2rem, 4vw, 3rem); }
-        h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
-
-        /* Navigation */
-        nav {
-            background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .nav-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-link {
-            color: var(--gray);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-link:hover {
-            color: var(--primary);
-        }
-
-        .btn {
-            padding: 0.625rem 1.25rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.2s;
-            cursor: pointer;
-            border: none;
-            font-size: 0.95rem;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-        }
-
-        .btn-outline {
-            border: 2px solid var(--border);
-            background: white;
-            color: var(--dark);
-        }
-
-        .btn-outline:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        /* Hero Section */
-        .hero {
-            padding: 8rem 2rem 5rem;
-            background: linear-gradient(135deg, #1E3A5F 0%, #2C4B6F 50%, #7C9885 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="0" y="0" width="1" height="1" fill="white" opacity="0.03"/><rect x="10" y="10" width="1" height="1" fill="white" opacity="0.03"/></svg>');
-            background-size: 10px 10px;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .hero-content {
-            max-width: 1280px;
-            margin: 0 auto;
-            color: white;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero h1 {
-            font-weight: 900;
-            margin-bottom: 1.5rem;
-            letter-spacing: -0.02em;
-        }
-
-        .hero p {
-            font-size: 1.25rem;
-            margin-bottom: 2.5rem;
-            opacity: 0.95;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-cta {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .hero-cta .btn {
-            padding: 0.875rem 2rem;
-            font-size: 1.1rem;
-        }
-
-        .btn-white {
-            background: var(--accent);
-            color: white;
-            font-weight: 600;
-        }
-
-        .btn-white:hover {
-            background: var(--accent-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
-        }
-
-        .btn-ghost {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.3);
-        }
-
-        .btn-ghost:hover {
-            background: rgba(255,255,255,0.3);
-            border-color: white;
-        }
-
-        /* Stats Bar */
-        .stats-bar {
-            background: var(--cream);
-            padding: 3rem 2rem;
-            border-top: 4px solid var(--accent);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        .stats-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            text-align: center;
-        }
-
-        .stat {
-            padding: 1rem;
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-            font-family: 'Georgia', serif;
-        }
-
-        .stat-label {
-            color: var(--gray);
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* Tools Section */
-        .tools-section {
-            padding: 5rem 2rem;
-            background: linear-gradient(180deg, var(--light) 0%, var(--cream) 100%);
-        }
-
-        .section-header {
-            text-align: center;
-            max-width: 800px;
-            margin: 0 auto 4rem;
-        }
-
-        .section-header h2 {
-            font-weight: 800;
-            margin-bottom: 1rem;
-            color: var(--dark);
-        }
-
-        .section-header p {
-            color: var(--gray);
-            font-size: 1.125rem;
-        }
-
-        .tools-grid {
-            max-width: 1280px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .tool-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .tool-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--accent), var(--sage));
-            transform: scaleX(0);
-            transition: transform 0.3s;
-        }
-
-        .tool-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-        }
-
-        .tool-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .tool-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--accent), var(--sage));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
-        }
-
-        .tool-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-        }
-
-        .tool-users {
-            color: var(--sage);
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .tool-description {
-            color: var(--gray);
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-        }
-
-        .tool-features {
-            list-style: none;
-            margin-bottom: 1.5rem;
-        }
-
-        .tool-features li {
-            padding: 0.5rem 0;
-            color: var(--gray);
-            font-size: 0.875rem;
-            display: flex;
-            align-items: flex-start;
-        }
-
-        .tool-features li::before {
-            content: '✓';
-            color: var(--success);
-            font-weight: bold;
-            margin-right: 0.75rem;
-            flex-shrink: 0;
-        }
-
-        .tool-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .tool-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .badge-live {
-            background: #E8F5E9;
-            color: #2E7D32;
-        }
-
-        .badge-new {
-            background: var(--accent);
-            color: white;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .badge-beta {
-            background: #FFF3E0;
-            color: #E65100;
-        }
-
-        /* Demo Section */
-        .demo-section {
-            padding: 5rem 2rem;
-            background: white;
-            position: relative;
-        }
-        
-        .demo-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-        }
-
-        .demo-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-        }
-
-        .demo-content h3 {
-            font-weight: 800;
-            margin-bottom: 1.5rem;
-            color: var(--dark);
-        }
-
-        .demo-content p {
-            color: var(--gray);
-            margin-bottom: 2rem;
-            font-size: 1.125rem;
-        }
-
-        .feature-list {
-            list-style: none;
-        }
-
-        .feature-list li {
-            padding: 1rem 0;
-            display: flex;
-            align-items: center;
-            color: var(--dark);
-            font-weight: 500;
-        }
-
-        .feature-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #F7F3ED, #E5E1DB);
-            border: 1px solid var(--accent);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
-            color: var(--accent);
-        }
-
-        .demo-form {
-            background: var(--cream);
-            padding: 2.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: 1px solid var(--border);
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid var(--border);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: all 0.2s;
-            background: white;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-
-        .btn-large {
-            width: 100%;
-            padding: 1rem;
-            font-size: 1.1rem;
-        }
-
-        /* Pricing Section */
-        .pricing-section {
-            padding: 5rem 2rem;
-            background: linear-gradient(180deg, var(--cream) 0%, var(--light) 100%);
-        }
-
-        .pricing-grid {
-            max-width: 1100px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .pricing-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 2.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            position: relative;
-            transition: all 0.3s;
-        }
-
-        .pricing-card.featured {
-            transform: scale(1.05);
-            box-shadow: 0 20px 40px rgba(30, 58, 95, 0.15);
-            border: 2px solid var(--accent);
-        }
-
-        .pricing-card.featured::before {
-            content: 'MOST POPULAR';
-            position: absolute;
-            top: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--accent);
-            color: white;
-            padding: 0.25rem 1rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-
-        .pricing-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-        }
-
-        .pricing-price {
-            font-size: 3rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin: 1.5rem 0;
-            font-family: 'Georgia', serif;
-        }
-
-        .pricing-price span {
-            font-size: 1rem;
-            color: var(--gray);
-            font-weight: 400;
-        }
-
-        .pricing-features {
-            list-style: none;
-            margin: 2rem 0;
-        }
-
-        .pricing-features li {
-            padding: 0.75rem 0;
-            color: var(--gray);
-            display: flex;
-            align-items: flex-start;
-        }
-
-        .pricing-features li::before {
-            content: '✓';
-            color: var(--success);
-            font-weight: bold;
-            margin-right: 0.75rem;
-            flex-shrink: 0;
-        }
-
-        /* Footer */
-        footer {
-            background: var(--dark);
-            color: white;
-            padding: 4rem 2rem 2rem;
-        }
-
-        .footer-content {
-            max-width: 1280px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 3rem;
-            margin-bottom: 3rem;
-        }
-
-        .footer-section h4 {
-            margin-bottom: 1.5rem;
-            font-weight: 700;
-        }
-
-        .footer-section a {
-            color: #94A3B8;
-            text-decoration: none;
-            display: block;
-            padding: 0.5rem 0;
-            transition: color 0.2s;
-        }
-
-        .footer-section a:hover {
-            color: white;
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding-top: 2rem;
-            border-top: 1px solid #334155;
-            color: #94A3B8;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .hero {
-                padding: 6rem 1.5rem 4rem;
-            }
-            
-            .demo-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .pricing-card.featured {
-                transform: scale(1);
-            }
-            
-            .stats-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in-up {
-            animation: fadeInUp 0.8s ease-out forwards;
-        }
-
-        /* Results Box */
-        .results-box {
-            background: linear-gradient(135deg, #F8F6F0, #E8E5DE);
-            border: 2px solid var(--sage);
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            margin-top: 2rem;
-            display: none;
-        }
-
-        .results-box.show {
-            display: block;
-            animation: fadeInUp 0.5s ease-out;
-        }
-
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .result-item:last-child {
-            border-bottom: none;
-        }
-
-        .result-label {
-            color: var(--gray);
-            font-weight: 500;
-        }
-
-        .result-value {
-            color: var(--sage);
-            font-weight: 700;
-            font-size: 1.125rem;
-        }
-
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0.5rem;
-        }
-
-        @media (max-width: 768px) {
-            .mobile-menu-btn {
-                display: block;
-            }
-        }
-
-        .hamburger {
-            width: 24px;
-            height: 20px;
-            position: relative;
-        }
-
-        .hamburger span {
-            display: block;
-            position: absolute;
-            height: 3px;
-            width: 100%;
-            background: var(--dark);
-            border-radius: 3px;
-            left: 0;
-            transition: 0.25s;
-        }
-
-        .hamburger span:nth-child(1) { top: 0; }
-        .hamburger span:nth-child(2) { top: 8px; }
-        .hamburger span:nth-child(3) { bottom: 0; }
-    </style>
+    <link rel="stylesheet" href="styles/main.css">
+    
 </head>
 <body>
     <!-- Navigation -->
@@ -758,10 +19,10 @@
                 <a href="#demo" class="nav-link">Demo</a>
                 <a href="#pricing" class="nav-link">Pricing</a>
                 <a href="#about" class="nav-link">About</a>
-                <a href="login.html" style="background: none; border: 2px solid var(--accent); color: var(--accent); padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; text-decoration: none; margin-right: 1rem;">Log In</a>
-                <a href="signup.html" class="btn btn-primary">Start Free Trial</a>
+                <a href="#authModal" data-open-login class="btn btn-outline" aria-label="Log in">Log In</a>
+                <a href="#authModal" data-open-auth class="btn btn-primary">Start Free Trial</a>
             </div>
-            <button class="mobile-menu-btn">
+            <button class="mobile-menu-btn" aria-label="Toggle navigation menu" aria-expanded="false">
                 <div class="hamburger">
                     <span></span>
                     <span></span>
@@ -779,7 +40,7 @@
                 Revolutionary intelligence tools that solve every challenge in modern real estate
             </p>
             <div class="hero-cta fade-in-up" style="animation-delay: 0.2s;">
-                <a href="signup.html" class="btn btn-white">Start Free Trial</a>
+                <a href="#authModal" data-open-auth class="btn btn-white">Start Free Trial</a>
                 <a href="#tools" class="btn btn-ghost">Explore Tools</a>
             </div>
         </div>
@@ -829,7 +90,7 @@
                     <li>Market comparison engine</li>
                 </ul>
                 <div class="tool-footer">
-                    <a href="signup.html" class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
+                    <a href="#authModal" data-open-auth class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
                     <span class="tool-badge badge-live">Live</span>
                 </div>
             </div>
@@ -847,7 +108,7 @@
                     <li>Competition tracking</li>
                 </ul>
                 <div class="tool-footer">
-                    <a href="signup.html" class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
+                    <a href="#authModal" data-open-auth class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
                     <span class="tool-badge badge-live">Live</span>
                 </div>
             </div>
@@ -865,7 +126,7 @@
                     <li>Follow-up scheduler</li>
                 </ul>
                 <div class="tool-footer">
-                    <a href="signup.html" class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
+                    <a href="#authModal" data-open-auth class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
                     <span class="tool-badge badge-new">New</span>
                 </div>
             </div>
@@ -883,7 +144,7 @@
                     <li>Predictive scoring</li>
                 </ul>
                 <div class="tool-footer">
-                    <a href="signup.html" class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
+                    <a href="#authModal" data-open-auth class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
                     <span class="tool-badge badge-live">Live</span>
                 </div>
             </div>
@@ -901,7 +162,7 @@
                     <li>Permit checklists</li>
                 </ul>
                 <div class="tool-footer">
-                    <a href="signup.html" class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
+                    <a href="#authModal" data-open-auth class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
                     <span class="tool-badge badge-beta">Beta</span>
                 </div>
             </div>
@@ -919,7 +180,7 @@
                     <li>Commute analysis</li>
                 </ul>
                 <div class="tool-footer">
-                    <a href="signup.html" class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
+                    <a href="#authModal" data-open-auth class="btn-tool" style="text-decoration: none; display: inline-block;">Try Now</a>
                     <span class="tool-badge badge-live">Live</span>
                 </div>
             </div>
@@ -973,7 +234,7 @@
                         <option>Short-term Rental</option>
                     </select>
                 </div>
-                <button class="btn btn-primary btn-large" onclick="analyzeProperty()">
+                <button class="btn btn-primary btn-large" onclick="analyzeProperty()" aria-label="Analyze property">
                     Analyze Property
                 </button>
                 
@@ -1017,7 +278,7 @@
                     <li>Basic market data</li>
                     <li>Email support</li>
                 </ul>
-                <a href="signup.html" class="btn btn-outline btn-large" style="text-decoration: none; display: inline-block; text-align: center;">Start Free</a>
+                <a href="#authModal" data-open-auth class="btn btn-outline btn-large" style="text-decoration: none; display: inline-block; text-align: center;">Start Free</a>
             </div>
 
             <div class="pricing-card featured">
@@ -1031,7 +292,7 @@
                     <li>API access</li>
                     <li>White-label options</li>
                 </ul>
-                <a href="signup.html" class="btn btn-primary btn-large" style="text-decoration: none; display: inline-block; text-align: center;">Start 14-Day Trial</a>
+                <a href="#authModal" data-open-auth class="btn btn-primary btn-large" style="text-decoration: none; display: inline-block; text-align: center;">Start 14-Day Trial</a>
             </div>
 
             <div class="pricing-card">
@@ -1046,6 +307,14 @@
                 </ul>
                 <a href="mailto:sales@retotalai.com" class="btn btn-outline btn-large" style="text-decoration: none; display: inline-block; text-align: center;">Contact Sales</a>
             </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="section-header">
+            <h2>About REtotalAI</h2>
+            <p>REtotalAI delivers intelligent tools that streamline every aspect of real estate.</p>
         </div>
     </section>
 
@@ -1087,73 +356,71 @@
     </footer>
 
 
-    <script>
-        // Smooth scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-
-        // Demo functionality
-        function analyzeProperty() {
-            const address = document.getElementById('address').value;
-            const price = document.getElementById('price').value;
+    
+<div id="authModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 2rem;" role="dialog" aria-modal="true">
+    <div style="max-width: 500px; margin: 5% auto; background: white; border-radius: 1rem; padding: 2.5rem; position: relative;">
+        <button onclick="closeAuthModal()" aria-label="Close authentication modal" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
+        
+        <div id="signupForm">
+            <h2 style="color: var(--primary); margin-bottom: 1rem; font-family: Georgia, serif;">Start Your Free Trial</h2>
+            <p style="color: var(--gray); margin-bottom: 2rem;">Get instant access to professional real estate tools</p>
             
-            if (!address || !price) {
-                alert('Please fill in all fields');
-                return;
-            }
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Full Name</label>
+                <input type="text" id="signupName" placeholder="John Smith" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
+            </div>
             
-            // Simulate analysis
-            const roi = (Math.random() * 20 + 8).toFixed(1);
-            const cashFlow = Math.floor(Math.random() * 2000 + 500);
-            const capRate = (Math.random() * 8 + 4).toFixed(1);
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Email</label>
+                <input type="email" id="signupEmail" placeholder="john@example.com" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
+            </div>
             
-            document.getElementById('roi').textContent = roi + '%';
-            document.getElementById('cashflow').textContent = '$' + cashFlow;
-            document.getElementById('caprate').textContent = capRate + '%';
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Password</label>
+                <input type="password" id="signupPassword" placeholder="••••••••" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
+            </div>
             
-            document.getElementById('results').classList.add('show');
-        }
-
-        // Tool launch
-        document.querySelectorAll('.tool-card button').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const toolName = this.closest('.tool-card').querySelector('.tool-title').textContent;
-                alert(`Launching ${toolName}...\n\nThis would open the full tool interface.`);
-            });
-        });
-
-        // Intersection Observer for animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        // Observe elements
-        document.querySelectorAll('.tool-card, .pricing-card').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(el);
-        });
-    </script>
+            <button onclick="handleSignup()" aria-label="Submit signup form" style="width: 100%; background: var(--accent); color: white; padding: 0.875rem; border-radius: 0.5rem; font-weight: 600; border: none; cursor: pointer; font-size: 1rem;">
+                Start Free Trial
+            </button>
+            
+            <p style="text-align: center; margin-top: 1.5rem; color: var(--gray);">
+                Already have an account? 
+                <a href="#" onclick="showLogin()" style="color: var(--accent); text-decoration: none; font-weight: 600;">Log In</a>
+            </p>
+            
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                <p style="text-align: center; color: var(--gray); font-size: 0.875rem;">
+                    ✓ 14-day free trial &nbsp;&nbsp; ✓ No credit card required &nbsp;&nbsp; ✓ Cancel anytime
+                </p>
+            </div>
+        </div>
+        
+        <div id="loginForm" style="display: none;">
+            <h2 style="color: var(--primary); margin-bottom: 1rem; font-family: Georgia, serif;">Welcome Back</h2>
+            <p style="color: var(--gray); margin-bottom: 2rem;">Log in to access your real estate tools</p>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Email</label>
+                <input type="email" id="loginEmail" placeholder="john@example.com" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Password</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
+            </div>
+            
+            <button onclick="handleLogin()" aria-label="Submit login form" style="width: 100%; background: var(--accent); color: white; padding: 0.875rem; border-radius: 0.5rem; font-weight: 600; border: none; cursor: pointer; font-size: 1rem;">
+                Log In
+            </button>
+            
+            <p style="text-align: center; margin-top: 1.5rem; color: var(--gray);">
+                Don't have an account? 
+                <a href="#" onclick="showSignup()" style="color: var(--accent); text-decoration: none; font-weight: 600;">Sign Up Free</a>
+            </p>
+        </div>
+    </div>
+</div>
+    <script src="scripts/main.js"></script>
 </body>
 </html>
