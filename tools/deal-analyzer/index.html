@@ -517,8 +517,22 @@
                         📍 Property Information
                     </div>
                     <div class="input-group">
-                        <label class="input-label">Property Address</label>
-                        <input type="text" id="address" placeholder="123 Main St, City, State">
+                        <label class="input-label">Street</label>
+                        <input type="text" id="street" placeholder="123 Main St">
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label class="input-label">City</label>
+                            <input type="text" id="city" placeholder="Anytown">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">State</label>
+                            <input type="text" id="state" placeholder="CA">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Zip Code</label>
+                            <input type="text" id="zipcode" placeholder="90210">
+                        </div>
                     </div>
                     <div class="input-row">
                         <div class="input-group">
@@ -969,7 +983,10 @@
         // Save analysis
         function saveAnalysis() {
             const analysis = {
-                address: document.getElementById('address').value,
+                street: document.getElementById('street').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                zipcode: document.getElementById('zipcode').value,
                 purchasePrice: document.getElementById('purchasePrice').value,
                 monthlyRent: document.getElementById('monthlyRent').value,
                 timestamp: new Date().toISOString(),
@@ -1010,10 +1027,16 @@
         }
 
         async function fetchAndPopulatePropertyDetails() {
-            const addressValue = document.getElementById('address').value;
+            const street = document.getElementById('street').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const zipcode = document.getElementById('zipcode').value;
+            if (!street || !city || !state || !zipcode) {
+                return;
+            }
             try {
                 const { getPropertyDetails } = await import('../../plugins/propertyValuation.js');
-                const details = await getPropertyDetails({ address: addressValue, city: '', state: '', zipcode: '' });
+                const details = await getPropertyDetails({ address: street, city, state, zipcode });
                 document.getElementById('yearBuilt').value = details.yearBuilt || '';
                 document.getElementById('sqft').value = details.sqft || '';
             } catch (err) {
@@ -1023,7 +1046,9 @@
             }
         }
 
-        document.getElementById('address').addEventListener('blur', fetchAndPopulatePropertyDetails);
+        ['street', 'city', 'state', 'zipcode'].forEach(id => {
+            document.getElementById(id).addEventListener('blur', fetchAndPopulatePropertyDetails);
+        });
 
         // Auto-calculate on input change
         document.querySelectorAll('input').forEach(input => {

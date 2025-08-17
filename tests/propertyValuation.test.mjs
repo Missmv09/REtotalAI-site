@@ -47,12 +47,20 @@ async function testDetailsPopulate() {
   const expected = { yearBuilt: 1995, sqft: 2000 };
   global.fetch = async () => ({ ok: true, json: async () => expected });
   const elements = {
-    address: { value: '123 Main St' },
+    street: { value: '123 Main St' },
+    city: { value: 'Anytown' },
+    state: { value: 'CA' },
+    zipcode: { value: '90210' },
     yearBuilt: { value: '' },
     sqft: { value: '' }
   };
   global.document = { getElementById: id => elements[id] };
-  const details = await getPropertyDetails({ address: elements.address.value, city: '', state: '', zipcode: '' });
+  const details = await getPropertyDetails({
+    address: elements.street.value,
+    city: elements.city.value,
+    state: elements.state.value,
+    zipcode: elements.zipcode.value
+  });
   document.getElementById('yearBuilt').value = details.yearBuilt;
   document.getElementById('sqft').value = details.sqft;
   assert.equal(elements.yearBuilt.value, expected.yearBuilt);
