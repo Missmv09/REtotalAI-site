@@ -92,7 +92,7 @@ const RetotalInvestmentCalculator = () => {
   };
 
   const handleProUpgrade = () => {
-    window.open('https://buy.stripe.com/test_your_payment_link', '_blank');
+    window.open('https://buy.stripe.com/28E6oGcgZeAL4Ofb5W9Ve00', '_blank');
   };
 
   const activatePro = () => {
