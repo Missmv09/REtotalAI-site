@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>REtotalAI - Revolutionary Real Estate Intelligence Platform</title>
     <link rel="stylesheet" href="styles/main.css">
-    
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -225,89 +225,63 @@
     </section>
 
     <!-- Demo Section -->
-    <section id="demo" class="demo-section">
-        <div class="demo-container">
-            <div class="demo-content">
-                <h3>💼 Experience the Power of Smart Real Estate Analysis</h3>
-                <p>
-                    Instantly evaluate any deal with AI-powered insights, personalized projections, and professional-grade analysis.
-                </p>
-                <ul class="feature-list">
-                    <li>
-                        <div class="feature-icon">⚡</div>
-                        <div class="feature-text">
-                            <strong>Real-Time ROI &amp; Cash Flow Projections</strong>
-                            <p>Know exactly what you'll earn—monthly and annually—based on your strategy.</p>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="feature-icon">🧠</div>
-                        <div class="feature-text">
-                            <strong>AI-Powered Deal Scoring</strong>
-                            <p>Get a smart investment score that considers risk, ROI, and strategy alignment.</p>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="feature-icon">💰</div>
-                        <div class="feature-text">
-                            <strong>Hard Money &amp; Traditional Loan Modeling</strong>
-                            <p>Simulate real-world financing scenarios using built-in lender terms and payment structures.</p>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="feature-icon">📍</div>
-                        <div class="feature-text">
-                            <strong>Location-Based Market Comparisons <span class="coming-soon">(Coming Soon)</span></strong>
-                            <p>Analyze comps and pricing trends based on actual property data.</p>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-            
-            <div class="demo-form">
-                <h4 style="margin-bottom: 1.5rem; color: var(--dark);">Quick Analysis</h4>
-                <div class="form-group">
-                    <label>Property Address</label>
-                    <input type="text" class="form-control" id="address" placeholder="123 Main St, City, State">
-                </div>
-                <div class="form-group">
-                    <label>Purchase Price</label>
-                    <input type="number" class="form-control" id="price" placeholder="450000">
-                </div>
-                <div class="form-group">
-                    <label>Investment Strategy</label>
-                    <select class="form-control" id="strategy">
-                        <option>Buy & Hold (Rental)</option>
-                        <option>Fix & Flip</option>
-                        <option>BRRRR Strategy</option>
-                        <option>Short-term Rental</option>
-                    </select>
-                </div>
-                <button class="btn btn-primary btn-large" onclick="analyzeProperty()" aria-label="Analyze property">
-                    Analyze Property
-                </button>
-                
-                <div id="results" class="results-box">
-                    <h4 style="color: var(--sage); margin-bottom: 1rem; font-family: Georgia, serif;">Analysis Complete!</h4>
-                    <div class="result-item">
-                        <span class="result-label">Expected ROI</span>
-                        <span class="result-value" id="roi">--</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Monthly Cash Flow</span>
-                        <span class="result-value" id="cashflow">--</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Cap Rate</span>
-                        <span class="result-value" id="caprate">--</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Investment Score</span>
-                        <span class="result-value">8.7/10</span>
-                    </div>
-                </div>
-            </div>
+    <section id="demo" class="bg-white py-20">
+      <div class="max-w-7xl mx-auto px-4">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6">Experience the Power</h2>
+        <p class="text-lg text-gray-600 mb-8 max-w-2xl">
+          See how our Deal Analyzer transforms property evaluation with instant insights and professional-grade analysis. Sign up to run your own deals.
+        </p>
+
+        <!-- Carousel of Sample Deals -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div class="border rounded-xl p-5 shadow-md bg-gray-50">
+            <h3 class="font-semibold text-lg">📦 BRRRR Sample Deal</h3>
+            <ul class="text-sm text-gray-700 mt-2">
+              <li>Expected ROI: 32%</li>
+              <li>Monthly Cash Flow: $1,925</li>
+              <li>Cap Rate: 10.4%</li>
+            </ul>
+          </div>
+          <div class="border rounded-xl p-5 shadow-md bg-gray-50">
+            <h3 class="font-semibold text-lg">🏡 Buy & Hold</h3>
+            <ul class="text-sm text-gray-700 mt-2">
+              <li>Expected ROI: 24.4%</li>
+              <li>Monthly Cash Flow: $2,357</li>
+              <li>Cap Rate: 11.3%</li>
+            </ul>
+          </div>
+          <div class="border rounded-xl p-5 shadow-md bg-gray-50">
+            <h3 class="font-semibold text-lg">🔨 Fix & Flip</h3>
+            <ul class="text-sm text-gray-700 mt-2">
+              <li>Profit: $84,000</li>
+              <li>ROI: 22.5%</li>
+              <li>Hold Time: 6 months</li>
+            </ul>
+          </div>
         </div>
+
+        <!-- Locked Quick Analysis Preview -->
+        <div class="bg-gray-100 rounded-xl p-8 max-w-xl mx-auto text-center shadow-lg relative">
+          <div class="absolute inset-0 bg-white bg-opacity-80 flex flex-col items-center justify-center rounded-xl">
+            <svg class="w-12 h-12 text-gray-400 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0-10v4m0 4a4 4 0 100-8 4 4 0 000 8zm0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-gray-600 font-medium mb-4">Quick Analysis Locked</p>
+            <a href="/pricing" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+              Start Free Trial to Run Your Deal
+            </a>
+          </div>
+
+          <!-- This will remain hidden by the overlay above -->
+          <h4 class="text-lg font-semibold text-gray-800 mb-2">Sample Output</h4>
+          <div class="text-left">
+            <p><strong>Expected ROI:</strong> 24.4%</p>
+            <p><strong>Monthly Cash Flow:</strong> $2,357</p>
+            <p><strong>Cap Rate:</strong> 11.3%</p>
+            <p><strong>Investment Score:</strong> 8.7/10</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Pricing Section -->
