@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
+import { calculateAnalysis } from './calculateAnalysis.js';
+
+const formatNumber = (value) =>
+  Number(value).toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+const getScoreMessage = (score) => {
+  if (score >= 8) return '🔥 Great deal! Worth strong consideration.';
+  if (score >= 5) return '💡 Decent deal. Run more scenarios.';
+  return '🚩Risky deal. Rethink or renegotiate.';
+};
 
 const initialState = {
+  propertyType: 'Single Family',
   propertyAddress: '',
   purchasePrice: '',
   arv: '',
@@ -26,9 +37,11 @@ const initialState = {
 export default function DealAnalyzerForm() {
   const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState(null);
 
   const handleChange = (field) => (e) => {
     setFormData({ ...formData, [field]: e.target.value });
+    setResults(null);
   };
 
   const handleNestedChange = (section, field) => (e) => {
@@ -36,14 +49,36 @@ export default function DealAnalyzerForm() {
       ...formData,
       [section]: { ...formData[section], [field]: e.target.value },
     });
+    setResults(null);
   };
 
   const handleAnalyze = () => {
+    const data = {
+      propertyType: formData.propertyType,
+      purchasePrice: parseFloat(formData.purchasePrice) || 0,
+      rehabBudget:
+        formData.financingType === 'Hard Money'
+          ? parseFloat(formData.hardMoney.rehabBudget) || 0
+          : 0,
+      arv: parseFloat(formData.arv) || 0,
+      rentalIncome: parseFloat(formData.monthlyRent) || 0,
+      financingType: formData.financingType,
+      loanPercent: parseFloat(formData.hardMoney.loanAmountPercent) || 0,
+      pointsPercent: parseFloat(formData.hardMoney.points) || 0,
+      hardInterestRate: parseFloat(formData.hardMoney.interestRate) || 0,
+      downPaymentPercent: parseFloat(formData.traditional.downPayment) || 0,
+      traditionalInterestRate: parseFloat(formData.traditional.interestRate) || 0,
+      operatingExpensePercent:
+        parseFloat(formData.traditional.operatingExpenses) || 0,
+      rehabDuration: parseFloat(formData.hardMoney.rehabTimeline) || 0,
+    };
+
     setLoading(true);
     setTimeout(() => {
-      console.log(formData);
+      const analysis = calculateAnalysis(data);
+      setResults(analysis);
       setLoading(false);
-    }, 1000);
+    }, 1500);
   };
 
   const isTraditional = formData.financingType === 'Traditional';
@@ -53,6 +88,19 @@ export default function DealAnalyzerForm() {
       <div className="bg-white p-6 rounded shadow">
         <h2 className="text-xl font-semibold mb-4">Property Details</h2>
         <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Property Type</label>
+            <select
+              value={formData.propertyType}
+              onChange={handleChange('propertyType')}
+              className="w-full border rounded p-2"
+            >
+              <option>Single Family</option>
+              <option>Multi Family</option>
+              <option>Condo</option>
+              <option>Townhouse</option>
+            </select>
+          </div>
           <div>
             <label className="block text-sm font-medium mb-1">Property Address</label>
             <input
@@ -278,13 +326,57 @@ export default function DealAnalyzerForm() {
       </div>
 
       <div className="bg-white p-6 rounded shadow mt-8">
-        <h2 className="text-xl font-semibold mb-4">Analysis Results</h2>
-        <p>ROI: —%</p>
-        <p>Monthly Cash Flow (if Buy & Hold): —</p>
-        <p>Total Project Cost: —</p>
-        <p>Profit on Sale: —</p>
-        <p>Cap Rate: —%</p>
-        <p>Investment Score: —/10</p>
+        <h2 className="text-xl font-semibold mb-4">Results</h2>
+        {results ? (
+          <>
+            <p
+              className={`font-semibold ${
+                results.roi > 20 ? 'text-green-600' : ''
+              }`}
+            >
+              <strong>ROI:</strong> {results.roi.toFixed(1)}%
+            </p>
+            <p
+              className={`font-bold ${
+                results.monthlyCashFlow >= 0
+                  ? 'text-green-600'
+                  : 'text-red-600'
+              }`}
+            >
+              <strong>Monthly Cash Flow:</strong> ${
+                formatNumber(results.monthlyCashFlow)
+              }
+            </p>
+            <p>
+              <strong>Cap Rate:</strong> {results.capRate.toFixed(1)}%
+            </p>
+            <p>
+              <strong>Total Project Cost:</strong> ${
+                formatNumber(results.totalProjectCost)
+              }
+            </p>
+            {formData.financingType === 'Hard Money' && (
+              <p>
+                <strong>Profit on Sale:</strong> ${
+                  formatNumber(results.profitOnSale)
+                }
+              </p>
+            )}
+            <p>
+              <strong>Investment Score:</strong> {results.score}/10 {results.emoji}
+            </p>
+            <p className="deal-tip">{getScoreMessage(results.score)}</p>
+          </>
+        ) : (
+          <>
+            <p>ROI: —%</p>
+            <p>Monthly Cash Flow: —</p>
+            <p>Cap Rate: —%</p>
+            <p>Total Project Cost: —</p>
+            {formData.financingType === 'Hard Money' && <p>Profit on Sale: —</p>}
+            <p>Investment Score: —/10</p>
+          </>
+        )}
       </div>
     </div>
   );
