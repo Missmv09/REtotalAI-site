@@ -12,7 +12,16 @@
     import React from 'https://cdn.skypack.dev/react@18.2.0';
     import { createRoot } from 'https://cdn.skypack.dev/react-dom@18.2.0/client';
     import DealAnalyzerForm from './scripts/DealAnalyzerForm.jsx';
-    createRoot(document.getElementById('root')).render(<DealAnalyzerForm />);
+    import DealAnalyzerFeatures from './scripts/DealAnalyzerFeatures.jsx';
+
+    const App = () => (
+      <>
+        <DealAnalyzerFeatures />
+        <DealAnalyzerForm />
+      </>
+    );
+
+    createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
