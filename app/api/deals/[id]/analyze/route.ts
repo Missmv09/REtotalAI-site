@@ -6,14 +6,31 @@ import { z } from 'zod';
 const DEMO_ORG = 'demo-org';
 const DEMO_USER = 'demo-user';
 
+const HoldingSchema = z.object({
+  taxes: z.number().optional(),
+  insurance: z.number().optional(),
+  utilities: z.number().optional(),
+  hoa: z.number().optional(),
+  maintenance: z.number().optional()
+}).partial();
+
+const LoanSchema = z.object({
+  type: z.enum(['cash','hard_money','conventional','dscr']),
+  interestRate: z.number().optional(),
+  pointsPct: z.number().min(0).max(10).optional(),
+  termMonths: z.number().optional(),
+  downPayment: z.number().optional(),
+  ltvPct: z.number().optional()
+});
+
 const InputSchema = z.object({
-  purchasePrice: z.number(),
-  rehabCost: z.number(),
-  arv: z.number(),
-  loanAmount: z.number(),
-  interestRate: z.number(),
-  monthlyIncome: z.number(),
-  holdingMonths: z.number()
+  purchasePrice: z.number().min(0),
+  rehabCost: z.number().min(0),
+  arv: z.number().min(0).optional(),
+  monthsToComplete: z.number().int().min(0),
+  sellingCostPct: z.number().min(0).max(15).optional(),
+  loan: LoanSchema,
+  holdingMonthly: HoldingSchema.optional()
 });
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {

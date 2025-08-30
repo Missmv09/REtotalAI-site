@@ -16,12 +16,20 @@ model Org {
 }
 
 model Deal {
-  id            String   @id @default(uuid())
-  org           Org      @relation(fields: [orgId], references: [id])
-  orgId         String
-  title         String
-  purchasePrice Float
-  rehabCost     Float    @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id               String   @id @default(uuid())
+  org              Org      @relation(fields: [orgId], references: [id])
+  orgId            String
+  title            String
+  purchasePrice    Float
+  rehabCost        Float    @default(0)
+  arv              Float    @default(0)
+  monthsToComplete Int      @default(0)
+  sellingCostPct   Float    @default(8)
+  loanType         String?
+  loanPointsPct    Float?
+  loanLtvPct       Float?
+  loanInterestRate Float?
+  holdingMonthly   Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }

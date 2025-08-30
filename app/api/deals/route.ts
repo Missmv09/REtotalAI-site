@@ -9,11 +9,17 @@ export async function POST(req: Request) {
   const deal = await prisma.deal.create({
     data: {
       orgId: DEMO_ORG,
-      name: body.name ?? 'Untitled Deal',
+      title: body.name ?? 'Untitled Deal',
       purchasePrice: body.purchasePrice ?? 0,
       rehabCost: body.rehabCost ?? 0,
       arv: body.arv ?? 0,
-      holdingMonths: body.holdingMonths ?? 6,
+      monthsToComplete: body.monthsToComplete ?? 6,
+      sellingCostPct: body.sellingCostPct ?? 8,
+      loanType: body.loan?.type,
+      loanPointsPct: body.loan?.pointsPct,
+      loanLtvPct: body.loan?.ltvPct,
+      loanInterestRate: body.loan?.interestRate,
+      holdingMonthly: body.holdingMonthly ?? {},
     }
   });
   return NextResponse.json(deal);
