@@ -2,32 +2,32 @@ generator client { provider = "prisma-client-js" }
 datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
 
 model Org {
-  id             String        @id @default(uuid())
-  name           String
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  memberships    Membership[]
-  deals          Deal[]
-  subscription   Subscription?
-  analysisRuns   AnalysisRun[]
-  usageLedgers   UsageLedger[]
-  auditLogs      AuditLog[]
-  sharedLinks    SharedLink[]
+  id           String        @id @default(uuid())
+  name         String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  memberships  Membership[]
+  deals        Deal[]
+  subscription Subscription?
+  analysisRuns AnalysisRun[]
+  usageLedgers UsageLedger[]
+  auditLogs    AuditLog[]
+  sharedLinks  SharedLink[]
 }
 
 model User {
-  id            String        @id @default(uuid())
-  email         String        @unique
-  name          String?
-  mfaEnabled    Boolean       @default(false)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  memberships   Membership[]
-  createdDeals  Deal[]        @relation("DealCreatedBy")
-  runs          AnalysisRun[] @relation("RunBy")
-  sharedLinks   SharedLink[]  @relation("SharedBy")
-  usageLedgers  UsageLedger[]
-  auditLogs     AuditLog[]    @relation("Actor")
+  id           String        @id @default(uuid())
+  email        String        @unique
+  name         String?
+  mfaEnabled   Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  memberships  Membership[]
+  createdDeals Deal[]        @relation("DealCreatedBy")
+  runs         AnalysisRun[] @relation("RunBy")
+  sharedLinks  SharedLink[]  @relation("SharedBy")
+  usageLedgers UsageLedger[]
+  auditLogs    AuditLog[]    @relation("Actor")
 }
 
 model Membership {
@@ -40,72 +40,71 @@ model Membership {
   createdAt DateTime @default(now())
   @@unique([orgId, userId])
 }
-
 enum Role { owner admin member viewer }
 
 model Subscription {
-  id                    String     @id @default(uuid())
-  org                   Org        @relation(fields: [orgId], references: [id])
-  orgId                 String     @unique
-  plan                  Plan
-  status                SubStatus
-  currentPeriodStart    DateTime
-  currentPeriodEnd      DateTime
-  stripeCustomerId      String?
-  stripeSubscriptionId  String?
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
+  id                   String   @id @default(uuid())
+  org                  Org      @relation(fields: [orgId], references: [id])
+  orgId                String   @unique
+  plan                 Plan
+  status               SubStatus
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
 enum Plan { starter pro }
 enum SubStatus { trialing active past_due canceled }
 
 model Deal {
-  id                String              @id @default(uuid())
-  org               Org                 @relation(fields: [orgId], references: [id])
-  orgId             String
-  createdBy         User?               @relation("DealCreatedBy", fields: [createdById], references: [id])
-  createdById       String?
-  title             String
-  propertyAddress   String?
-  propertyCity      String?
-  propertyState     String?
+  id                 String              @id @default(uuid())
+  org                Org                 @relation(fields: [orgId], references: [id])
+  orgId              String
+  createdBy          User?               @relation("DealCreatedBy", fields: [createdById], references: [id])
+  createdById        String?
+  title              String
+  propertyAddress    String?
+  propertyCity       String?
+  propertyState      String?
   propertyPostalCode String?
-  lat               Float?
-  lon               Float?
-  arv               Decimal?
-  purchasePrice     Decimal
-  rehabCost         Decimal             @default(0)
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  deletedAt         DateTime?
-  loanTerms         LoanTerms?
-  holdingCosts      HoldingCosts?
-  incomeAssumptions IncomeAssumptions?
-  runs              AnalysisRun[]
-  shares            SharedLink[]
+  lat                Float?
+  lon                Float?
+  arv                Decimal?
+  purchasePrice      Decimal
+  rehabCost          Decimal             @default(0)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  deletedAt          DateTime?
+  loanTerms          LoanTerms?
+  holdingCosts       HoldingCosts?
+  incomeAssumptions  IncomeAssumptions?
+  runs               AnalysisRun[]
+  shares             SharedLink[]
 }
 
 model LoanTerms {
-  id            String  @id @default(uuid())
-  deal          Deal    @relation(fields: [dealId], references: [id])
-  dealId        String  @unique
-  loanType      LoanType
-  ltv           Decimal?
-  interestRate  Decimal?
-  points        Decimal?
-  termMonths    Int?
-  interestOnly  Boolean?
-  closingCosts  Decimal?
-  downPayment   Decimal?
-  createdAt     DateTime @default(now())
+  id           String   @id @default(uuid())
+  deal         Deal     @relation(fields: [dealId], references: [id])
+  dealId       String   @unique
+  loanType     LoanType
+  ltv          Decimal?
+  interestRate Decimal?
+  points       Decimal?
+  termMonths   Int?
+  interestOnly Boolean?
+  closingCosts Decimal?
+  downPayment  Decimal?
+  createdAt    DateTime @default(now())
 }
 enum LoanType { cash hard_money conventional dscr }
 
 model HoldingCosts {
-  id                    String  @id @default(uuid())
-  deal                  Deal    @relation(fields: [dealId], references: [id])
-  dealId                String  @unique
-  holdMonths            Int     @default(6)
+  id                    String   @id @default(uuid())
+  deal                  Deal     @relation(fields: [dealId], references: [id])
+  dealId                String   @unique
+  holdMonths            Int      @default(6)
   taxesMonthly          Decimal?
   insuranceMonthly      Decimal?
   utilitiesMonthly      Decimal?
@@ -117,13 +116,13 @@ model HoldingCosts {
 }
 
 model IncomeAssumptions {
-  id            String  @id @default(uuid())
-  deal          Deal    @relation(fields: [dealId], references: [id])
-  dealId        String  @unique
-  monthlyRent   Decimal?
-  otherIncome   Decimal? @default(0)
-  capexMonthly  Decimal? @default(0)
-  createdAt     DateTime @default(now())
+  id           String   @id @default(uuid())
+  deal         Deal     @relation(fields: [dealId], references: [id])
+  dealId       String   @unique
+  monthlyRent  Decimal?
+  otherIncome  Decimal? @default(0)
+  capexMonthly Decimal? @default(0)
+  createdAt    DateTime @default(now())
 }
 
 model AnalysisRun {
@@ -142,27 +141,27 @@ model AnalysisRun {
 }
 
 model SharedLink {
-  id         String   @id @default(uuid())
-  org        Org      @relation(fields: [orgId], references: [id])
-  orgId      String
-  deal       Deal     @relation(fields: [dealId], references: [id])
-  dealId     String
-  token      String   @unique
-  expiresAt  DateTime?
-  createdBy  User?    @relation("SharedBy", fields: [createdById], references: [id])
+  id          String   @id @default(uuid())
+  org         Org      @relation(fields: [orgId], references: [id])
+  orgId       String
+  deal        Deal     @relation(fields: [dealId], references: [id])
+  dealId      String
+  token       String   @unique
+  expiresAt   DateTime?
+  createdBy   User?    @relation("SharedBy", fields: [createdById], references: [id])
   createdById String?
-  createdAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
 }
 
 model UsageLedger {
-  id              String  @id @default(uuid())
-  org             Org     @relation(fields: [orgId], references: [id])
+  id              String   @id @default(uuid())
+  org             Org      @relation(fields: [orgId], references: [id])
   orgId           String
-  user            User    @relation(fields: [userId], references: [id])
+  user            User     @relation(fields: [userId], references: [id])
   userId          String
   tool            Tool
   periodStartDate DateTime
-  count           Int     @default(0)
+  count           Int      @default(0)
   lastUsedAt      DateTime?
   @@unique([orgId, userId, tool, periodStartDate])
 }
@@ -180,3 +179,4 @@ model AuditLog {
   userAgent   String?
   createdAt   DateTime @default(now())
 }
+
