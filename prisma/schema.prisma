@@ -12,6 +12,7 @@ model Org {
   name      String
   deals     Deal[]
   analysisRuns AnalysisRun[]
+  sharedLinks SharedLink[]
   usageLedgers UsageLedger[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -36,6 +37,7 @@ model Deal {
   holdingCosts     HoldingCosts?
   incomeAssumptions IncomeAssumptions?
   analysisRuns     AnalysisRun[]
+  sharedLinks      SharedLink[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
@@ -101,3 +103,15 @@ model UsageLedger {
 
   @@unique([orgId, tool, periodStartDate])
 }
+
+model SharedLink {
+  id          String   @id @default(uuid())
+  orgId       String
+  org         Org      @relation(fields: [orgId], references: [id])
+  dealId      String
+  deal        Deal     @relation(fields: [dealId], references: [id])
+  token       String   @unique
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+}
+
