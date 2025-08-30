@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deal Analyzer - REtotalAI</title>
+    <title>Deal Analyzer - BRRRR</title>
     <style>
         * {
             margin: 0;
@@ -136,7 +136,7 @@
 
         /* Strategy Selector */
         .strategy-selector {
-            display: flex;
+            display: none;
             gap: 1rem;
             justify-content: center;
             margin-bottom: 2rem;
@@ -499,9 +499,9 @@
 
         <!-- Strategy Selector -->
         <div class="strategy-selector">
-            <button class="strategy-btn active" data-strategy="rental">Buy & Hold</button>
+            <button class="strategy-btn" data-strategy="rental">Buy & Hold</button>
             <button class="strategy-btn" data-strategy="flip">Fix & Flip</button>
-            <button class="strategy-btn" data-strategy="brrrr">BRRRR</button>
+            <button class="strategy-btn active" data-strategy="brrrr">BRRRR</button>
             <button class="strategy-btn" data-strategy="airbnb">Short-Term Rental</button>
         </div>
 
@@ -1072,6 +1072,8 @@
             // Calculate with example data
             calculateDeal();
         });
-    </script>
+    
+switchStrategy('brrrr');
+</script>
 </body>
 </html>

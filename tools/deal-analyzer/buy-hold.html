@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deal Analyzer - REtotalAI</title>
+    <title>Deal Analyzer - Buy & Hold</title>
     <style>
         * {
             margin: 0;
@@ -136,7 +136,7 @@
 
         /* Strategy Selector */
         .strategy-selector {
-            display: flex;
+            display: none;
             gap: 1rem;
             justify-content: center;
             margin-bottom: 2rem;
@@ -1072,6 +1072,8 @@
             // Calculate with example data
             calculateDeal();
         });
-    </script>
+    
+switchStrategy('rental');
+</script>
 </body>
 </html>
