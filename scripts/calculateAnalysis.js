@@ -47,10 +47,15 @@ export function calculateAnalysis(data) {
     const loanAmount = purchasePrice - downPayment;
     const monthlyRate = (traditionalInterestRate / 100) / 12;
     const numPayments = 30 * 12;
-    const monthlyMortgage =
-      loanAmount *
-      ((monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
-        (Math.pow(1 + monthlyRate, numPayments) - 1));
+    let monthlyMortgage;
+    if (monthlyRate === 0) {
+      monthlyMortgage = loanAmount / numPayments;
+    } else {
+      monthlyMortgage =
+        loanAmount *
+        ((monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
+          (Math.pow(1 + monthlyRate, numPayments) - 1));
+    }
 
     monthlyCashFlow = rentalIncome - operatingExpenses - monthlyMortgage;
 
