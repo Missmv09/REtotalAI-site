@@ -1,31 +1,40 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, getDemoOrgId } from '@/lib/db';
 
-const DEMO_ORG = 'demo-org';
-const DEMO_USER = 'demo-user';
+export async function GET() {
+  const orgId = await getDemoOrgId();
+  const deals = await prisma.deal.findMany({
+    where: { orgId },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, title: true, purchasePrice: true, rehabCost: true, arv: true, createdAt: true },
+  });
+  return NextResponse.json(deals);
+}
 
 export async function POST(req: Request) {
   const body = await req.json();
+  const orgId = await getDemoOrgId();
+
   const deal = await prisma.deal.create({
     data: {
-      orgId: DEMO_ORG,
-      title: body.name ?? 'Untitled Deal',
+      orgId,
+      title: body.title ?? 'Untitled Deal',
       purchasePrice: body.purchasePrice ?? 0,
       rehabCost: body.rehabCost ?? 0,
-      arv: body.arv ?? 0,
-      monthsToComplete: body.monthsToComplete ?? 6,
-      sellingCostPct: body.sellingCostPct ?? 8,
-      loanType: body.loan?.type,
-      loanPointsPct: body.loan?.pointsPct,
-      loanLtvPct: body.loan?.ltvPct,
-      loanInterestRate: body.loan?.interestRate,
-      holdingMonthly: body.holdingMonthly ?? {},
-    }
+      arv: body.arv ?? null,
+    },
   });
-  return NextResponse.json(deal);
-}
 
-export async function GET() {
-  const deals = await prisma.deal.findMany({ where: { orgId: DEMO_ORG } });
-  return NextResponse.json(deals);
+  // optional children
+  if (body.loanTerms) {
+    await prisma.loanTerms.create({ data: { dealId: deal.id, ...body.loanTerms } });
+  }
+  if (body.holdingCosts) {
+    await prisma.holdingCosts.create({ data: { dealId: deal.id, ...body.holdingCosts } });
+  }
+  if (body.incomeAssumptions) {
+    await prisma.incomeAssumptions.create({ data: { dealId: deal.id, ...body.incomeAssumptions } });
+  }
+
+  return NextResponse.json({ id: deal.id });
 }

@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { analyze, DealInputs, DealOutputs } from '@/lib/deal/analyze';
 
 export default function DealAnalyzerPage() {
@@ -13,7 +14,6 @@ export default function DealAnalyzerPage() {
     holdingMonthly: { taxes: 0, insurance: 0, utilities: 0, hoa: 0, maintenance: 0 }
   });
   const [outputs, setOutputs] = useState<DealOutputs | null>(null);
-  const [dealId, setDealId] = useState<string | null>(null);
 
   const update = (field: keyof DealInputs, value: any) => {
     setInputs(prev => ({ ...prev, [field]: value }));
@@ -25,31 +25,53 @@ export default function DealAnalyzerPage() {
     setInputs(prev => ({ ...prev, holdingMonthly: { ...prev.holdingMonthly, [field]: value } }));
   };
 
-  const runAnalysis = async () => {
-    if (!dealId) {
-      const created = await fetch('/api/deals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(inputs)
-      }).then(r => r.json());
-      setDealId(created.id);
-    } else {
-      await fetch(`/api/deals/${dealId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(inputs)
-      });
-    }
+  const calculate = () => {
     const local = analyze(inputs);
     setOutputs(local);
-    if (dealId) {
-      await fetch(`/api/deals/${dealId}/analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(inputs)
-      });
-    }
   };
+
+  const saveAnalysis = async () => {
+    const outputs = await saveAndAnalyze(inputs);
+    setOutputs(outputs);
+    alert('Saved ✓');
+  };
+
+  async function saveAndAnalyze(state: DealInputs) {
+    const create = await fetch('/api/deals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: 'Untitled Deal',
+        purchasePrice: state.purchasePrice,
+        rehabCost: state.rehabCost,
+        arv: state.arv,
+        loanTerms: {
+          loanType: state.loan.type,
+          interestRate: state.loan.interestRate,
+          points: state.loan.pointsPct,
+          termMonths: state.loan.termMonths,
+          ltv: state.loan.ltvPct,
+        },
+        holdingCosts: {
+          holdMonths: state.monthsToComplete,
+          taxesMonthly: state.holdingMonthly?.taxes,
+          insuranceMonthly: state.holdingMonthly?.insurance,
+          utilitiesMonthly: state.holdingMonthly?.utilities,
+          hoaMonthly: state.holdingMonthly?.hoa,
+          maintenanceMonthly: state.holdingMonthly?.maintenance,
+        },
+      }),
+    });
+    const { id } = await create.json();
+
+    const run = await fetch(`/api/deals/${id}/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state),
+    });
+    const outputs = await run.json();
+    return outputs;
+  }
 
   const useExample = () => {
     setInputs({
@@ -100,9 +122,11 @@ export default function DealAnalyzerPage() {
             <Field label="Maintenance" value={inputs.holdingMonthly?.maintenance ?? 0} onChange={v => updateHold('maintenance', Math.max(0, v))} />
           </div>
         </div>
-        <div className="flex gap-2">
-          <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={runAnalysis}>Calculate</button>
+        <div className="flex gap-2 flex-wrap items-center">
+          <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={calculate}>Calculate</button>
+          <button className="px-4 py-2 border rounded" onClick={saveAnalysis}>Save Analysis</button>
           <button className="px-4 py-2 border rounded" onClick={useExample}>Use Example</button>
+          <Link href="/deals" className="px-4 py-2 border rounded">View Saved Deals</Link>
         </div>
       </div>
       <div className="w-1/2 space-y-4">

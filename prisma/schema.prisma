@@ -11,6 +11,8 @@ model Org {
   id        String   @id @default(uuid())
   name      String
   deals     Deal[]
+  analysisRuns AnalysisRun[]
+  usageLedgers UsageLedger[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -22,7 +24,7 @@ model Deal {
   title            String
   purchasePrice    Float
   rehabCost        Float    @default(0)
-  arv              Float    @default(0)
+  arv              Float?
   monthsToComplete Int      @default(0)
   sellingCostPct   Float    @default(8)
   loanType         String?
@@ -30,6 +32,72 @@ model Deal {
   loanLtvPct       Float?
   loanInterestRate Float?
   holdingMonthly   Json?
+  loanTerms        LoanTerms?
+  holdingCosts     HoldingCosts?
+  incomeAssumptions IncomeAssumptions?
+  analysisRuns     AnalysisRun[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+}
+
+model LoanTerms {
+  id          String @id @default(uuid())
+  deal        Deal   @relation(fields: [dealId], references: [id])
+  dealId      String @unique
+  loanType    String?
+  interestRate Float?
+  points      Float?
+  termMonths  Int?
+  ltv         Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model HoldingCosts {
+  id              String @id @default(uuid())
+  deal            Deal   @relation(fields: [dealId], references: [id])
+  dealId          String @unique
+  holdMonths      Int?
+  taxesMonthly    Float?
+  insuranceMonthly Float?
+  utilitiesMonthly Float?
+  hoaMonthly      Float?
+  maintenanceMonthly Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model IncomeAssumptions {
+  id                String @id @default(uuid())
+  deal              Deal   @relation(fields: [dealId], references: [id])
+  dealId            String @unique
+  grossMonthlyRent  Float?
+  otherMonthlyIncome Float?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model AnalysisRun {
+  id        String   @id @default(uuid())
+  org       Org      @relation(fields: [orgId], references: [id])
+  orgId     String
+  deal      Deal     @relation(fields: [dealId], references: [id])
+  dealId    String
+  inputs    Json
+  outputs   Json
+  version   String
+  createdAt DateTime @default(now())
+}
+
+model UsageLedger {
+  id             String   @id @default(uuid())
+  org            Org      @relation(fields: [orgId], references: [id])
+  orgId          String
+  tool           String
+  periodStartDate DateTime
+  count          Int      @default(0)
+  lastUsedAt     DateTime
+  createdAt      DateTime @default(now())
+
+  @@unique([orgId, tool, periodStartDate])
 }
