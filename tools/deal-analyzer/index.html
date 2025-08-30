@@ -1035,7 +1035,7 @@
                 return;
             }
             try {
-                const { getPropertyDetails } = await import('../../plugins/propertyValuation.js');
+                const { getPropertyDetails } = await import('/plugins/propertyValuation.js');
                 const details = await getPropertyDetails({ address: street, city, state, zipcode });
                 document.getElementById('yearBuilt').value = details.yearBuilt || '';
                 document.getElementById('sqft').value = details.sqft || '';
