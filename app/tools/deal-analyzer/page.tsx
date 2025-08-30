@@ -1,187 +1,163 @@
 'use client';
-import { useState } from 'react';
-import Link from 'next/link';
-import { analyze, DealInputs, DealOutputs } from '@/lib/deal/analyze';
+import { useState, useRef } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { analyze, DealInputs } from '@/lib/deal/analyze';
+
+const money = (n: number) => `$${Number(n || 0).toLocaleString()}`;
 
 export default function DealAnalyzerPage() {
-  const [inputs, setInputs] = useState<DealInputs>({
-    purchasePrice: 0,
-    rehabCost: 0,
-    arv: 0,
+  const [mode] = useState<'flip'|'buyhold'|'brrrr'>('flip'); // tabs can be added
+  const [state, setState] = useState<DealInputs>({
+    mode: 'flip',
+    purchasePrice: 350000,
+    rehabCost: 25000,
+    arv: 420000,
     monthsToComplete: 6,
-    sellingCostPct: 8,
-    loan: { type: 'hard_money', interestRate: 10, pointsPct: 2, ltvPct: 80 },
-    holdingMonthly: { taxes: 0, insurance: 0, utilities: 0, hoa: 0, maintenance: 0 }
+    loan: { type: 'hard_money', interestRate: 12, pointsPct: 2, ltvPct: 80, termMonths: 12 },
+    holdingMonthly: { taxes: 250, insurance: 120, utilities: 90, hoa: 0, maintenance: 100 },
+    selling: { agentCommissionPct: 5.0, titleEscrow: 2000, transferTaxesRecording: 1200, attorney: 750, marketing: 500, sellerMoving: 400, other: 0 }
   });
-  const [outputs, setOutputs] = useState<DealOutputs | null>(null);
+  const [out, setOut] = useState<any>(null);
+  const pdfRef = useRef<HTMLDivElement>(null);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
 
-  const update = (field: keyof DealInputs, value: any) => {
-    setInputs(prev => ({ ...prev, [field]: value }));
-  };
-  const updateLoan = (field: keyof DealInputs['loan'], value: any) => {
-    setInputs(prev => ({ ...prev, loan: { ...prev.loan, [field]: value } }));
-  };
-  const updateHold = (field: keyof NonNullable<DealInputs['holdingMonthly']>, value: any) => {
-    setInputs(prev => ({ ...prev, holdingMonthly: { ...prev.holdingMonthly, [field]: value } }));
-  };
+  function upd<K extends keyof DealInputs>(k: K, v: DealInputs[K]) { setState(s => ({ ...s, [k]: v })); }
+  function updLoan(k: keyof DealInputs['loan'], v: any) { setState(s => ({ ...s, loan: { ...s.loan, [k]: v }})); }
+  function updHold(k: keyof NonNullable<DealInputs['holdingMonthly']>, v: any) {
+    setState(s => ({ ...s, holdingMonthly: { ...(s.holdingMonthly || {}), [k]: v }}));
+  }
+  function updSell(k: keyof NonNullable<DealInputs['selling']>, v: any) {
+    setState(s => ({ ...s, selling: { ...(s.selling || {}), [k]: v }}));
+  }
 
-  const calculate = () => {
-    const local = analyze(inputs);
-    setOutputs(local);
-  };
+  function calc() { setOut(analyze(state)); }
 
-  const saveAnalysis = async () => {
-    const outputs = await saveAndAnalyze(inputs);
-    setOutputs(outputs);
-    alert('Saved ✓');
-  };
-
-  async function saveAndAnalyze(state: DealInputs) {
+  async function saveAndShare() {
+    // 1) Create a deal
     const create = await fetch('/api/deals', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        title: 'Untitled Deal',
+        title: 'Analysis',
         purchasePrice: state.purchasePrice,
         rehabCost: state.rehabCost,
-        arv: state.arv,
-        loanTerms: {
-          loanType: state.loan.type,
-          interestRate: state.loan.interestRate,
-          points: state.loan.pointsPct,
-          termMonths: state.loan.termMonths,
-          ltv: state.loan.ltvPct,
-        },
-        holdingCosts: {
-          holdMonths: state.monthsToComplete,
-          taxesMonthly: state.holdingMonthly?.taxes,
-          insuranceMonthly: state.holdingMonthly?.insurance,
-          utilitiesMonthly: state.holdingMonthly?.utilities,
-          hoaMonthly: state.holdingMonthly?.hoa,
-          maintenanceMonthly: state.holdingMonthly?.maintenance,
-        },
-      }),
+        arv: state.arv
+      })
     });
     const { id } = await create.json();
 
+    // 2) Save run snapshot via analyze API
     const run = await fetch(`/api/deals/${id}/analyze`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(state),
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
     });
     const outputs = await run.json();
-    return outputs;
+    setOut(outputs);
+
+    // 3) Create/reuse share link
+    const resp = await fetch(`/api/deals/${id}/share`, { method: 'POST' });
+    const { url } = await resp.json();
+    setShareUrl(url);
   }
 
-  const useExample = () => {
-    setInputs({
-      purchasePrice: 200000,
-      rehabCost: 40000,
-      arv: 300000,
-      monthsToComplete: 6,
-      sellingCostPct: 8,
-      loan: { type: 'hard_money', interestRate: 10, pointsPct: 2, ltvPct: 80 },
-      holdingMonthly: { taxes: 250, insurance: 120, utilities: 90, hoa: 0, maintenance: 100 }
-    });
-  };
+  async function downloadPdf() {
+    if (!pdfRef.current) return;
+    const canvas = await html2canvas(pdfRef.current);
+    const img = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p','pt','a4');
+    const width = pdf.internal.pageSize.getWidth();
+    const ratio = width / canvas.width;
+    pdf.addImage(img, 'PNG', 0, 20, width, canvas.height * ratio);
+    pdf.save('retotalai-deal.pdf');
+  }
 
   return (
-    <div className="flex p-8 gap-8">
-      <div className="w-1/2 space-y-4">
-        <h2 className="text-xl font-semibold">Inputs</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Purchase Price" value={inputs.purchasePrice} onChange={v => update('purchasePrice', Math.max(0, v))} />
-          <Field label="Rehab Cost" value={inputs.rehabCost} onChange={v => update('rehabCost', Math.max(0, v))} />
-          <Field label="After Repair Value" value={inputs.arv} onChange={v => update('arv', Math.max(0, v))} />
-          <Field label="Interest Rate (%)" value={inputs.loan.interestRate ?? 0} onChange={v => updateLoan('interestRate', Math.max(0, v))} />
-          <div className="flex flex-col">
-            <label className="text-sm">Loan Type</label>
-            <select
-              className="border p-2 rounded"
-              value={inputs.loan.type}
-              onChange={e => updateLoan('type', e.target.value as DealInputs['loan']['type'])}
-            >
-              <option value="cash">Cash</option>
-              <option value="hard_money">Hard Money</option>
-              <option value="conventional">Conventional</option>
-              <option value="dscr">DSCR</option>
-            </select>
+    <div className="mx-auto max-w-6xl p-6">
+      <h1 className="text-2xl font-semibold mb-4">Deal Analyzer — {mode === 'flip' ? 'Fix & Flip' : mode}</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* LEFT: Inputs */}
+        <div className="space-y-4">
+          <Section title="Property & Purchase">
+            <Row label="Purchase Price"><Input num value={state.purchasePrice} onChange={v=>upd('purchasePrice', v)} /></Row>
+            <Row label="Rehab / Repair Cost"><Input num value={state.rehabCost} onChange={v=>upd('rehabCost', v)} /></Row>
+            <Row label="After Repair Value (ARV)"><Input num value={state.arv} onChange={v=>upd('arv', v)} /></Row>
+          </Section>
+
+          <Section title="Loan">
+            <Row label="Loan Type">
+              <select className="input" value={state.loan.type} onChange={e=>updLoan('type', e.target.value)}>
+                <option value="cash">Cash</option>
+                <option value="hard_money">Hard Money</option>
+                <option value="conventional">Conventional</option>
+                <option value="dscr">DSCR</option>
+              </select>
+            </Row>
+            <Row label="Interest Rate (%)"><Input num value={state.loan.interestRate} onChange={v=>updLoan('interestRate', v)} /></Row>
+            <Row label="Points (%)"><Input num value={state.loan.pointsPct} onChange={v=>updLoan('pointsPct', v)} /></Row>
+            <Row label="LTV (%)"><Input num value={state.loan.ltvPct} onChange={v=>updLoan('ltvPct', v)} /></Row>
+            <Row label="Holding Period / Term (months)"><Input num value={state.loan.termMonths ?? state.monthsToComplete} onChange={v=>{updLoan('termMonths', v); upd('monthsToComplete', v);}}/></Row>
+            <Row label="(Optional) Term (years)"><Input num value={state.loan.termYears} onChange={v=>updLoan('termYears', v)} /></Row>
+          </Section>
+
+          <Section title="Monthly Holding Costs (during rehab/hold)">
+            <Row label="Taxes"><Input num value={state.holdingMonthly?.taxes} onChange={v=>updHold('taxes', v)} /></Row>
+            <Row label="Insurance"><Input num value={state.holdingMonthly?.insurance} onChange={v=>updHold('insurance', v)} /></Row>
+            <Row label="Utilities"><Input num value={state.holdingMonthly?.utilities} onChange={v=>updHold('utilities', v)} /></Row>
+            <Row label="HOA"><Input num value={state.holdingMonthly?.hoa} onChange={v=>updHold('hoa', v)} /></Row>
+            <Row label="Maintenance"><Input num value={state.holdingMonthly?.maintenance} onChange={v=>updHold('maintenance', v)} /></Row>
+            <Row label="Holding Period (months)"><Input num value={state.monthsToComplete} onChange={v=>upd('monthsToComplete', v)} /></Row>
+          </Section>
+
+          <Section title="Selling Costs (breakdown)">
+            <Row label="Agent Commission (%)"><Input num value={state.selling?.agentCommissionPct} onChange={v=>updSell('agentCommissionPct', v)} /></Row>
+            <Row label="Title/Escrow"><Input num value={state.selling?.titleEscrow} onChange={v=>updSell('titleEscrow', v)} /></Row>
+            <Row label="Transfer Taxes & Recording"><Input num value={state.selling?.transferTaxesRecording} onChange={v=>updSell('transferTaxesRecording', v)} /></Row>
+            <Row label="Attorney"><Input num value={state.selling?.attorney} onChange={v=>updSell('attorney', v)} /></Row>
+            <Row label="Pre-sale & Marketing"><Input num value={state.selling?.marketing} onChange={v=>updSell('marketing', v)} /></Row>
+            <Row label="Seller Moving"><Input num value={state.selling?.sellerMoving} onChange={v=>updSell('sellerMoving', v)} /></Row>
+            <Row label="Other"><Input num value={state.selling?.other} onChange={v=>updSell('other', v)} /></Row>
+          </Section>
+
+          <div className="flex gap-3">
+            <button className="px-4 py-2 rounded-lg border" onClick={calc}>Calculate</button>
+            <button className="px-4 py-2 rounded-lg border" onClick={saveAndShare}>Save Analysis & Create Share Link</button>
+            <button className="px-4 py-2 rounded-lg border" onClick={downloadPdf}>Download PDF</button>
           </div>
-          <Field label="Points (%)" value={inputs.loan.pointsPct ?? 0} min={0} max={10} onChange={v => updateLoan('pointsPct', Math.min(10, Math.max(0, v)))} />
-          <Field label="LTV (%)" value={inputs.loan.ltvPct ?? 80} onChange={v => updateLoan('ltvPct', Math.max(0, v))} />
-          <Field label="Months to Complete" value={inputs.monthsToComplete} min={0} step={1} onChange={v => update('monthsToComplete', Math.max(0, Math.floor(v)))} />
-          <Field label="Selling Cost (%)" value={inputs.sellingCostPct ?? 8} min={0} max={15} onChange={v => update('sellingCostPct', Math.min(15, Math.max(0, v)))} />
+          {shareUrl && <div className="text-sm">Share URL: <a className="text-blue-600 underline" href={shareUrl} target="_blank">{shareUrl}</a></div>}
         </div>
-        <div>
-          <h3 className="font-medium">Holding Costs (Monthly)</h3>
-          <div className="grid grid-cols-2 gap-4 mt-2">
-            <Field label="Taxes" value={inputs.holdingMonthly?.taxes ?? 0} onChange={v => updateHold('taxes', Math.max(0, v))} />
-            <Field label="Insurance" value={inputs.holdingMonthly?.insurance ?? 0} onChange={v => updateHold('insurance', Math.max(0, v))} />
-            <Field label="Utilities" value={inputs.holdingMonthly?.utilities ?? 0} onChange={v => updateHold('utilities', Math.max(0, v))} />
-            <Field label="HOA" value={inputs.holdingMonthly?.hoa ?? 0} onChange={v => updateHold('hoa', Math.max(0, v))} />
-            <Field label="Maintenance" value={inputs.holdingMonthly?.maintenance ?? 0} onChange={v => updateHold('maintenance', Math.max(0, v))} />
-          </div>
+
+        {/* RIGHT: Outputs */}
+        <div ref={pdfRef} className="space-y-4">
+          <KPI title="Total Investment" value={out?.totalInvestment}/>
+          <KPI title="Financing Cost" value={out?.financingCost}/>
+          <KPI title="Holding Cost" value={out?.holdingCost}/>
+          <KPI title="Selling Cost" value={out?.sellingCost}/>
+          <KPI title="Profit" value={out?.profit}/>
+          <KPI title="ROI" value={out ? `${(out.roi*100).toFixed(2)}%` : undefined}/>
+          {out?.warnings?.length ? (
+            <div className="rounded-xl border p-4">
+              <div className="font-medium mb-2">Warnings</div>
+              <ul className="list-disc pl-5 text-sm">
+                {out.warnings.map((w: string, i: number) => <li key={i}>{w}</li>)}
+              </ul>
+            </div>
+          ) : null}
         </div>
-        <div className="flex gap-2 flex-wrap items-center">
-          <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={calculate}>Calculate</button>
-          <button className="px-4 py-2 border rounded" onClick={saveAnalysis}>Save Analysis</button>
-          <button className="px-4 py-2 border rounded" onClick={useExample}>Use Example</button>
-          <Link href="/deals" className="px-4 py-2 border rounded">View Saved Deals</Link>
-        </div>
-      </div>
-      <div className="w-1/2 space-y-4">
-        <h2 className="text-xl font-semibold">Results</h2>
-        {outputs && (
-          <div className="grid grid-cols-2 gap-4">
-            <KPI label="Total Investment" value={`$${outputs.totalInvestment.toFixed(2)}`} />
-            <KPI label="Financing Cost" value={`$${outputs.financingCost.toFixed(2)}`} />
-            <KPI label="Holding Cost" value={`$${outputs.holdingCost.toFixed(2)}`} />
-            <KPI label="Selling Cost" value={`$${outputs.sellingCost.toFixed(2)}`} />
-            <KPI label="Profit" value={`$${outputs.profit.toFixed(2)}`} />
-            <KPI label="ROI" value={`${(outputs.roi * 100).toFixed(2)}%`} />
-          </div>
-        )}
-        {outputs && outputs.warnings.length > 0 && (
-          <ul className="text-sm text-yellow-700 list-disc pl-5">
-            {outputs.warnings.map(w => (
-              <li key={w}>{w}</li>
-            ))}
-          </ul>
-        )}
       </div>
     </div>
   );
 }
 
-function Field({ label, value, onChange, min = 0, max, step = 0.01 }: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  min?: number;
-  max?: number;
-  step?: number;
-}) {
-  return (
-    <div className="flex flex-col">
-      <label className="text-sm">{label}</label>
-      <input
-        type="number"
-        className="border p-2 rounded"
-        value={value}
-        min={min}
-        max={max}
-        step={step}
-        onChange={e => onChange(Number(e.target.value))}
-      />
-    </div>
-  );
+function Section({ title, children }: any) {
+  return <div className="rounded-2xl border p-4"><div className="font-medium mb-3">{title}</div><div className="grid grid-cols-1 md:grid-cols-2 gap-3">{children}</div></div>;
 }
-
-function KPI({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="p-4 border rounded bg-white">
-      <div className="text-sm text-gray-500">{label}</div>
-      <div className="text-lg font-bold">{value}</div>
-    </div>
-  );
+function Row({ label, children }: any) {
+  return <label className="text-sm space-y-1"><div className="opacity-70">{label}</div>{children}</label>;
+}
+function Input({ value, onChange, num=false }: { value?: any; onChange: (v:any)=>void; num?: boolean }) {
+  return <input className="input w-full border rounded-lg px-3 py-2" value={value ?? ''} onChange={e=>onChange(num ? Number(e.target.value || 0) : e.target.value)} type={num ? 'number' : 'text'} />;
+}
+function KPI({ title, value }: { title: string; value?: number|string }) {
+  const v = typeof value === 'number' ? money(value) : (value ?? '—');
+  return <div className="rounded-2xl border p-4 bg-white"><div className="text-sm opacity-60">{title}</div><div className="text-2xl font-semibold">{v}</div></div>;
 }

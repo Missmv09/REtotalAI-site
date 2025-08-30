@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { randomUUID } from 'crypto';
+import { prisma, getDemoOrgId } from '@/lib/db';
+import { randomBytes } from 'crypto';
 
-const DEMO_ORG = 'demo-org';
-
-export async function POST(_req: Request, { params }: { params: { id: string } }) {
-  const token = randomUUID();
-  const link = await prisma.sharedLink.create({
-    data: {
-      orgId: DEMO_ORG,
-      dealId: params.id,
-      token
-    }
+export async function POST(_: Request, { params }: { params: { id: string } }) {
+  const orgId = await getDemoOrgId();
+  // reuse existing non-expired link if present
+  const existing = await prisma.sharedLink.findFirst({
+    where: { orgId, dealId: params.id, expiresAt: null },
+    select: { token: true }
   });
-  return NextResponse.json({ url: `/share/${link.token}` });
+  const token = existing?.token ?? randomBytes(16).toString('hex');
+  if (!existing) {
+    await prisma.sharedLink.create({ data: { orgId, dealId: params.id, token } });
+  }
+  return NextResponse.json({ url: `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/share/${token}`, token });
 }
