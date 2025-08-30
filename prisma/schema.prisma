@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Org {
+  id            String         @id @default(uuid())
+  name          String
+  plan          String         @default("starter")
+  memberships   Membership[]
+  deals         Deal[]
+  subscriptions Subscription[]
+  usage         UsageLedger[]
+  auditLogs     AuditLog[]
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  name         String?
+  memberships  Membership[]
+  analysisRuns AnalysisRun[]
+  usage        UsageLedger[]
+  auditLogs    AuditLog[]
+}
+
+model Membership {
+  id     String @id @default(uuid())
+  orgId  String
+  userId String
+  role   String @default("member")
+  org    Org    @relation(fields: [orgId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  orgId     String
+  plan      String
+  createdAt DateTime @default(now())
+  org       Org      @relation(fields: [orgId], references: [id])
+}
+
+model Deal {
+  id               String             @id @default(uuid())
+  orgId            String
+  name             String
+  purchasePrice    Decimal            @db.Decimal(10,2)
+  rehabCost        Decimal            @db.Decimal(10,2)
+  arv              Decimal            @db.Decimal(10,2)
+  holdingMonths    Int
+  loanTerms        LoanTerms?
+  holdingCosts     HoldingCosts?
+  incomeAssumptions IncomeAssumptions?
+  analysisRuns     AnalysisRun[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  org              Org                @relation(fields: [orgId], references: [id])
+}
+
+model LoanTerms {
+  id          String  @id @default(uuid())
+  orgId       String
+  dealId      String  @unique
+  loanAmount  Decimal @db.Decimal(10,2)
+  interestRate Float
+  termMonths  Int
+  deal        Deal    @relation(fields: [dealId], references: [id])
+  org         Org     @relation(fields: [orgId], references: [id])
+}
+
+model HoldingCosts {
+  id        String  @id @default(uuid())
+  orgId     String
+  dealId    String  @unique
+  taxes     Decimal @db.Decimal(10,2) @default(0)
+  insurance Decimal @db.Decimal(10,2) @default(0)
+  utilities Decimal @db.Decimal(10,2) @default(0)
+  other     Decimal @db.Decimal(10,2) @default(0)
+  deal      Deal    @relation(fields: [dealId], references: [id])
+  org       Org     @relation(fields: [orgId], references: [id])
+}
+
+model IncomeAssumptions {
+  id          String  @id @default(uuid())
+  orgId       String
+  dealId      String  @unique
+  rent        Decimal @db.Decimal(10,2) @default(0)
+  otherIncome Decimal @db.Decimal(10,2) @default(0)
+  deal        Deal    @relation(fields: [dealId], references: [id])
+  org         Org     @relation(fields: [orgId], references: [id])
+}
+
+model AnalysisRun {
+  id        String   @id @default(uuid())
+  orgId     String
+  dealId    String
+  userId    String
+  inputs    Json
+  outputs   Json
+  createdAt DateTime @default(now())
+  deal      Deal     @relation(fields: [dealId], references: [id])
+  org       Org      @relation(fields: [orgId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model SharedLink {
+  id        String   @id @default(uuid())
+  orgId     String
+  dealId    String
+  token     String   @unique
+  createdAt DateTime @default(now())
+  deal      Deal     @relation(fields: [dealId], references: [id])
+  org       Org      @relation(fields: [orgId], references: [id])
+}
+
+model UsageLedger {
+  id       String   @id @default(uuid())
+  orgId    String
+  userId   String
+  tool     String
+  month    DateTime
+  count    Int      @default(0)
+  org      Org      @relation(fields: [orgId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@unique([orgId, userId, tool, month], name: "orgId_userId_tool_month")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  orgId     String
+  userId    String?
+  action    String
+  meta      Json?
+  createdAt DateTime @default(now())
+  org       Org      @relation(fields: [orgId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+}
