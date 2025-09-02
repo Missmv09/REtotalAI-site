@@ -31,3 +31,12 @@ The project is a fully static site that can be deployed on Netlify.
 - Centralized dashboard for managing tools and data.
 - Stripe integration for billing and subscriptions.
 - Expand into a full SaaS offering with additional real estate AI services.
+
+## Development
+
+Run static analysis before committing changes:
+
+```
+npm run lint       # ESLint for code quality
+npm run type-check # TypeScript type checking
+```
