@@ -206,7 +206,7 @@ const ItemRow: React.FC<{
         onChange={(v) => onChange({ type: v as ItemType })}
         options={[
           { value: "fixed", label: "Fixed $" },
-          { value: "%", label: "%" },
+          { value: "percent", label: "%" },
         ]}
       />
       <div className="col-span-3">
