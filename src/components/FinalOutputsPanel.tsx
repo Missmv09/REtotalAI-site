@@ -27,32 +27,41 @@ const currency = (n: number) =>
     maximumFractionDigits: 0,
   });
 
-const FinalOutputsPanel: React.FC<FinalOutputsProps> = ({ dealType, inputs, closing, hold }) => {
+export default function FinalOutputsPanel({ dealType, inputs, closing, hold }: FinalOutputsProps) {
   const cashToClose =
     inputs.purchasePrice +
     inputs.rehab +
     closing.purchase -
     inputs.loanAmount -
     closing.financeable;
-
   const flipProfit =
     inputs.arv -
     (inputs.purchasePrice + inputs.rehab + closing.total + hold.total);
-
-  const monthlyDebt = inputs.monthlyDebtService ?? 1200; // example default
+  const monthlyDebt = inputs.monthlyDebtService ?? 1200;
   const dscr =
-    inputs.monthlyRent > 0 && inputs.opexMonthly > 0
-      ? (inputs.monthlyRent - inputs.opexMonthly) / monthlyDebt
-      : 0;
+    inputs.monthlyRent > 0 ? (inputs.monthlyRent - inputs.opexMonthly) / monthlyDebt : 0;
 
   return (
-    <div className="space-y-2 rounded-2xl bg-white p-4 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-800">Summary</h2>
-      <p>Cash to Close: {currency(cashToClose)}</p>
-      {dealType === "flip" && <p>Flip Profit: {currency(flipProfit)}</p>}
-      {dealType !== "flip" && <p>DSCR: {dscr.toFixed(2)}</p>}
+    <div className="space-y-2">
+      <h2 className="text-lg font-semibold text-slate-800">Deal Summary</h2>
+      <div className="grid grid-cols-2 gap-4">
+        <Card label="Cash to Close" value={cashToClose} />
+        {dealType === "flip" ? (
+          <Card label="Flip Profit" value={flipProfit} />
+        ) : (
+          <Card label="DSCR" value={dscr.toFixed(2)} />
+        )}
+      </div>
     </div>
   );
-};
+}
 
-export default FinalOutputsPanel;
+function Card({ label, value }: { label: string; value: any }) {
+  const v = typeof value === "number" ? currency(value) : String(value ?? "—");
+  return (
+    <div className="rounded-xl border p-4">
+      <div className="text-sm opacity-60">{label}</div>
+      <div className="text-xl font-semibold">{v}</div>
+    </div>
+  );
+}
