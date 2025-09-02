@@ -1,6 +1,9 @@
 import React, { useState } from "react";
-import ClosingCostsSection, { Totals as ClosingTotals } from "./ClosingCostsSection";
-import HoldCostsSection, { HoldTotals } from "./HoldCostsSection";
+
+// ✅ Correct imports (pointing to components folder)
+import ClosingCostsSection, { Totals as ClosingTotals } from "../components/ClosingCostsSection";
+import HoldCostsSection, { HoldTotals } from "../components/HoldCostsSection";
+import FinalOutputsPanel from "../components/FinalOutputsPanel";
 
 export default function DealAnalyzer() {
   // ------------------------
@@ -15,16 +18,35 @@ export default function DealAnalyzer() {
   // ------------------------
   // State for modules
   // ------------------------
-  const [closingTotals, setClosingTotals] = useState<ClosingTotals>({ purchase: 0, exit: 0, total: 0, financeable: 0 });
-  const [holdTotals, setHoldTotals] = useState<HoldTotals>({ monthly: 0, oneTime: 0, monthsHeld: 0, total: 0 });
+  const [closingTotals, setClosingTotals] = useState<ClosingTotals>({
+    purchase: 0,
+    exit: 0,
+    total: 0,
+    financeable: 0,
+  });
+  const [holdTotals, setHoldTotals] = useState<HoldTotals>({
+    monthly: 0,
+    oneTime: 0,
+    monthsHeld: 0,
+    total: 0,
+  });
   const [monthlyOpex, setMonthlyOpex] = useState(0);
 
   // ------------------------
   // Example Outputs
   // ------------------------
-  const cashToClose = purchasePrice + rehab + closingTotals.purchase - loanAmount - closingTotals.financeable;
-  const flipProfit = arv - (purchasePrice + rehab + closingTotals.total + holdTotals.total); // simplified
-  const dscr = monthlyRent > 0 && monthlyOpex > 0 ? (monthlyRent - monthlyOpex) / 1200 : 0; // 1200 = example P&I
+  const cashToClose =
+    purchasePrice +
+    rehab +
+    closingTotals.purchase -
+    loanAmount -
+    closingTotals.financeable;
+  const flipProfit =
+    arv - (purchasePrice + rehab + closingTotals.total + holdTotals.total); // simplified
+  const dscr =
+    monthlyRent > 0 && monthlyOpex > 0
+      ? (monthlyRent - monthlyOpex) / 1200 // 1200 = example P&I
+      : 0;
 
   return (
     <div className="space-y-8 p-6">
@@ -50,14 +72,25 @@ export default function DealAnalyzer() {
         onChange={(_, totals) => setMonthlyOpex(totals.total)}
       />
 
-      {/* Outputs */}
-      <div className="rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800">Summary</h2>
-        <p>Cash to Close: ${cashToClose.toLocaleString()}</p>
-        <p>Flip Profit: ${flipProfit.toLocaleString()}</p>
-        <p>DSCR (Rental): {dscr.toFixed(2)}</p>
-      </div>
+      {/* Final Outputs */}
+      <FinalOutputsPanel
+        dealType={"flip" /* or "rental" / "brrrr" based on mode */}
+        inputs={{
+          purchasePrice,
+          rehab,
+          arv,
+          loanAmount,
+          annualRate: 0.12, // example hard-coded
+          termYears: 30,
+          interestOnly: false,
+          monthlyRent,
+          opexMonthly: monthlyOpex,
+          // monthlyDebtService: myMonthlyPAndI, // override if you compute it
+          rehabFinanced: false,
+        }}
+        closing={closingTotals}
+        hold={{ total: holdTotals.total, monthly: holdTotals.monthly }}
+      />
     </div>
   );
 }
-
