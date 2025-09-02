@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import type { ChangeEvent, FC } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -133,7 +134,7 @@ function computeSubtotals(
 // ---------------------------
 // Main Component
 // ---------------------------
-const FieldLabel: React.FC<{ label: string; hint?: string }> = ({ label, hint }) => (
+const FieldLabel: FC<{ label: string; hint?: string }> = ({ label, hint }) => (
   <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
     <span>{label}</span>
     {hint ? (
@@ -142,7 +143,7 @@ const FieldLabel: React.FC<{ label: string; hint?: string }> = ({ label, hint })
   </div>
 );
 
-const NumberInput: React.FC<{
+const NumberInput: FC<{
   value: number | string;
   onChange: (n: number) => void;
   prefix?: string;
@@ -156,7 +157,7 @@ const NumberInput: React.FC<{
         inputMode="decimal"
         className="w-full outline-none"
         value={String(value ?? "")}
-        onChange={(e) => onChange(clampToNumber(e.target.value))}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(clampToNumber(e.target.value))}
         min={min}
       />
       {suffix ? <span className="ml-1 text-slate-500">{suffix}</span> : null}
@@ -164,13 +165,13 @@ const NumberInput: React.FC<{
   );
 };
 
-const InlineSelect: React.FC<{ value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }> = ({ value, onChange, options }) => (
+const InlineSelect: FC<{ value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }> = ({ value, onChange, options }) => (
   <select
     className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm"
     value={value}
-    onChange={(e) => onChange(e.target.value)}
+    onChange={(e: ChangeEvent<HTMLSelectElement>) => onChange(e.target.value)}
   >
-    {options.map((o) => (
+    {options.map((o: { value: string; label: string }) => (
       <option key={o.value} value={o.value}>
         {o.label}
       </option>
@@ -178,7 +179,7 @@ const InlineSelect: React.FC<{ value: string; onChange: (v: string) => void; opt
   </select>
 );
 
-const TableHeader: React.FC<{ exitKind: ExitKind }> = ({ exitKind }) => (
+const TableHeader: FC<{ exitKind: ExitKind }> = ({ exitKind }) => (
   <div className="grid grid-cols-12 gap-3 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
     <div className="col-span-4">Item</div>
     <div className="col-span-2">Type</div>
@@ -188,7 +189,7 @@ const TableHeader: React.FC<{ exitKind: ExitKind }> = ({ exitKind }) => (
   </div>
 );
 
-const ItemRow: React.FC<{
+const ItemRow: FC<{
   item: ClosingCostItem;
   onChange: (patch: Partial<ClosingCostItem>) => void;
   onRemove: () => void;
@@ -203,7 +204,7 @@ const ItemRow: React.FC<{
       />
       <InlineSelect
         value={item.type}
-        onChange={(v) => onChange({ type: v as ItemType })}
+        onChange={(v: string) => onChange({ type: v as ItemType })}
         options={[
           { value: "fixed", label: "Fixed $" },
           { value: "%", label: "%" },
@@ -213,7 +214,7 @@ const ItemRow: React.FC<{
         {item.type === "percent" ? (
           <InlineSelect
             value={item.basis ?? "loan_amount"}
-            onChange={(v) => onChange({ basis: v as Basis })}
+              onChange={(v: string) => onChange({ basis: v as Basis })}
             options={[
               { value: "loan_amount", label: "Loan Amount" },
               { value: "purchase_price", label: "Purchase Price" },
@@ -228,7 +229,7 @@ const ItemRow: React.FC<{
       <div className="col-span-2">
         <NumberInput
           value={item.value}
-          onChange={(n) => onChange({ value: n })}
+            onChange={(n: number) => onChange({ value: n })}
           prefix={item.type === "fixed" ? "$" : undefined}
           suffix={item.type === "percent" ? "%" : undefined}
           min={0}
@@ -339,7 +340,7 @@ export default function ClosingCostsSection({ value, bases, onChange, className 
         <div className="flex flex-wrap items-center gap-2">
           <InlineSelect
             value={state.mode}
-            onChange={(v) => switchMode(v as any)}
+            onChange={(v: string) => switchMode(v as any)}
             options={[
               { value: "simple", label: "Simple (one total)" },
               { value: "itemized", label: "Itemized (breakout)" },
@@ -347,7 +348,7 @@ export default function ClosingCostsSection({ value, bases, onChange, className 
           />
           <InlineSelect
             value={state.exitKind}
-            onChange={(v) => switchExitKind(v as ExitKind)}
+            onChange={(v: string) => switchExitKind(v as ExitKind)}
             options={[
               { value: "sale", label: "Exit = Sale" },
               { value: "refi", label: "Exit = Refi" },
@@ -364,7 +365,7 @@ export default function ClosingCostsSection({ value, bases, onChange, className 
             <div className="mt-2">
               <NumberInput
                 value={state.simple?.purchaseTotal ?? 0}
-                onChange={(n) => emit({ ...state, simple: { ...(state.simple ?? { exitTotal: 0, purchaseTotal: 0 }), purchaseTotal: n } })}
+                onChange={(n: number) => emit({ ...state, simple: { ...(state.simple ?? { exitTotal: 0, purchaseTotal: 0 }), purchaseTotal: n } })}
                 prefix="$"
                 min={0}
               />
@@ -375,7 +376,7 @@ export default function ClosingCostsSection({ value, bases, onChange, className 
             <div className="mt-2">
               <NumberInput
                 value={state.simple?.exitTotal ?? 0}
-                onChange={(n) => emit({ ...state, simple: { ...(state.simple ?? { exitTotal: 0, purchaseTotal: 0 }), exitTotal: n } })}
+                onChange={(n: number) => emit({ ...state, simple: { ...(state.simple ?? { exitTotal: 0, purchaseTotal: 0 }), exitTotal: n } })}
                 prefix="$"
                 min={0}
               />
@@ -403,7 +404,7 @@ export default function ClosingCostsSection({ value, bases, onChange, className 
                     <ItemRow
                       item={it}
                       amount={computeItemAmount(it, bases)}
-                      onChange={(patch) => updateItem("purchase", it.id, patch)}
+                    onChange={(patch: Partial<ClosingCostItem>) => updateItem("purchase", it.id, patch)}
                       onRemove={() => removeItem("purchase", it.id)}
                     />
                   </motion.div>
@@ -432,7 +433,7 @@ export default function ClosingCostsSection({ value, bases, onChange, className 
                     <ItemRow
                       item={it}
                       amount={computeItemAmount(it, bases)}
-                      onChange={(patch) => updateItem("exit", it.id, patch)}
+                    onChange={(patch: Partial<ClosingCostItem>) => updateItem("exit", it.id, patch)}
                       onRemove={() => removeItem("exit", it.id)}
                     />
                   </motion.div>
@@ -485,9 +486,9 @@ export async function generateInvestorSummaryPDF(args: {
   let y = 48;
 
   // Header
-  doc.setFontSize(16).setFont(undefined, "bold").text("Investor Deal Summary", pageW / 2, y, { align: "center" });
+  doc.setFontSize(16).setFont(undefined as unknown as string, "bold").text("Investor Deal Summary", pageW / 2, y, { align: "center" });
   y += 20;
-  doc.setFontSize(10).setFont(undefined, "normal");
+  doc.setFontSize(10).setFont(undefined as unknown as string, "normal");
   if (args.header?.address) doc.text(args.header.address, pageW / 2, y, { align: "center" });
   y += 16;
 
@@ -495,10 +496,10 @@ export async function generateInvestorSummaryPDF(args: {
   const left = 48, right = pageW - 48;
   const boxW = right - left;
   doc.setDrawColor(220).setFillColor(248, 250, 252).rect(left, y, boxW, 90, "F");
-  doc.setFontSize(11).setFont(undefined, "bold").text("Quick Snapshot", left + 12, y + 18);
-  doc.setFontSize(10).setFont(undefined, "normal");
+  doc.setFontSize(11).setFont(undefined as unknown as string, "bold").text("Quick Snapshot", left + 12, y + 18);
+  doc.setFontSize(10).setFont(undefined as unknown as string, "normal");
   const snap = args.snapshot;
-  const lines = [
+    const lines: [string, string][] = [
     ["Purchase Price", toUSD(snap.purchasePrice)],
     ["Rehab Budget", toUSD(snap.rehab)],
     ["ARV", snap.arv != null ? toUSD(snap.arv) : "—"],
@@ -511,35 +512,35 @@ export async function generateInvestorSummaryPDF(args: {
   const colX = left + 12;
   let rowY = y + 40;
   lines.forEach((row, i) => {
-    doc.setFont(undefined, "bold").text(row[0], colX, rowY);
-    doc.setFont(undefined, "normal").text(row[1], colX + 180, rowY);
+    doc.setFont(undefined as unknown as string, "bold").text(row[0], colX, rowY);
+    doc.setFont(undefined as unknown as string, "normal").text(row[1], colX + 180, rowY);
     rowY += 14;
   });
   y += 110;
 
   // Costs bar
-  doc.setFontSize(11).setFont(undefined, "bold").text("Closing & Financing", left, y);
+  doc.setFontSize(11).setFont(undefined as unknown as string, "bold").text("Closing & Financing", left, y);
   y += 12;
-  doc.setFontSize(10).setFont(undefined, "normal");
-  const rows = [
+  doc.setFontSize(10).setFont(undefined as unknown as string, "normal");
+    const rows: [string, string][] = [
     ["Purchase Closing Costs", toUSD(args.closingCosts.purchase)],
     ["Exit/Refi Closing Costs", toUSD(args.closingCosts.exit)],
     ["Financing Costs", args.financingCosts != null ? toUSD(args.financingCosts) : "—"],
     ["All Closing Costs", toUSD(args.closingCosts.total)],
   ];
-  rows.forEach((r) => {
-    doc.text(r[0], left, y);
-    doc.text(r[1], left + 220, y);
+    rows.forEach((r: [string, string]) => {
+      doc.text(r[0], left, y);
+      doc.text(r[1], left + 220, y);
     y += 14;
   });
   y += 8;
 
   // Exit section
   if (args.exitSummary) {
-    doc.setFontSize(11).setFont(undefined, "bold").text("Exit", left, y);
+    doc.setFontSize(11).setFont(undefined as unknown as string, "bold").text("Exit", left, y);
     y += 14;
     const ex = args.exitSummary;
-    const exRows: string[][] = [];
+      const exRows: [string, string][] = [];
     if (ex.scenario === "flip") {
       exRows.push(["Sale Price", toUSD(ex.salePrice ?? 0)]);
       if (ex.netProfit != null) exRows.push(["Net Profit", toUSD(ex.netProfit)]);
@@ -547,23 +548,23 @@ export async function generateInvestorSummaryPDF(args: {
     } else {
       if (ex.dscr != null) exRows.push(["DSCR", ex.dscr.toFixed(2)]);
     }
-    exRows.forEach((r) => {
-      doc.setFont(undefined, "bold").text(r[0], left, y);
-      doc.setFont(undefined, "normal").text(r[1], left + 220, y);
-      y += 14;
-    });
+      exRows.forEach((r: [string, string]) => {
+        doc.setFont(undefined as unknown as string, "bold").text(r[0], left, y);
+        doc.setFont(undefined as unknown as string, "normal").text(r[1], left + 220, y);
+        y += 14;
+      });
   }
 
   // Stress test
   if (args.stress && args.stress.length) {
     y += 8;
-    doc.setFontSize(11).setFont(undefined, "bold").text("Stress Test", left, y);
+    doc.setFontSize(11).setFont(undefined as unknown as string, "bold").text("Stress Test", left, y);
     y += 14;
-    args.stress.forEach((s) => {
-      doc.setFont(undefined, "bold").text(s.label, left, y);
-      doc.setFont(undefined, "normal").text(s.value, left + 220, y);
-      y += 14;
-    });
+      args.stress.forEach((s: { label: string; value: string }) => {
+        doc.setFont(undefined as unknown as string, "bold").text(s.label, left, y);
+        doc.setFont(undefined as unknown as string, "normal").text(s.value, left + 220, y);
+        y += 14;
+      });
   }
 
   // Footer

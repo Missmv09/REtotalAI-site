@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import type { ChangeEvent, FC } from "react";
 
 export interface HoldTotals {
   monthly: number;
@@ -14,7 +15,7 @@ interface HoldCostsProps {
   className?: string;
 }
 
-const HoldCostsSection: React.FC<HoldCostsProps> = ({ kind, bases, onChange, className }) => {
+const HoldCostsSection: FC<HoldCostsProps> = ({ kind, bases, onChange, className }) => {
   const [monthly, setMonthly] = useState(0);
   const [oneTime, setOneTime] = useState(0);
   const [monthsHeld, setMonthsHeld] = useState(6);
@@ -42,7 +43,7 @@ const HoldCostsSection: React.FC<HoldCostsProps> = ({ kind, bases, onChange, cla
               type="number"
               min={0}
               value={monthsHeld}
-              onChange={(e) => setMonthsHeld(Number(e.target.value) || 0)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setMonthsHeld(Number(e.target.value) || 0)}
               className="w-24 rounded border border-slate-200 p-1"
             />
           </div>
@@ -52,7 +53,7 @@ const HoldCostsSection: React.FC<HoldCostsProps> = ({ kind, bases, onChange, cla
               type="number"
               min={0}
               value={monthly}
-              onChange={(e) => setMonthly(Number(e.target.value) || 0)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setMonthly(Number(e.target.value) || 0)}
               className="w-32 rounded border border-slate-200 p-1"
             />
           </div>
@@ -62,7 +63,7 @@ const HoldCostsSection: React.FC<HoldCostsProps> = ({ kind, bases, onChange, cla
               type="number"
               min={0}
               value={oneTime}
-              onChange={(e) => setOneTime(Number(e.target.value) || 0)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setOneTime(Number(e.target.value) || 0)}
               className="w-32 rounded border border-slate-200 p-1"
             />
           </div>
@@ -78,7 +79,7 @@ const HoldCostsSection: React.FC<HoldCostsProps> = ({ kind, bases, onChange, cla
               type="number"
               min={0}
               value={monthly}
-              onChange={(e) => setMonthly(Number(e.target.value) || 0)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setMonthly(Number(e.target.value) || 0)}
               className="w-32 rounded border border-slate-200 p-1"
             />
           </div>

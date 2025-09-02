@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
-// ✅ point to src/components
 import ClosingCostsSection, { Totals as ClosingTotals } from "../components/ClosingCostsSection";
 import HoldCostsSection, { HoldTotals } from "../components/HoldCostsSection";
 import FinalOutputsPanel from "../components/FinalOutputsPanel";
@@ -24,14 +23,14 @@ export default function DealAnalyzer() {
     <div className="space-y-8 p-6">
       <h1 className="text-2xl font-bold text-slate-900">Deal Analyzer</h1>
 
-      <ClosingCostsSection
-        bases={{ purchasePrice, loanAmount, salePrice: arv, refiLoan: loanAmount }}
-        onChange={(_, totals) => setClosingTotals(totals)}
-      />
+        <ClosingCostsSection
+          bases={{ purchasePrice, loanAmount, salePrice: arv, refiLoan: loanAmount }}
+          onChange={(_: unknown, totals: ClosingTotals) => setClosingTotals(totals)}
+        />
 
-      <HoldCostsSection kind="carry" bases={{}} onChange={(_, t) => setHoldTotals(t)} />
+        <HoldCostsSection kind="carry" bases={{}} onChange={(_: HoldTotals, t: HoldTotals) => setHoldTotals(t)} />
 
-      <HoldCostsSection kind="opex" bases={{ monthlyRent }} onChange={(_, t) => setMonthlyOpex(t.total)} />
+        <HoldCostsSection kind="opex" bases={{ monthlyRent }} onChange={(_: HoldTotals, t: HoldTotals) => setMonthlyOpex(t.total)} />
 
       <FinalOutputsPanel
         dealType={"flip" /* or "rental" / "brrrr" */}

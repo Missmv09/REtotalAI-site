@@ -1,4 +1,3 @@
-import React from "react";
 import { Totals as ClosingTotals } from "./ClosingCostsSection";
 
 export interface FinalOutputsProps {
