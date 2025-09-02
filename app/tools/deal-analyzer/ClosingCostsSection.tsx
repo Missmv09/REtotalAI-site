@@ -508,7 +508,8 @@ export async function generateInvestorSummaryPDF(args: {
     ["Net Profit (Flip)", snap.netProfit != null ? toUSD(snap.netProfit) : "—"],
     ["ROI", snap.roiPct != null ? `${snap.roiPct.toFixed(1)}%` : "—"],
   ];
-  let colX = left + 12, rowY = y + 40;
+  const colX = left + 12;
+  let rowY = y + 40;
   lines.forEach((row, i) => {
     doc.setFont(undefined, "bold").text(row[0], colX, rowY);
     doc.setFont(undefined, "normal").text(row[1], colX + 180, rowY);
@@ -543,7 +544,7 @@ export async function generateInvestorSummaryPDF(args: {
       exRows.push(["Sale Price", toUSD(ex.salePrice ?? 0)]);
       if (ex.netProfit != null) exRows.push(["Net Profit", toUSD(ex.netProfit)]);
       if (ex.roiPct != null) exRows.push(["ROI", `${ex.roiPct.toFixed(1)}%`]);
-    } else if (ex.scenario !== "flip") {
+    } else {
       if (ex.dscr != null) exRows.push(["DSCR", ex.dscr.toFixed(2)]);
     }
     exRows.forEach((r) => {
