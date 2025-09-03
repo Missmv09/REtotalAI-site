@@ -3,8 +3,15 @@ export const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export async function api(path: string, init: RequestInit = {}) {
   const headers = new Headers(init.headers || {});
-  headers.set("Content-Type", "application/json");
-  headers.set("x-user-id", "dev-user-1"); // temporary user id
+
+  const body = (init as any).body;
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData;
+
+  if (body != null && !isFormData && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  headers.set("x-user-id", "dev-user-1"); // temp dev identity
 
   const res = await fetch(`${BASE_URL}${path}`, { ...init, headers });
   if (res.status === 402) {
