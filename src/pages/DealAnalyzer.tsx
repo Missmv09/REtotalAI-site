@@ -1,6 +1,7 @@
+// src/pages/DealAnalyzer.tsx
 import React, { useState } from "react";
-import ClosingCostsSection, { Totals as ClosingTotals } from "./ClosingCostsSection";
-import HoldCostsSection, { HoldTotals } from "./HoldCostsSection";
+import ClosingCostsSection, { Totals as ClosingTotals } from "../components/ClosingCostsSection";
+import HoldCostsSection, { HoldTotals } from "../components/HoldCostsSection";
 import FinalOutputsPanel from "../components/FinalOutputsPanel";
 
 export default function DealAnalyzer() {
@@ -66,4 +67,3 @@ export default function DealAnalyzer() {
     </div>
   );
 }
-
