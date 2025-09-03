@@ -6,7 +6,6 @@
       "dom.iterable",
       "esnext"
     ],
-    "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
     "forceConsistentCasingInFileNames": true,
@@ -28,6 +27,7 @@
       {
         "name": "next"
       }
+    
     ]
   },
   "include": [
@@ -38,6 +38,10 @@
   ],
   "exclude": [
     "node_modules",
-    "vite.config.ts"
+    "vite.config.ts",
+    ".next",
+    "server",
+    "server/**",
+    "**/server/**"
   ]
 }
