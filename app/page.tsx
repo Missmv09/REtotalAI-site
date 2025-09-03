@@ -1,14 +1,9 @@
 'use client';
 import React, { useMemo, useState } from "react";
 
-// REtotalAi — Landing + Pricing + Product-specific CTA
-// Tailwind-only, self-contained. Wire the fetch() endpoints noted in handlers to your backend.
-// Strategy implemented:
-//  - Hero CTA: "Analyze Your First Deal Free" (clear, product-specific)
-//  - Clarifier: Full platform trial (all 8 AI tools) for 7 days
-//  - Pricing tiers: Starter $19, Pro $49, Team $99 with monthly/annual toggle
-//  - Secondary tool grid with per-tool "Try Free" buttons (optional hook)
-//  - Simple analytics hooks via data- attributes
+// REtotalAi — Landing + Pricing + Product-specific CTA (Frontend-only)
+// This file must remain a React component. Backend (Express/Prisma/Stripe) should live
+// in separate server files. The UI calls /api endpoints via fetch (stubbed here).
 
 export default function REtotalAiLandingPricing() {
   const [billing, setBilling] = useState("monthly"); // 'monthly' | 'annual'
@@ -21,28 +16,22 @@ export default function REtotalAiLandingPricing() {
   const isAnnual = billing === "annual";
 
   async function handleStartTrial(entryPoint = "hero") {
-    // TODO: Replace with your auth/session logic
-    // Recommended contract: POST /api/trial/start { entryPoint }
-    // Response: { ok, trialEndsAt, includes: 'all-tools' | 'deal-analyzer-only' }
     try {
-      console.log("trial:start", { entryPoint });
-      // const res = await fetch("/api/trial/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entryPoint })});
-      // const data = await res.json();
-      alert("✅ Trial started. You'll have full access for 7 days. (Wire /api/trial/start)");
+      // NOTE: implement on the server: POST /api/trial/start { entryPoint }
+      // await fetch("/api/trial/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entryPoint })});
+      alert("✅ Trial started. (Stubbed — wire to /api/trial/start)");
     } catch (e) {
       alert("⚠️ Could not start trial. Please try again.");
     }
   }
 
   async function handleCheckout(planId) {
-    // Recommended contract: POST /api/checkout/session { planId, billing }
-    // Response: { url } and redirect to Stripe Checkout
     try {
-      console.log("checkout", { planId, billing });
+      // NOTE: implement on the server: POST /api/checkout/session { planId, billing }
       // const res = await fetch("/api/checkout/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planId, billing })});
       // const { url } = await res.json();
       // window.location.href = url;
-      alert(`🧾 Checkout for ${planId} (${billing}). (Wire /api/checkout/session)`);
+      alert(`🧾 Checkout for ${planId} (${billing}). (Stubbed — wire to /api/checkout/session)`);
     } catch (e) {
       alert("⚠️ Could not launch checkout. Please try again.");
     }
