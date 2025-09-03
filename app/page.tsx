@@ -1,43 +1,116 @@
 'use client';
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import { api } from "../src/api";
 
-// REtotalAi — Landing + Pricing + Product-specific CTA (Frontend-only)
-// This file must remain a React component. Backend (Express/Prisma/Stripe) should live
-// in separate server files. The UI calls /api endpoints via fetch (stubbed here).
+function Modal({ open, onClose, children }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export default function REtotalAiLandingPricing() {
-  const [billing, setBilling] = useState("monthly"); // 'monthly' | 'annual'
+  const [billing, setBilling] = useState("monthly");
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [trial, setTrial] = useState<{ active: boolean; endsAt: any }>({ active: false, endsAt: null });
+  const [busy, setBusy] = useState(false);
+  const [deal, setDeal] = useState({
+    property: { address: "" },
+    numbers: { purchase: "", arv: "", rehab: "", rent: "" },
+  });
+  const [reportUrl, setReportUrl] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await api("/api/trial/status");
+        setTrial(data);
+      } catch {}
+    })();
+  }, []);
 
   const price = useMemo(() => ({
     monthly: { starter: 19, pro: 49, team: 99 },
-    annual: { starter: 190, pro: 490, team: 990 }, // ~2 months free
+    annual: { starter: 190, pro: 490, team: 990 },
   }), []);
-
   const isAnnual = billing === "annual";
+
+  function num(v: any) {
+    const n = parseFloat(String(v).replace(/[^0-9.]/g, ""));
+    return isFinite(n) ? n : 0;
+  }
+
+  const purchase = num(deal.numbers.purchase);
+  const arv = num(deal.numbers.arv);
+  const rehab = num(deal.numbers.rehab);
+  const rent = num(deal.numbers.rent);
+  const annualRent = rent * 12;
+  const estTaxesInsMaint = purchase * 0.03;
+  const noi = annualRent - estTaxesInsMaint;
+  const capRate = purchase ? (noi / purchase) * 100 : 0;
+  const cashInvested = purchase * 0.2 + rehab;
+  const annualCashFlow = noi - purchase * 0.8 * 0.07;
+  const coc = cashInvested ? (annualCashFlow / cashInvested) * 100 : 0;
+
+  const valid =
+    deal.property.address.trim().length > 5 &&
+    purchase > 0 &&
+    arv > 0;
 
   async function handleStartTrial(entryPoint = "hero") {
     try {
-      // NOTE: implement on the server: POST /api/trial/start { entryPoint }
-      // await fetch("/api/trial/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entryPoint })});
-      alert("✅ Trial started. (Stubbed — wire to /api/trial/start)");
+      const data = await api("/api/trial/start", {
+        method: "POST",
+        body: JSON.stringify({ entryPoint }),
+      });
+      setTrial({ active: true, endsAt: data.trialEndsAt });
+      setWizardOpen(true);
     } catch (e) {
-      alert("⚠️ Could not start trial. Please try again.");
+      alert("Could not start trial");
     }
   }
 
-  async function handleCheckout(planId) {
+  async function handleCheckout(planId: string) {
     try {
-      // NOTE: implement on the server: POST /api/checkout/session { planId, billing }
-      // const res = await fetch("/api/checkout/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planId, billing })});
-      // const { url } = await res.json();
-      // window.location.href = url;
-      alert(`🧾 Checkout for ${planId} (${billing}). (Stubbed — wire to /api/checkout/session)`);
+      const { url } = await api("/api/checkout/session", {
+        method: "POST",
+        body: JSON.stringify({ planId, billing }),
+      });
+      if (url) window.location.href = url;
     } catch (e) {
-      alert("⚠️ Could not launch checkout. Please try again.");
+      alert("Checkout unavailable");
     }
   }
 
-  function PriceTag({ amount }) {
+  async function submitDeal() {
+    setBusy(true);
+    try {
+      const created = await api("/api/deals", {
+        method: "POST",
+        body: JSON.stringify(deal),
+      });
+      const blob = await api(`/api/deals/${created.id}/report`);
+      const url = URL.createObjectURL(blob);
+      setReportUrl(url);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (e: any) {
+      if (e.code === 402) {
+        setWizardOpen(false);
+        setPaywallOpen(true);
+      } else {
+        alert("Could not analyze deal");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function PriceTag({ amount }: { amount: number }) {
     return (
       <div className="text-4xl font-bold tracking-tight">${amount}<span className="text-sm font-medium text-gray-500">/{isAnnual ? "yr" : "mo"}</span></div>
     );
@@ -58,11 +131,10 @@ export default function REtotalAiLandingPricing() {
             <a href="#how" className="hover:text-gray-900">How it works</a>
           </nav>
           <div className="flex items-center gap-3">
-            <button onClick={() => handleStartTrial("nav")}
-              data-cta="start-trial-nav"
-              className="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-black">
-              Start Free Trial
-            </button>
+            {trial.active && trial.endsAt ? (
+              <span className="text-xs text-gray-600">Trial active • ends {new Date(trial.endsAt).toLocaleDateString()}</span>
+            ) : null}
+            <button onClick={() => (trial.active ? setWizardOpen(true) : handleStartTrial("nav"))} data-cta="start-trial-nav" className="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-black">{trial.active ? "Analyze a Deal" : "Start Free Trial"}</button>
           </div>
         </div>
       </header>
@@ -73,23 +145,13 @@ export default function REtotalAiLandingPricing() {
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium text-gray-600">
             <span className="h-2 w-2 rounded-full bg-green-500"/> New: First deal free
           </div>
-          <h1 className="mt-4 text-4xl md:text-6xl font-extrabold leading-tight">
-            Analyze Your First Deal <span className="text-indigo-600">Free</span>
-          </h1>
-          <p className="mt-4 text-lg text-gray-600">
-            Professional-grade AI Deal Analyzer with full platform access for 7 days. Get instant ROI, cash-on-cash, IRR, rehab budgets, and lender-ready reports.
-          </p>
+          <h1 className="mt-4 text-4xl md:text-6xl font-extrabold leading-tight">Analyze Your First Deal <span className="text-indigo-600">Free</span></h1>
+          <p className="mt-4 text-lg text-gray-600">Professional-grade AI Deal Analyzer with full platform access for 7 days. Get instant ROI, cash-on-cash, IRR, rehab budgets, and lender-ready reports.</p>
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
-            <button onClick={() => handleStartTrial("hero")}
-              data-cta="start-trial-hero"
-              className="px-6 py-3 rounded-2xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-600/20">
-              Start Free Trial — Analyze a Deal
-            </button>
+            <button onClick={() => (trial.active ? setWizardOpen(true) : handleStartTrial("hero"))} data-cta="start-trial-hero" className="px-6 py-3 rounded-2xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-600/20">Start Free Trial — Analyze a Deal</button>
             <a href="#pricing" className="px-6 py-3 rounded-2xl border hover:bg-gray-50">See Pricing</a>
           </div>
-          <p className="mt-3 text-sm text-gray-500">
-            Includes full access to all 8 AI tools. No credit card required to start.
-          </p>
+          <p className="mt-3 text-sm text-gray-500">Includes full access to all 8 AI tools. No credit card required to start.</p>
           <div className="mt-6 flex items-center gap-6 text-xs text-gray-500">
             <div className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-gray-400"/> Pro-grade accuracy</div>
             <div className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-gray-400"/> Lender-ready PDF reports</div>
@@ -99,10 +161,7 @@ export default function REtotalAiLandingPricing() {
         <div className="relative">
           <div className="absolute -inset-4 rounded-3xl bg-indigo-600/10 blur-2xl"/>
           <div className="relative rounded-3xl border bg-white p-6 shadow-xl">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Deal Analyzer Preview</h3>
-              <span className="text-xs text-gray-500">AI Powered</span>
-            </div>
+            <div className="flex items-center justify-between"><h3 className="font-semibold">Deal Analyzer Preview</h3><span className="text-xs text-gray-500">AI Powered</span></div>
             <div className="mt-4 grid grid-cols-2 gap-3">
               {["Purchase Price","ARV","Rehab Budget","Rent","Cap Rate","Cash-on-Cash"].map((label, i) => (
                 <div key={i} className="space-y-1">
@@ -111,14 +170,8 @@ export default function REtotalAiLandingPricing() {
                 </div>
               ))}
             </div>
-            <div className="mt-4 h-28 rounded-xl border bg-gradient-to-br from-indigo-50 to-white flex items-center justify-center text-sm text-gray-600">
-              Chart & projections preview
-            </div>
-            <button onClick={() => handleStartTrial("hero-preview")}
-              data-cta="start-trial-preview"
-              className="mt-5 w-full rounded-xl bg-gray-900 text-white py-3 hover:bg-black">
-              Analyze My First Deal Free
-            </button>
+            <div className="mt-4 h-28 rounded-xl border bg-gradient-to-br from-indigo-50 to-white flex items-center justify-center text-sm text-gray-600">Chart & projections preview</div>
+            <button onClick={() => (trial.active ? setWizardOpen(true) : handleStartTrial("hero-preview"))} data-cta="start-trial-preview" className="mt-5 w-full rounded-xl bg-gray-900 text-white py-3 hover:bg-black">Analyze My First Deal Free</button>
           </div>
         </div>
       </section>
@@ -137,7 +190,7 @@ export default function REtotalAiLandingPricing() {
             <div key={i} className="rounded-2xl border bg-white p-6 shadow-sm">
               <div className="text-sm font-semibold text-indigo-600">{f.t}</div>
               <p className="mt-2 text-sm text-gray-600">{f.d}</p>
-              <button onClick={() => handleStartTrial(`feature:${f.t}`)} className="mt-4 text-sm text-indigo-700 hover:underline">Try Free →</button>
+              <button onClick={() => (trial.active ? setWizardOpen(true) : handleStartTrial(`feature:${f.t}`))} className="mt-4 text-sm text-indigo-700 hover:underline">Try Free →</button>
             </div>
           ))}
         </div>
@@ -168,9 +221,7 @@ export default function REtotalAiLandingPricing() {
               <li>Unlimited reports</li>
               <li>Email support</li>
             </ul>
-            <button onClick={() => handleCheckout("starter")}
-              data-cta="checkout-starter"
-              className="mt-6 w-full rounded-xl bg-gray-900 text-white py-3 hover:bg-black">Choose Starter</button>
+            <button onClick={() => handleCheckout("starter")} data-cta="checkout-starter" className="mt-6 w-full rounded-xl bg-gray-900 text-white py-3 hover:bg-black">Choose Starter</button>
           </div>
 
           {/* Pro */}
@@ -186,9 +237,7 @@ export default function REtotalAiLandingPricing() {
               <li>Lender-ready PDFs</li>
               <li>Priority support</li>
             </ul>
-            <button onClick={() => handleCheckout("pro")}
-              data-cta="checkout-pro"
-              className="mt-6 w-full rounded-xl bg-indigo-600 text-white py-3 hover:bg-indigo-700">Go Pro</button>
+            <button onClick={() => handleCheckout("pro")} data-cta="checkout-pro" className="mt-6 w-full rounded-xl bg-indigo-600 text-white py-3 hover:bg-indigo-700">Go Pro</button>
           </div>
 
           {/* Team */}
@@ -202,9 +251,7 @@ export default function REtotalAiLandingPricing() {
               <li>Shared libraries & templates</li>
               <li>API access</li>
             </ul>
-            <button onClick={() => handleCheckout("team")}
-              data-cta="checkout-team"
-              className="mt-6 w-full rounded-xl bg-gray-900 text-white py-3 hover:bg-black">Choose Team</button>
+            <button onClick={() => handleCheckout("team")} data-cta="checkout-team" className="mt-6 w-full rounded-xl bg-gray-900 text-white py-3 hover:bg-black">Choose Team</button>
           </div>
         </div>
 
@@ -227,6 +274,93 @@ export default function REtotalAiLandingPricing() {
           ))}
         </div>
       </section>
+
+      {/* Deal Wizard Modal */}
+      <Modal open={wizardOpen} onClose={() => setWizardOpen(false)}>
+        <div className="flex items-start justify-between">
+          <h3 className="text-lg font-semibold">Analyze a Deal</h3>
+          <button onClick={() => setWizardOpen(false)} className="text-sm text-gray-500">Close</button>
+        </div>
+        <div className="mt-4 grid md:grid-cols-2 gap-4">
+          <div className="col-span-2">
+            <label className="text-xs text-gray-600">Property Address</label>
+            <input value={deal.property.address} onChange={(e) => setDeal(v => ({ ...v, property: { ...v.property, address: e.target.value }}))} className="mt-1 w-full h-10 rounded-xl border px-3" placeholder="123 Main St, City" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Purchase ($)</label>
+            <input value={deal.numbers.purchase} onChange={(e) => setDeal(v => ({ ...v, numbers: { ...v.numbers, purchase: e.target.value }}))} className="mt-1 w-full h-10 rounded-xl border px-3" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">ARV ($)</label>
+            <input value={deal.numbers.arv} onChange={(e) => setDeal(v => ({ ...v, numbers: { ...v.numbers, arv: e.target.value }}))} className="mt-1 w-full h-10 rounded-xl border px-3" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Rehab Budget ($)</label>
+            <input value={deal.numbers.rehab} onChange={(e) => setDeal(v => ({ ...v, numbers: { ...v.numbers, rehab: e.target.value }}))} className="mt-1 w-full h-10 rounded-xl border px-3" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Estimated Rent ($/mo)</label>
+            <input value={deal.numbers.rent} onChange={(e) => setDeal(v => ({ ...v, numbers: { ...v.numbers, rent: e.target.value }}))} className="mt-1 w-full h-10 rounded-xl border px-3" />
+          </div>
+        </div>
+        <div className="mt-4 grid md:grid-cols-3 gap-3 text-sm">
+          <div className="rounded-xl border p-3">
+            <div className="text-xs text-gray-500">Cap Rate</div>
+            <div className="font-semibold">{capRate.toFixed(1)}%</div>
+          </div>
+          <div className="rounded-xl border p-3">
+            <div className="text-xs text-gray-500">Cash-on-Cash</div>
+            <div className="font-semibold">{coc.toFixed(1)}%</div>
+          </div>
+          <div className="rounded-xl border p-3">
+            <div className="text-xs text-gray-500">Annual Cash Flow</div>
+            <div className="font-semibold">${Math.round(annualCashFlow).toLocaleString()}</div>
+          </div>
+        </div>
+        <div className="mt-5 flex items-center gap-3">
+          <button
+            onClick={submitDeal}
+            disabled={busy || !valid}
+            className="px-5 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {busy ? "Analyzing…" : "Generate Report"}
+          </button>
+          {reportUrl && (
+            <a href={reportUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-700 underline">
+              Open report again
+            </a>
+          )}
+        </div>
+        {!trial.active && (
+          <p className="mt-3 text-xs text-gray-500">Tip: Start your free trial to unlock unlimited tools for 7 days.</p>
+        )}
+      </Modal>
+
+      {/* Paywall Modal */}
+      <Modal open={paywallOpen} onClose={() => setPaywallOpen(false)}>
+        <div className="flex items-start justify-between">
+          <h3 className="text-lg font-semibold">Unlock more deal analyses</h3>
+          <button onClick={() => setPaywallOpen(false)} className="text-sm text-gray-500">Close</button>
+        </div>
+        <p className="mt-3 text-sm text-gray-600">You&apos;ve used your free analysis. Start your 7‑day trial or choose a plan to analyze unlimited deals and generate lender-ready PDFs.</p>
+        <div className="mt-5 grid sm:grid-cols-3 gap-3">
+          <button onClick={() => handleCheckout("starter")} className="rounded-xl border p-3 hover:bg-gray-50 text-left">
+            <div className="text-sm font-semibold">Starter</div>
+            <div className="text-xs text-gray-600">Deal Analyzer + 1 tool</div>
+          </button>
+          <button onClick={() => handleCheckout("pro")} className="rounded-xl border p-3 hover:bg-gray-50 text-left">
+            <div className="text-sm font-semibold">Pro</div>
+            <div className="text-xs text-gray-600">All 8 AI tools</div>
+          </button>
+          <button onClick={() => handleCheckout("team")} className="rounded-xl border p-3 hover:bg-gray-50 text-left">
+            <div className="text-sm font-semibold">Team</div>
+            <div className="text-xs text-gray-600">Seats & collaboration</div>
+          </button>
+        </div>
+        <div className="mt-4">
+          <button onClick={() => handleStartTrial("paywall")} className="px-5 py-2 rounded-xl bg-gray-900 text-white hover:bg-black">Start Free Trial</button>
+        </div>
+      </Modal>
 
       {/* Footer */}
       <footer className="border-t">
