@@ -32,7 +32,7 @@ try {
 const app = express();
 app.use(cors({
   origin: [
-    "https://YOUR-VERCEL-APP.vercel.app", // (we'll paste your real URL after we deploy the site)
+    "https://retotalai.vercel.app", // Vercel deployment URL
     "http://localhost:3000"               // keep for safety; fine to leave
   ],
   credentials: false
