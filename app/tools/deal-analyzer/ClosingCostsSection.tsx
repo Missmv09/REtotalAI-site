@@ -470,6 +470,15 @@ export default function ClosingCostsSection({ value, bases, onChange, className 
 // Optional: lightweight PDF exporter (one-page investor summary)
 // Uses dynamic import to avoid bundling unless requested.
 // ---------------------------
+
+type FontStyle = "normal" | "bold" | "italic" | "bolditalic";
+
+function safeSetFont(doc: any, name?: string, style?: FontStyle) {
+  const fallbackName = name ?? "helvetica"; // default family
+  const fallbackStyle = style ?? "normal";
+  doc.setFont(fallbackName, fallbackStyle);
+}
+
 export async function generateInvestorSummaryPDF(args: {
   fileName?: string;
   header: { address?: string; investor?: string; date?: string };
@@ -485,9 +494,12 @@ export async function generateInvestorSummaryPDF(args: {
   let y = 48;
 
   // Header
-  doc.setFontSize(16).setFont(undefined, "bold").text("Investor Deal Summary", pageW / 2, y, { align: "center" });
+  doc.setFontSize(16);
+  safeSetFont(doc, undefined, "bold");
+  doc.text("Investor Deal Summary", pageW / 2, y, { align: "center" });
   y += 20;
-  doc.setFontSize(10).setFont(undefined, "normal");
+  doc.setFontSize(10);
+  safeSetFont(doc, undefined, "normal");
   if (args.header?.address) doc.text(args.header.address, pageW / 2, y, { align: "center" });
   y += 16;
 
@@ -495,8 +507,11 @@ export async function generateInvestorSummaryPDF(args: {
   const left = 48, right = pageW - 48;
   const boxW = right - left;
   doc.setDrawColor(220).setFillColor(248, 250, 252).rect(left, y, boxW, 90, "F");
-  doc.setFontSize(11).setFont(undefined, "bold").text("Quick Snapshot", left + 12, y + 18);
-  doc.setFontSize(10).setFont(undefined, "normal");
+  doc.setFontSize(11);
+  safeSetFont(doc, undefined, "bold");
+  doc.text("Quick Snapshot", left + 12, y + 18);
+  doc.setFontSize(10);
+  safeSetFont(doc, undefined, "normal");
   const snap = args.snapshot;
   const lines = [
     ["Purchase Price", toUSD(snap.purchasePrice)],
@@ -511,16 +526,21 @@ export async function generateInvestorSummaryPDF(args: {
   const colX = left + 12;
   let rowY = y + 40;
   lines.forEach((row, i) => {
-    doc.setFont(undefined, "bold").text(row[0], colX, rowY);
-    doc.setFont(undefined, "normal").text(row[1], colX + 180, rowY);
+    safeSetFont(doc, undefined, "bold");
+    doc.text(row[0], colX, rowY);
+    safeSetFont(doc, undefined, "normal");
+    doc.text(row[1], colX + 180, rowY);
     rowY += 14;
   });
   y += 110;
 
   // Costs bar
-  doc.setFontSize(11).setFont(undefined, "bold").text("Closing & Financing", left, y);
+  doc.setFontSize(11);
+  safeSetFont(doc, undefined, "bold");
+  doc.text("Closing & Financing", left, y);
   y += 12;
-  doc.setFontSize(10).setFont(undefined, "normal");
+  doc.setFontSize(10);
+  safeSetFont(doc, undefined, "normal");
   const rows = [
     ["Purchase Closing Costs", toUSD(args.closingCosts.purchase)],
     ["Exit/Refi Closing Costs", toUSD(args.closingCosts.exit)],
@@ -536,7 +556,9 @@ export async function generateInvestorSummaryPDF(args: {
 
   // Exit section
   if (args.exitSummary) {
-    doc.setFontSize(11).setFont(undefined, "bold").text("Exit", left, y);
+    doc.setFontSize(11);
+    safeSetFont(doc, undefined, "bold");
+    doc.text("Exit", left, y);
     y += 14;
     const ex = args.exitSummary;
     const exRows: string[][] = [];
@@ -548,8 +570,10 @@ export async function generateInvestorSummaryPDF(args: {
       if (ex.dscr != null) exRows.push(["DSCR", ex.dscr.toFixed(2)]);
     }
     exRows.forEach((r) => {
-      doc.setFont(undefined, "bold").text(r[0], left, y);
-      doc.setFont(undefined, "normal").text(r[1], left + 220, y);
+      safeSetFont(doc, undefined, "bold");
+      doc.text(r[0], left, y);
+      safeSetFont(doc, undefined, "normal");
+      doc.text(r[1], left + 220, y);
       y += 14;
     });
   }
@@ -557,11 +581,15 @@ export async function generateInvestorSummaryPDF(args: {
   // Stress test
   if (args.stress && args.stress.length) {
     y += 8;
-    doc.setFontSize(11).setFont(undefined, "bold").text("Stress Test", left, y);
+    doc.setFontSize(11);
+    safeSetFont(doc, undefined, "bold");
+    doc.text("Stress Test", left, y);
     y += 14;
     args.stress.forEach((s) => {
-      doc.setFont(undefined, "bold").text(s.label, left, y);
-      doc.setFont(undefined, "normal").text(s.value, left + 220, y);
+      safeSetFont(doc, undefined, "bold");
+      doc.text(s.label, left, y);
+      safeSetFont(doc, undefined, "normal");
+      doc.text(s.value, left + 220, y);
       y += 14;
     });
   }
