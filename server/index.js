@@ -32,8 +32,8 @@ try {
 const app = express();
 app.use(cors({
   origin: [
-    "https://retotalai.vercel.app", // Vercel deployment URL
-    "http://localhost:3000"               // keep for safety; fine to leave
+    "https://r-etotal-ai-site.vercel.app", // live Vercel frontend
+    "http://localhost:3000"                // local dev
   ],
   credentials: false
 }));
