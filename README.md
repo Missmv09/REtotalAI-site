@@ -26,6 +26,11 @@ The project is a fully static site that can be deployed on Netlify.
 3. Set the publish directory to the repository root (`/`).
 4. Configure any required environment variables in the Netlify dashboard.
 
+### Cloud Deployment (Vercel + Render)
+1. In your Vercel project, set `NEXT_PUBLIC_API_URL=https://retotalai-site.onrender.com`.
+2. Deploy the site on Vercel.
+3. After the Vercel deploy finishes, add the deployed Vercel URL to the CORS `origin` array in `server/index.js` and commit the change to trigger a Render redeploy.
+
 ## Roadmap
 - User authentication and profiles.
 - Centralized dashboard for managing tools and data.
