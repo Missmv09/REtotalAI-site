@@ -10,7 +10,9 @@
     "start": "next start",
     "test": "node tests/propertyValuation.test.mjs",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "health": "curl -i $RENDER_API_URL/health",
+    "preflight": "curl -i -X OPTIONS $RENDER_API_URL/api/trial/start -H \"Origin: $FRONTEND_ORIGIN\" -H \"Access-Control-Request-Method: POST\""
   },
   "keywords": [],
   "author": "REtotalAI Team",

@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { api } from '@/src/api';
 
 export default function ShareView({ params }: { params: { token: string } }) {
   const [data, setData] = useState<any>(null);
@@ -9,8 +10,10 @@ export default function ShareView({ params }: { params: { token: string } }) {
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(`/api/share/${params.token}`);
-      if (res.ok) setData(await res.json());
+        try {
+          const res = await api(`/api/share/${params.token}`);
+          setData(res);
+        } catch {}
     })();
   }, [params.token]);
 

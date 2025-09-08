@@ -1,0 +1,37 @@
+name: Smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Validate package.json files
+        run: |
+          node -e "const fs=require('fs');const g=require('child_process').execSync('git ls-files \"**/package.json\"').toString().trim().split('\n').filter(Boolean);for(const f of g){JSON.parse(fs.readFileSync(f,'utf8'));};console.log('✅ all package.json valid');"
+
+      - name: Health check
+        run: |
+          set -e
+          code=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.RENDER_API_URL }}/health")
+          echo "status=$code"
+          [ "$code" = "200" ] || (echo "::error::Health check failed" && exit 1)
+
+      - name: CORS preflight
+        run: |
+          set -e
+          headers=$(mktemp)
+          curl -s -D "$headers" -o /dev/null -X OPTIONS "${{ secrets.RENDER_API_URL }}/api/trial/start" \
+            -H "Origin: ${{ secrets.FRONTEND_ORIGIN }}" \
+            -H "Access-Control-Request-Method: POST"
+          origin=$(grep -i '^access-control-allow-origin:' "$headers" | awk '{print $2}' | tr -d '\r')
+          echo "allow-origin=$origin"
+          [ "$origin" = "${{ secrets.FRONTEND_ORIGIN }}" ] || (echo "::error::CORS allow-origin mismatch" && exit 1)

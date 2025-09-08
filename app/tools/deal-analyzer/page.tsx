@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { analyze, DealInputs } from '@/lib/deal/analyze';
+import { api } from '@/src/api';
 
 const money = (n: number) => `$${Number(n || 0).toLocaleString()}`;
 
@@ -34,30 +35,27 @@ export default function DealAnalyzerPage() {
   function calc() { setOut(analyze(state)); }
 
   async function saveAndShare() {
-    // 1) Create a deal
-    const create = await fetch('/api/deals', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title: 'Analysis',
-        purchasePrice: state.purchasePrice,
-        rehabCost: state.rehabCost,
-        arv: state.arv
-      })
-    });
-    const { id } = await create.json();
+      // 1) Create a deal
+      const { id } = await api('/api/deals', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: 'Analysis',
+          purchasePrice: state.purchasePrice,
+          rehabCost: state.rehabCost,
+          arv: state.arv
+        })
+      });
 
-    // 2) Save run snapshot via analyze API
-    const run = await fetch(`/api/deals/${id}/analyze`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(state)
-    });
-    const outputs = await run.json();
-    setOut(outputs);
+      // 2) Save run snapshot via analyze API
+      const outputs = await api(`/api/deals/${id}/analyze`, {
+        method: 'POST',
+        body: JSON.stringify(state)
+      });
+      setOut(outputs);
 
-    // 3) Create/reuse share link
-    const resp = await fetch(`/api/deals/${id}/share`, { method: 'POST' });
-    const { url } = await resp.json();
-    setShareUrl(url);
+      // 3) Create/reuse share link
+      const { url } = await api(`/api/deals/${id}/share`, { method: 'POST' });
+      setShareUrl(url);
   }
 
   async function downloadPdf() {

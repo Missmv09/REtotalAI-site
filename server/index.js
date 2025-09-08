@@ -42,13 +42,14 @@ const ALLOWED_ORIGINS = Array.from(
   new Set([FRONTEND_URL, ...EXTRA_URLS, RENDER_URL, "http://localhost:3000"].filter(Boolean))
 );
 
-app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin) return cb(null, true); // allow curl/postman
-    return cb(null, ALLOWED_ORIGINS.includes(origin));
-  },
-  credentials: false
-}));
+const corsOriginFn = (origin, cb) => {
+  if (!origin) return cb(null, true); // allow curl/postman
+  return cb(null, ALLOWED_ORIGINS.includes(origin));
+};
+
+app.use(cors({ origin: corsOriginFn, credentials: false }));
+// Handle preflight CORS for all routes
+app.options("*", cors({ origin: corsOriginFn, credentials: false }));
 
 const PORT = Number(process.env.PORT) || 4000;
 

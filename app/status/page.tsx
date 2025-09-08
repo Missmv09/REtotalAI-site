@@ -1,12 +1,9 @@
 import React from 'react';
+import { api } from '@/src/api';
 
 async function getHealth() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/health`, { cache: 'no-store' });
-    if (!res.ok) {
-      throw new Error('Failed');
-    }
-    return res.json();
+    return await api('/health', { cache: 'no-store' });
   } catch {
     return { error: true } as const;
   }
@@ -14,11 +11,7 @@ async function getHealth() {
 
 async function getTrialStatus() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/status`, { cache: 'no-store' });
-    if (!res.ok) {
-      throw new Error('Failed');
-    }
-    return res.json();
+    return await api('/api/trial/status', { cache: 'no-store' });
   } catch {
     return { error: true } as const;
   }
