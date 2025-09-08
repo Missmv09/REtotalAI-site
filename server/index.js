@@ -48,8 +48,12 @@ const corsOriginFn = (origin, cb) => {
 };
 
 app.use(cors({ origin: corsOriginFn, credentials: false }));
-// Handle preflight CORS for all routes
-app.options("*", cors({ origin: corsOriginFn, credentials: false }));
+// Handle preflight CORS for all routes (Express 5: '*' is invalid; use '/*' or a RegExp)
+app.options("/*", cors({
+  origin: corsOriginFn,
+  credentials: false,
+  optionsSuccessStatus: 204
+}));
 
 const PORT = Number(process.env.PORT) || 4000;
 
