@@ -1,8 +1,8 @@
 import Link from 'next/link';
+import { api } from '@/src/api';
 
 async function fetchDeals() {
-  const res = await fetch('/api/deals', { cache: 'no-store' });
-  return res.json();
+  return api('/api/deals', { cache: 'no-store' });
 }
 
 export default async function DealsPage() {

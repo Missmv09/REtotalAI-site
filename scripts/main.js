@@ -1,5 +1,10 @@
-        // Smooth scrolling
-        document.querySelectorAll('a[href^="#"]:not([data-open-auth]):not([data-open-login])').forEach(anchor => {
+         const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+         if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+             console.log('[API]', baseUrl);
+         }
+
+         // Smooth scrolling
+         document.querySelectorAll('a[href^="#"]:not([data-open-auth]):not([data-open-login])').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
@@ -120,7 +125,7 @@
                 return;
             }
             try {
-                const res = await fetch('/api/signup', {
+                 const res = await fetch(`${baseUrl}/api/signup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password })
@@ -144,7 +149,7 @@
                 return;
             }
             try {
-                const res = await fetch('/api/login', {
+                 const res = await fetch(`${baseUrl}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
