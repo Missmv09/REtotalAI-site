@@ -3,7 +3,7 @@ import { useState, useRef } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { analyze, DealInputs } from '@/lib/deal/analyze';
-import { api } from '@/src/api';
+import { api } from '@/lib/api';
 
 const money = (n: number) => `$${Number(n || 0).toLocaleString()}`;
 

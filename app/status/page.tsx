@@ -1,5 +1,5 @@
 import React from 'react';
-import { api } from '@/src/api';
+import { api } from '@/lib/api';
 
 async function getHealth() {
   try {

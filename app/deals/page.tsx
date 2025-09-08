@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { api } from '@/src/api';
+import { api } from '@/lib/api';
 
 async function fetchDeals() {
   return api('/api/deals', { cache: 'no-store' });
