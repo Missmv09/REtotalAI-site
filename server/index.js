@@ -57,8 +57,26 @@ const corsOriginFn = (origin, cb) => {
 
 // Main CORS middleware
 app.use(cors({ origin: corsOriginFn, credentials: false }));
-// Express 5-safe preflight handler (scope to API)
-app.options("/api/*", cors({ origin: corsOriginFn, credentials: false, optionsSuccessStatus: 204 }));
+// No wildcard route handlers (Express 5-safe). Manual OPTIONS handler below is the only preflight logic.
+app.use((req, res, next) => {
+  if (req.method !== "OPTIONS") return next();
+  const origin = req.headers.origin;
+  corsOriginFn(origin, (_err, ok) => {
+    if (ok) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Vary", "Origin");
+    }
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      req.header("Access-Control-Request-Method") || "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      req.header("Access-Control-Request-Headers") || ""
+    );
+    res.status(204).end();
+  });
+});
 
 const PORT = Number(process.env.PORT) || 4000;
 
