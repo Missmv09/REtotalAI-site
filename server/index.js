@@ -44,7 +44,15 @@ const ALLOWED_ORIGINS = Array.from(
 
 const corsOriginFn = (origin, cb) => {
   if (!origin) return cb(null, true); // allow curl/postman/no-origin
-  return cb(null, ALLOWED_ORIGINS.includes(origin));
+  // Exact allowlist hit
+  if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+  // Allow Vercel preview/prod subdomains
+  try {
+    const { hostname } = new URL(origin);
+    if (hostname.endsWith(".vercel.app")) return cb(null, true);
+  } catch {}
+  console.warn("[CORS] denied origin:", origin, "allowed:", ALLOWED_ORIGINS);
+  return cb(null, false);
 };
 
 // Main CORS middleware
