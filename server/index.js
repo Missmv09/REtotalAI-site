@@ -30,16 +30,27 @@ try {
 } catch {}
 
 const app = express();
+
+// Build CORS allowlist from env (and include Render URL automatically)
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const EXTRA_URLS = (process.env.FRONTEND_URLS || "")
+  .split(",")
+  .map(s => s.trim())
+  .filter(Boolean);
+const RENDER_URL = process.env.RENDER_EXTERNAL_URL || "";
+const ALLOWED_ORIGINS = Array.from(
+  new Set([FRONTEND_URL, ...EXTRA_URLS, RENDER_URL, "http://localhost:3000"].filter(Boolean))
+);
+
 app.use(cors({
-  origin: [
-    "https://r-etotal-ai-site.vercel.app", // live Vercel frontend
-    "http://localhost:3000"                // local dev
-  ],
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true); // allow curl/postman
+    return cb(null, ALLOWED_ORIGINS.includes(origin));
+  },
   credentials: false
 }));
 
-const PORT = process.env.PORT || 4000;
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const PORT = Number(process.env.PORT) || 4000;
 
 app.use(bodyParser.json());
 
@@ -146,7 +157,18 @@ app.get("/api/deals/:id/report", (req, res) => {
 // ---------------------------
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
-app.listen(PORT, () => console.log(`✅ REtotalAi server on http://localhost:${PORT}`));
+// 404
+app.use((req, res) => res.status(404).json({ error: "Not found", path: req.path }));
+
+// Error handler
+app.use((err, _req, res, _next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: "Internal Server Error" });
+});
+app.listen(PORT, () => {
+  console.log(`✅ REtotalAi server on http://localhost:${PORT}`);
+  console.log("CORS allowlist:", ALLOWED_ORIGINS);
+});
 
 // ===============================
 // Prisma schema (optional; create prisma/schema.prisma)
