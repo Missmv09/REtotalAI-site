@@ -42,17 +42,20 @@ const ALLOWED_ORIGINS = Array.from(
   new Set([FRONTEND_URL, ...EXTRA_URLS, RENDER_URL, "http://localhost:3000"].filter(Boolean))
 );
 
-const corsOriginFn = (origin, cb) => {
-  if (!origin) return cb(null, true); // allow curl/postman/no-origin
-  // Exact allowlist hit
-  if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-  // Allow Vercel preview/prod subdomains
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true; // non-browser tools
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
   try {
     const { hostname } = new URL(origin);
-    if (hostname.endsWith(".vercel.app")) return cb(null, true);
+    if (hostname.endsWith(".vercel.app")) return true;
   } catch {}
-  console.warn("[CORS] denied origin:", origin, "allowed:", ALLOWED_ORIGINS);
-  return cb(null, false);
+  return false;
+};
+
+const corsOriginFn = (origin, cb) => {
+  const ok = isAllowedOrigin(origin);
+  if (!ok) console.warn("[CORS] denied origin:", origin, "allowed:", ALLOWED_ORIGINS);
+  return cb(null, ok);
 };
 
 // Main CORS middleware
