@@ -1,7 +1,6 @@
-// src/api.ts
-export const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 if (process.env.NODE_ENV !== "production") {
-  console.log("[API]", baseUrl);
+  console.log("[API]", BASE);
 }
 
 export async function api(path: string, init: RequestInit = {}) {
@@ -16,7 +15,7 @@ export async function api(path: string, init: RequestInit = {}) {
   }
   headers.set("x-user-id", "dev-user-1"); // temp dev identity
 
-  const res = await fetch(`${baseUrl}${path}`, { ...init, headers });
+  const res = await fetch(`${BASE}${path}`, { ...init, headers });
   if (res.status === 402) {
     const json = await res.json().catch(() => ({}));
     const err: any = new Error(json.message || "PAYWALL");

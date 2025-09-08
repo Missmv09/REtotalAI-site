@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { api } from '@/src/api';
+import { api } from '@/lib/api';
 
 export default function ShareView({ params }: { params: { token: string } }) {
   const [data, setData] = useState<any>(null);

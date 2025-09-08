@@ -1,6 +1,6 @@
 'use client';
 import React, { useMemo, useState, useEffect } from "react";
-import { api } from "../src/api";
+import { api } from "@/lib/api";
 
 function Modal({ open, onClose, children }) {
   if (!open) return null;

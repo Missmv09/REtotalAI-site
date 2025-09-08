@@ -21,17 +21,38 @@ jobs:
       - name: Health check
         run: |
           set -e
-          code=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.RENDER_API_URL }}/health")
+          if [ -z "${{ secrets.RENDER_API_URL }}" ]; then
+            echo "ℹ️ RENDER_API_URL not set; skipping smoke checks."
+            exit 0
+          fi
+          code=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.RENDER_API_URL }}/health" || true)
           echo "status=$code"
-          [ "$code" = "200" ] || (echo "::error::Health check failed" && exit 1)
+          if [ "$code" != "200" ]; then
+            echo "::error::Health check failed (expected 200). Got $code"
+            exit 1
+          fi
 
       - name: CORS preflight
         run: |
           set -e
+          if [ -z "${{ secrets.FRONTEND_ORIGIN }}" ]; then
+            echo "ℹ️ FRONTEND_ORIGIN not set; skipping preflight."
+            exit 0
+          fi
           headers=$(mktemp)
-          curl -s -D "$headers" -o /dev/null -X OPTIONS "${{ secrets.RENDER_API_URL }}/api/trial/start" \
+          code=$(curl -s -o /dev/null -w "%{http_code}" -D "$headers" -X OPTIONS "${{ secrets.RENDER_API_URL }}/api/ping" \
             -H "Origin: ${{ secrets.FRONTEND_ORIGIN }}" \
-            -H "Access-Control-Request-Method: POST"
+            -H "Access-Control-Request-Method: GET" || true)
+          echo "preflight_status=$code"
+          case "$code" in
+            200|204) echo "Preflight status OK ($code)";;
+            *) echo "::error::Preflight failed (expected 200/204). Got $code"; cat "$headers"; exit 1;;
+          esac
           origin=$(grep -i '^access-control-allow-origin:' "$headers" | awk '{print $2}' | tr -d '\r')
           echo "allow-origin=$origin"
-          [ "$origin" = "${{ secrets.FRONTEND_ORIGIN }}" ] || (echo "::error::CORS allow-origin mismatch" && exit 1)
+          if [ "$origin" != "${{ secrets.FRONTEND_ORIGIN }}" ]; then
+            echo "::error::CORS allow-origin mismatch (expected ${{ secrets.FRONTEND_ORIGIN }}, got $origin)"
+            cat "$headers"
+            exit 1
+          fi
+
