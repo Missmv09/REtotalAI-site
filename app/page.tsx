@@ -18,12 +18,15 @@ export default function REtotalAiLandingPricing() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [trial, setTrial] = useState<{ active: boolean; endsAt: any }>({ active: false, endsAt: null });
-  const [busy, setBusy] = useState(false);
-  const [deal, setDeal] = useState({
-    property: { address: "" },
-    numbers: { purchase: "", arv: "", rehab: "", rent: "" },
-  });
-  const [reportUrl, setReportUrl] = useState("");
+
+  const [address, setAddress] = useState("");
+  const [purchase, setPurchase] = useState<string>("");
+  const [arv, setArv] = useState<string>("");
+  const [rehab, setRehab] = useState<string>("");
+  const [rent, setRent] = useState<string>("");
+  const [propertyType, setPropertyType] = useState<string>("Single Family");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -45,22 +48,28 @@ export default function REtotalAiLandingPricing() {
     return isFinite(n) ? n : 0;
   }
 
-  const purchase = num(deal.numbers.purchase);
-  const arv = num(deal.numbers.arv);
-  const rehab = num(deal.numbers.rehab);
-  const rent = num(deal.numbers.rent);
-  const annualRent = rent * 12;
-  const estTaxesInsMaint = purchase * 0.03;
+  const purchaseNum = num(purchase);
+  const arvNum = num(arv);
+  const rehabNum = num(rehab);
+  const rentNum = num(rent);
+  const annualRent = rentNum * 12;
+  const estTaxesInsMaint = purchaseNum * 0.03;
   const noi = annualRent - estTaxesInsMaint;
-  const capRate = purchase ? (noi / purchase) * 100 : 0;
-  const cashInvested = purchase * 0.2 + rehab;
-  const annualCashFlow = noi - purchase * 0.8 * 0.07;
+  const capRate = purchaseNum ? (noi / purchaseNum) * 100 : 0;
+  const cashInvested = purchaseNum * 0.2 + rehabNum;
+  const annualCashFlow = noi - purchaseNum * 0.8 * 0.07;
   const coc = cashInvested ? (annualCashFlow / cashInvested) * 100 : 0;
 
-  const valid =
-    deal.property.address.trim().length > 5 &&
-    purchase > 0 &&
-    arv > 0;
+  const canSubmit = useMemo(() => {
+    const p = Number(purchase);
+    const a = Number(arv);
+    return (
+      address.trim().length > 3 &&
+      Number.isFinite(p) && p > 0 &&
+      Number.isFinite(a) && a > 0 &&
+      !submitting
+    );
+  }, [address, purchase, arv, submitting]);
 
   async function handleStartTrial(entryPoint = "hero") {
     try {
@@ -87,26 +96,31 @@ export default function REtotalAiLandingPricing() {
     }
   }
 
-  async function submitDeal() {
-    setBusy(true);
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setError(null);
+    setSubmitting(true);
     try {
-      const created = await api("/api/deals", {
+      const payload = {
+        property: { address: address.trim(), type: propertyType },
+        numbers: {
+          purchase: Number(purchase) || 0,
+          arv: Number(arv) || 0,
+          rehab: Number(rehab) || 0,
+          rent: Number(rent) || 0,
+        },
+      };
+      const deal = await api("/api/deals", {
         method: "POST",
-        body: JSON.stringify(deal),
+        body: JSON.stringify(payload),
       });
-      const blob = await api(`/api/deals/${created.id}/report`);
-      const url = URL.createObjectURL(blob);
-      setReportUrl(url);
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (e: any) {
-      if (e.code === 402) {
-        setWizardOpen(false);
-        setPaywallOpen(true);
-      } else {
-        alert("Could not analyze deal");
-      }
+      const pdfUrl = `${process.env.NEXT_PUBLIC_API_URL ?? ""}/api/deals/${deal.id}/report`;
+      window.open(pdfUrl, "_blank", "noopener,noreferrer");
+    } catch (err: any) {
+      setError(err?.message || "Failed to generate report.");
     } finally {
-      setBusy(false);
+      setSubmitting(false);
     }
   }
 
@@ -275,67 +289,100 @@ export default function REtotalAiLandingPricing() {
         </div>
       </section>
 
+
       {/* Deal Wizard Modal */}
       <Modal open={wizardOpen} onClose={() => setWizardOpen(false)}>
-        <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold">Analyze a Deal</h3>
-          <button onClick={() => setWizardOpen(false)} className="text-sm text-gray-500">Close</button>
-        </div>
-        <div className="mt-4 grid md:grid-cols-2 gap-4">
-          <div className="col-span-2">
-            <label className="text-xs text-gray-600">Property Address</label>
-            <input value={deal.property.address} onChange={(e) => setDeal(v => ({ ...v, property: { ...v.property, address: e.target.value }}))} className="mt-1 w-full h-10 rounded-xl border px-3" placeholder="123 Main St, City" />
+        <form onSubmit={onSubmit}>
+          <div className="flex items-start justify-between">
+            <h3 className="text-lg font-semibold">Analyze a Deal</h3>
+            <button type="button" onClick={() => setWizardOpen(false)} className="text-sm text-gray-500">Close</button>
           </div>
-          <div>
-            <label className="text-xs text-gray-600">Purchase ($)</label>
-            <input value={deal.numbers.purchase} onChange={(e) => setDeal(v => ({ ...v, numbers: { ...v.numbers, purchase: e.target.value }}))} className="mt-1 w-full h-10 rounded-xl border px-3" />
+          <div className="mt-4 grid md:grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <label className="text-xs text-gray-600">Property Address</label>
+              <input value={address} onChange={(e) => setAddress(e.target.value)} className="mt-1 w-full h-10 rounded-xl border px-3" placeholder="123 Main St, City" />
+            </div>
+            {/* Property Type */}
+            <div className="col-span-2 space-y-2">
+              <label className="text-sm font-medium">Property Type</label>
+              <select
+                className="w-full rounded-md border px-3 py-2"
+                value={propertyType}
+                onChange={(e) => setPropertyType(e.target.value)}
+              >
+                <option>Single Family</option>
+                <option>Condo</option>
+                <option>Townhouse</option>
+                <option>Duplex</option>
+                <option>Triplex</option>
+                <option>Fourplex</option>
+                <option>Multi-Family (5+)</option>
+                <option>Mixed-Use</option>
+                <option>Land</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-600">Purchase ($)</label>
+              <input value={purchase} onChange={(e) => setPurchase(e.target.value)} className="mt-1 w-full h-10 rounded-xl border px-3" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-600">ARV ($)</label>
+              <input value={arv} onChange={(e) => setArv(e.target.value)} className="mt-1 w-full h-10 rounded-xl border px-3" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-600">Rehab Budget ($)</label>
+              <input value={rehab} onChange={(e) => setRehab(e.target.value)} className="mt-1 w-full h-10 rounded-xl border px-3" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-600">Estimated Rent ($/mo)</label>
+              <input value={rent} onChange={(e) => setRent(e.target.value)} className="mt-1 w-full h-10 rounded-xl border px-3" />
+            </div>
           </div>
-          <div>
-            <label className="text-xs text-gray-600">ARV ($)</label>
-            <input value={deal.numbers.arv} onChange={(e) => setDeal(v => ({ ...v, numbers: { ...v.numbers, arv: e.target.value }}))} className="mt-1 w-full h-10 rounded-xl border px-3" />
+          <div className="mt-4 grid md:grid-cols-3 gap-3 text-sm">
+            <div className="rounded-xl border p-3">
+              <div className="text-xs text-gray-500">Cap Rate</div>
+              <div className="font-semibold">{capRate.toFixed(1)}%</div>
+            </div>
+            <div className="rounded-xl border p-3">
+              <div className="text-xs text-gray-500">Cash-on-Cash</div>
+              <div className="font-semibold">{coc.toFixed(1)}%</div>
+            </div>
+            <div className="rounded-xl border p-3">
+              <div className="text-xs text-gray-500">Annual Cash Flow</div>
+              <div className="font-semibold">${Math.round(annualCashFlow).toLocaleString()}</div>
+            </div>
           </div>
-          <div>
-            <label className="text-xs text-gray-600">Rehab Budget ($)</label>
-            <input value={deal.numbers.rehab} onChange={(e) => setDeal(v => ({ ...v, numbers: { ...v.numbers, rehab: e.target.value }}))} className="mt-1 w-full h-10 rounded-xl border px-3" />
+          <div className="mt-4 flex items-center justify-between">
+            <button
+              type="button"
+              className="text-sm underline"
+              onClick={() => {
+                setAddress("123 Main St Cityville, USA");
+                setPurchase("250000");
+                setArv("350000");
+                setRehab("50000");
+                setRent("2200");
+                setPropertyType("Single Family");
+              }}
+            >
+              Try demo values
+            </button>
+            {error ? <p className="text-sm text-red-600">{error}</p> : <span />}
           </div>
-          <div>
-            <label className="text-xs text-gray-600">Estimated Rent ($/mo)</label>
-            <input value={deal.numbers.rent} onChange={(e) => setDeal(v => ({ ...v, numbers: { ...v.numbers, rent: e.target.value }}))} className="mt-1 w-full h-10 rounded-xl border px-3" />
+          <div className="mt-5">
+            <button
+              type="submit"
+              className="px-5 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+              disabled={!canSubmit}
+            >
+              {submitting ? "Generating…" : "Generate Report"}
+            </button>
           </div>
-        </div>
-        <div className="mt-4 grid md:grid-cols-3 gap-3 text-sm">
-          <div className="rounded-xl border p-3">
-            <div className="text-xs text-gray-500">Cap Rate</div>
-            <div className="font-semibold">{capRate.toFixed(1)}%</div>
-          </div>
-          <div className="rounded-xl border p-3">
-            <div className="text-xs text-gray-500">Cash-on-Cash</div>
-            <div className="font-semibold">{coc.toFixed(1)}%</div>
-          </div>
-          <div className="rounded-xl border p-3">
-            <div className="text-xs text-gray-500">Annual Cash Flow</div>
-            <div className="font-semibold">${Math.round(annualCashFlow).toLocaleString()}</div>
-          </div>
-        </div>
-        <div className="mt-5 flex items-center gap-3">
-          <button
-            onClick={submitDeal}
-            disabled={busy || !valid}
-            className="px-5 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-          >
-            {busy ? "Analyzing…" : "Generate Report"}
-          </button>
-          {reportUrl && (
-            <a href={reportUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-700 underline">
-              Open report again
-            </a>
+          {!trial.active && (
+            <p className="mt-3 text-xs text-gray-500">Tip: Start your free trial to unlock unlimited tools for 7 days.</p>
           )}
-        </div>
-        {!trial.active && (
-          <p className="mt-3 text-xs text-gray-500">Tip: Start your free trial to unlock unlimited tools for 7 days.</p>
-        )}
+        </form>
       </Modal>
-
       {/* Paywall Modal */}
       <Modal open={paywallOpen} onClose={() => setPaywallOpen(false)}>
         <div className="flex items-start justify-between">
