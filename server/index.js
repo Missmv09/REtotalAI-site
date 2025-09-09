@@ -193,6 +193,41 @@ app.get("/api/ping", (_req, res) => {
   res.json({ ok: true, time: new Date().toISOString() });
 });
 
+// Friendly landing page for the API root (safe, noindex, no-store)
+app.get("/", (_req, res) => {
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("X-Robots-Tag", "noindex, nofollow");
+  res.setHeader("Cache-Control", "no-store");
+  const frontend = "https://r-etotal-ai-site.vercel.app";
+  res.end(`<!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>REtotalAi API</title>
+      <style>
+        :root { color-scheme: light dark; }
+        body { font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; padding: 2rem; }
+        .card { max-width: 720px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 14px; padding: 1.25rem; }
+        h1 { margin: 0 0 .25rem 0; }
+        .muted { color: #6b7280; }
+        a { color: #4f46e5; text-decoration: none; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <h1>REtotalAi API</h1>
+        <p class="muted">Backend is running on Render. The product UI is on Vercel.</p>
+        <ul>
+          <li><a href="/health">/health</a> — health check (JSON)</li>
+          <li><a href="/api/ping">/api/ping</a> — ping (JSON, if present)</li>
+          <li><a href="${frontend}">${frontend}</a> — open the app</li>
+        </ul>
+      </div>
+    </body>
+  </html>`);
+});
+
 // 404
 app.use((req, res) => res.status(404).json({ error: "Not found", path: req.path }));
 
