@@ -28,6 +28,24 @@ export default function REtotalAiLandingPricing() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [taxes, setTaxes] = useState<string>("2400");           // annual $
+  const [insurance, setInsurance] = useState<string>("1200");   // annual $
+  const [hoa, setHoa] = useState<string>("0");                  // monthly $
+  const [vacancyPct, setVacancyPct] = useState<string>("5");    // % of rent
+  const [maintenancePct, setMaintenancePct] = useState<string>("7"); // % of rent
+  const [managementPct, setManagementPct] = useState<string>("8");   // % of rent
+  const [otherMonthly, setOtherMonthly] = useState<string>("0");     // monthly $
+
+  const [downPct, setDownPct] = useState<string>("20");         // %
+  const [ratePct, setRatePct] = useState<string>("7");          // APR %
+  const [termYears, setTermYears] = useState<string>("30");     // years
+
+  // Flip assumptions
+  const [holdingMonths, setHoldingMonths] = useState<string>("6");    // months
+  const [sellingCostPct, setSellingCostPct] = useState<string>("8");  // % of ARV (agent etc.)
+  const [closingCostPct, setClosingCostPct] = useState<string>("2");  // % of ARV (seller closing)
+  const [carryOtherMonthly, setCarryOtherMonthly] = useState<string>("150"); // other monthly carry
+
   useEffect(() => {
     (async () => {
       try {
@@ -109,6 +127,23 @@ export default function REtotalAiLandingPricing() {
           arv: Number(arv) || 0,
           rehab: Number(rehab) || 0,
           rent: Number(rent) || 0,
+
+          taxes: Number(taxes) || 0,
+          insurance: Number(insurance) || 0,
+          hoa: Number(hoa) || 0,
+          vacancyPct: Number(vacancyPct) || 0,
+          maintenancePct: Number(maintenancePct) || 0,
+          managementPct: Number(managementPct) || 0,
+          otherMonthly: Number(otherMonthly) || 0,
+
+          downPct: Number(downPct) || 0,
+          ratePct: Number(ratePct) || 0,
+          termYears: Number(termYears) || 0,
+
+          holdingMonths: Number(holdingMonths) || 0,
+          sellingCostPct: Number(sellingCostPct) || 0,
+          closingCostPct: Number(closingCostPct) || 0,
+          carryOtherMonthly: Number(carryOtherMonthly) || 0,
         },
       };
       const deal = await api("/api/deals", {
@@ -368,6 +403,140 @@ export default function REtotalAiLandingPricing() {
               Try demo values
             </button>
             {error ? <p className="text-sm text-red-600">{error}</p> : <span />}
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              className="text-sm underline"
+              onClick={() => {
+                setAddress("742 Evergreen Terrace, Springfield, USA");
+                setPropertyType("Single Family");
+                setPurchase("180000");
+                setArv("220000");
+                setRehab("15000");
+                setRent("1950");
+                // expenses/financing (rental demo)
+                setTaxes("2400"); setInsurance("1200"); setHoa("0");
+                setVacancyPct("5"); setMaintenancePct("7"); setManagementPct("8"); setOtherMonthly("0");
+                setDownPct("20"); setRatePct("7"); setTermYears("30");
+                // flip
+                setHoldingMonths("6"); setSellingCostPct("8"); setClosingCostPct("2"); setCarryOtherMonthly("150");
+              }}
+            >
+              Rental demo
+            </button>
+
+            <button
+              type="button"
+              className="text-sm underline"
+              onClick={() => {
+                setAddress("75 Maple Ave, Nashville, TN");
+                setPropertyType("Single Family");
+                setPurchase("220000");
+                setArv("360000");
+                setRehab("40000");
+                setRent(""); // not needed for flip
+                // expenses/financing (not essential for flip, keep defaults)
+                setTaxes("2400"); setInsurance("1200"); setHoa("0");
+                setVacancyPct("5"); setMaintenancePct("7"); setManagementPct("0"); setOtherMonthly("0");
+                setDownPct("20"); setRatePct("8"); setTermYears("30");
+                // flip assumptions (flip demo)
+                setHoldingMonths("6"); setSellingCostPct("10"); setClosingCostPct("2"); setCarryOtherMonthly("200");
+              }}
+            >
+              Flip demo
+            </button>
+          </div>
+
+          <div className="mt-6 border rounded-xl p-4">
+            <details open>
+              <summary className="cursor-pointer font-medium">Expenses & Financing</summary>
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm">Taxes (annual)</label>
+                  <input className="w-full rounded-md border px-3 py-2"
+                    value={taxes} onChange={e=>setTaxes(e.target.value)} inputMode="numeric" />
+                </div>
+                <div>
+                  <label className="text-sm">Insurance (annual)</label>
+                  <input className="w-full rounded-md border px-3 py-2"
+                    value={insurance} onChange={e=>setInsurance(e.target.value)} inputMode="numeric" />
+                </div>
+                <div>
+                  <label className="text-sm">HOA (monthly)</label>
+                  <input className="w-full rounded-md border px-3 py-2"
+                    value={hoa} onChange={e=>setHoa(e.target.value)} inputMode="numeric" />
+                </div>
+                <div>
+                  <label className="text-sm">Vacancy (%)</label>
+                  <input className="w-full rounded-md border px-3 py-2"
+                    value={vacancyPct} onChange={e=>setVacancyPct(e.target.value)} inputMode="numeric" />
+                </div>
+                <div>
+                  <label className="text-sm">Maintenance (%)</label>
+                  <input className="w-full rounded-md border px-3 py-2"
+                    value={maintenancePct} onChange={e=>setMaintenancePct(e.target.value)} inputMode="numeric" />
+                </div>
+                <div>
+                  <label className="text-sm">Management (%)</label>
+                  <input className="w-full rounded-md border px-3 py-2"
+                    value={managementPct} onChange={e=>setManagementPct(e.target.value)} inputMode="numeric" />
+                </div>
+                <div>
+                  <label className="text-sm">Other (monthly)</label>
+                  <input className="w-full rounded-md border px-3 py-2"
+                    value={otherMonthly} onChange={e=>setOtherMonthly(e.target.value)} inputMode="numeric" />
+                </div>
+
+                <div className="col-span-2 border-t pt-4 mt-2">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm">Down Payment (%)</label>
+                      <input className="w-full rounded-md border px-3 py-2"
+                        value={downPct} onChange={e=>setDownPct(e.target.value)} inputMode="numeric" />
+                    </div>
+                    <div>
+                      <label className="text-sm">Interest Rate (APR %)</label>
+                      <input className="w-full rounded-md border px-3 py-2"
+                        value={ratePct} onChange={e=>setRatePct(e.target.value)} inputMode="numeric" />
+                    </div>
+                    <div>
+                      <label className="text-sm">Loan Term (years)</label>
+                      <input className="w-full rounded-md border px-3 py-2"
+                        value={termYears} onChange={e=>setTermYears(e.target.value)} inputMode="numeric" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div className="mt-4 border rounded-xl p-4">
+            <details>
+              <summary className="cursor-pointer font-medium">Flip Assumptions</summary>
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm">Holding Months</label>
+                  <input className="w-full rounded-md border px-3 py-2"
+                    value={holdingMonths} onChange={e=>setHoldingMonths(e.target.value)} inputMode="numeric" />
+                </div>
+                <div>
+                  <label className="text-sm">Agent/Selling Costs (% of ARV)</label>
+                  <input className="w-full rounded-md border px-3 py-2"
+                    value={sellingCostPct} onChange={e=>setSellingCostPct(e.target.value)} inputMode="numeric" />
+                </div>
+                <div>
+                  <label className="text-sm">Seller Closing (% of ARV)</label>
+                  <input className="w-full rounded-md border px-3 py-2"
+                    value={closingCostPct} onChange={e=>setClosingCostPct(e.target.value)} inputMode="numeric" />
+                </div>
+                <div>
+                  <label className="text-sm">Other Carry (monthly)</label>
+                  <input className="w-full rounded-md border px-3 py-2"
+                    value={carryOtherMonthly} onChange={e=>setCarryOtherMonthly(e.target.value)} inputMode="numeric" />
+                </div>
+              </div>
+            </details>
           </div>
           <div className="mt-5">
             <button
