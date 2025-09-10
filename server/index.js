@@ -20,6 +20,8 @@ import express from "express";
 import bodyParser from "body-parser";
 import crypto from "crypto";
 import PDFDocument from "pdfkit";
+import fs from "fs";
+import path from "path";
 
 // Optional Stripe. If no key, endpoints still respond with a mock URL.
 let stripe = null;
@@ -31,6 +33,9 @@ try {
 } catch {}
 
 const app = express();
+
+// Serve static assets (e.g., logo) from server/assets at /assets
+app.use("/assets", express.static(path.join(process.cwd(), "server", "assets")));
 
 // Build CORS allowlist from env (deduped) and include Render URL automatically
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -173,160 +178,210 @@ app.post("/api/deals", (req, res) => {
   return res.json(deal);
 });
 
+// Deal report (PDF) — branded + two-column tables + rental & flip metrics
 app.get("/api/deals/:id/report", (req, res) => {
   const deal = db.deals.get(req.params.id);
   if (!deal) return res.status(404).send("Not found");
 
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `inline; filename="deal-${deal.id}.pdf"`);
+  res.setHeader(
+    "Content-Disposition",
+    `inline; filename="deal-${deal.id}.pdf"`
+  );
 
-  const doc = new PDFDocument({ size: "LETTER", margin: 50 });
+  const doc = new PDFDocument({ size: "LETTER", margin: 48 });
   doc.pipe(res);
 
+  // -----------------------------
+  // Helpers
+  // -----------------------------
   const n = deal.numbers || {};
-  const p = (k, d = 0) => (Number.isFinite(+n[k]) ? +n[k] : d);
-
-  // helpers
-  const $ = (v) => (Number.isFinite(+v) ? `$${Number(v).toLocaleString()}` : "-");
-  const pct = (v) => (Number.isFinite(+v) ? `${Number(v).toFixed(1)}%` : "-");
-  const line = (label, value) => {
+  const getN = (k, d = 0) => (Number.isFinite(+n[k]) ? +n[k] : d);
+  const $ = (v) => (Number.isFinite(+v) ? `$${Number(v).toLocaleString()}` : "—");
+  const pct = (v, d = 1) => (Number.isFinite(+v) ? `${Number(v).toFixed(d)}%` : "—");
+  const num = (v, d = 0) => (Number.isFinite(+v) ? Number(v).toFixed(d) : "—");
+  const labelW = 220;
+  const valX = 320;
+  const lineH = 16;
+  let y = 48 + 72; // start after header
+  const kv = (label, value) => {
     doc.font("Helvetica").fontSize(11);
-    const L = `${label}`.padEnd(20, " ");
-    doc.text(`${L} ${value}`);
+    doc.text(label, 48, y, { width: labelW });
+    doc.text(String(value), valX, y);
+    y += lineH;
+  };
+  const hr = () => {
+    doc
+      .moveTo(48, y + 6)
+      .lineTo(564, y + 6)
+      .strokeColor("#ddd")
+      .stroke();
+    y += lineH;
+    doc.strokeColor("black");
+  };
+  const section = (title) => {
+    doc.font("Helvetica-Bold").fontSize(13).text(title, 48, y);
+    y += lineH;
+    hr();
   };
 
-  // Header
-  doc.fontSize(20).text("Deal Analysis Report");
-  doc.moveDown(0.5);
-  doc
+  // -----------------------------
+  // Header with brand and logo
+  // -----------------------------
+  const BRAND = process.env.BRAND_NAME || "REtotalAi";
+  const logoPath =
+    process.env.LOGO_PATH ||
+    path.join(process.cwd(), "server", "assets", "logo.png");
+
+  doc.font("Helvetica-Bold")
+    .fontSize(18)
+    .text(`${BRAND} — Deal Analysis Report`, 48, 48);
+  doc.font("Helvetica")
     .fontSize(10)
     .fillColor("#555")
-    .text(`Generated: ${new Date().toLocaleString()}`);
-  doc.moveDown();
+    .text(`Generated: ${new Date().toLocaleString()}`, 48, 68);
   doc.fillColor("black");
-  doc.fontSize(12).text(`Property: ${deal.property?.address || "N/A"}`);
-  if (deal.property?.type) doc.text(`Type: ${deal.property.type}`);
-  doc.moveDown();
 
-  // Raw numbers
-  line("Purchase:", $(p("purchase")));
-  line("ARV:", $(p("arv")));
-  line("Rehab:", $(p("rehab")));
-  if (Number.isFinite(+p("rent"))) line("Rent (monthly):", $(p("rent")));
-  doc.moveDown();
+  try {
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, 480, 40, { width: 64 });
+    }
+  } catch {}
 
-  // -------- Rental Section --------
-  const rent = p("rent");
-  const purchase = p("purchase");
-  const arv = p("arv");
-  const rehab = p("rehab");
+  // -----------------------------
+  // Property summary
+  // -----------------------------
+  y = 48 + 60;
+  section("Property");
+  kv("Address", deal.property?.address || "N/A");
+  kv("Type", deal.property?.type || "—");
+  kv("Purchase Price", $(getN("purchase")));
+  kv("After Repair Value (ARV)", $(getN("arv")));
+  kv("Rehab Budget", $(getN("rehab")));
+  if (Number.isFinite(+getN("rent"))) kv("Estimated Rent (monthly)", $(getN("rent")));
+  y += lineH;
 
-  const taxes = p("taxes");
-  const insurance = p("insurance");
-  const hoa = p("hoa");
-  const vacancyPct = p("vacancyPct");
-  const maintenancePct = p("maintenancePct");
-  const managementPct = p("managementPct");
-  const otherMonthly = p("otherMonthly");
+  // -----------------------------
+  // Rental Analysis
+  // -----------------------------
+  const purchase = getN("purchase");
+  const arv = getN("arv");
+  const rehab = getN("rehab");
+  const rent = getN("rent");
 
-  const downPct = p("downPct");
-  const ratePct = p("ratePct");
-  const termYears = p("termYears");
+  const taxes = getN("taxes");
+  const insurance = getN("insurance");
+  const hoa = getN("hoa");
+  const vacancyPct = getN("vacancyPct");
+  const maintenancePct = getN("maintenancePct");
+  const managementPct = getN("managementPct");
+  const otherMonthly = getN("otherMonthly");
+
+  const downPct = getN("downPct");
+  const ratePct = getN("ratePct");
+  const termYears = getN("termYears");
+
+  const amortPI = (loan, aprPct, years) => {
+    const r = (aprPct / 100) / 12;
+    const nPmts = years * 12;
+    if (!(loan > 0) || !(r > 0) || !(nPmts > 0)) return 0;
+    return (loan * r) / (1 - Math.pow(1 + r, -nPmts));
+  };
 
   if (rent > 0) {
-    doc.moveDown().fontSize(14).text("Rental Analysis", { underline: true });
-    doc.moveDown(0.3);
-
+    section("Rental Analysis");
     const grossAnnual = rent * 12;
-
     const vac = grossAnnual * (vacancyPct / 100);
     const maint = grossAnnual * (maintenancePct / 100);
     const mgmt = grossAnnual * (managementPct / 100);
-
     const hoaAnnual = hoa * 12;
     const otherAnnual = otherMonthly * 12;
-
     const opEx = taxes + insurance + hoaAnnual + vac + maint + mgmt + otherAnnual;
     const noi = grossAnnual - opEx;
-
     const allIn = purchase + rehab;
-    const capRate = allIn > 0 ? (noi / allIn) * 100 : NaN;
-
-    // financing
+    const cap = allIn > 0 ? (noi / allIn) * 100 : NaN;
     const down = allIn * (downPct / 100);
-    const loanAmount = Math.max(allIn - down, 0);
-    const r = (ratePct / 100) / 12;
-    const nPmts = termYears * 12;
-    let monthlyPI = 0;
-    if (loanAmount > 0 && r > 0 && nPmts > 0) {
-      monthlyPI = (loanAmount * r) / (1 - Math.pow(1 + r, -nPmts));
-    }
+    const loanAmt = Math.max(allIn - down, 0);
+    const monthlyPI = amortPI(loanAmt, ratePct, termYears);
     const annualDebt = monthlyPI * 12;
     const dscr = annualDebt > 0 ? noi / annualDebt : NaN;
-    const annualCashFlow = noi - annualDebt;
+    const annualCF = noi - annualDebt;
+    const invested = down + rehab;
+    const coc = invested > 0 ? (annualCF / invested) * 100 : NaN;
+    const breakEvenRent = (opEx + annualDebt) / 12;
+    const grm = grossAnnual > 0 ? allIn / grossAnnual : NaN;
+    const grossYield = allIn > 0 ? (grossAnnual / allIn) * 100 : NaN;
+    const oer = grossAnnual > 0 ? (opEx / grossAnnual) * 100 : NaN;
 
-    const cashInvested = down + rehab;
-    const coc = cashInvested > 0 ? (annualCashFlow / cashInvested) * 100 : NaN;
-
-    // print
-    line("Gross Rent (annual):", $(grossAnnual));
-    line("Taxes (annual):", $(taxes));
-    line("Insurance (annual):", $(insurance));
-    line("HOA (annual):", $(hoaAnnual));
-    line(`Vacancy (${vacancyPct}%):`, $(vac));
-    line(`Maintenance (${maintenancePct}%):`, $(maint));
-    line(`Mgmt (${managementPct}%):`, $(mgmt));
-    line("Other (annual):", $(otherAnnual));
-    line("Operating Exp (annual):", $(opEx));
-    line("NOI:", $(noi));
-    line("All-in Basis:", $(allIn));
-    line("Cap Rate:", pct(capRate));
-    doc.moveDown(0.3);
-    line("Loan Amount:", $(loanAmount));
-    line("Annual Debt (P&I):", $(annualDebt));
-    line("DSCR:", Number.isFinite(dscr) ? dscr.toFixed(2) : "-");
-    line("Annual Cash Flow:", $(annualCashFlow));
-    line("Cash Invested (down+rehab):", $(cashInvested));
-    line("Cash-on-Cash:", pct(coc));
-    doc.moveDown();
+    kv("Gross Rent (annual)", $(grossAnnual));
+    kv("Taxes (annual)", $(taxes));
+    kv("Insurance (annual)", $(insurance));
+    kv("HOA (annual)", $(hoaAnnual));
+    kv(`Vacancy (${num(vacancyPct,1)}%)`, $(vac));
+    kv(`Maintenance (${num(maintenancePct,1)}%)`, $(maint));
+    kv(`Management (${num(managementPct,1)}%)`, $(mgmt));
+    kv("Other (annual)", $(otherAnnual));
+    kv("Operating Expenses (annual)", $(opEx));
+    hr();
+    kv("NOI", $(noi));
+    kv("All-In Basis (Purchase + Rehab)", $(allIn));
+    kv("Cap Rate", pct(cap));
+    kv("Loan Amount", $(loanAmt));
+    kv("Annual Debt (P&I)", $(annualDebt));
+    kv("DSCR", Number.isFinite(dscr) ? num(dscr, 2) : "—");
+    kv("Annual Cash Flow", $(annualCF));
+    kv("Cash Invested (Down + Rehab)", $(invested));
+    kv("Cash-on-Cash", pct(coc));
+    hr();
+    kv("Break-Even Rent (monthly)", $(breakEvenRent));
+    kv("GRM (Price / Annual Rent)", Number.isFinite(grm) ? num(grm, 2) : "—");
+    kv("Gross Yield", pct(grossYield));
+    kv("Operating Expense Ratio (OER)", pct(oer));
+    y += lineH;
   }
 
-  // -------- Flip Section --------
-  const holdingMonths = p("holdingMonths");
-  const sellingCostPct = p("sellingCostPct");
-  const closingCostPct = p("closingCostPct");
-  const carryOtherMonthly = p("carryOtherMonthly");
+  // -----------------------------
+  // Flip Analysis
+  // -----------------------------
+  const holdingMonths = getN("holdingMonths");
+  const sellingCostPct = getN("sellingCostPct");
+  const closingCostPct = getN("closingCostPct");
+  const carryOtherMonthly = getN("carryOtherMonthly");
 
   if (arv > 0) {
-    doc.moveDown().fontSize(14).text("Flip Analysis", { underline: true });
-    doc.moveDown(0.3);
-
+    section("Flip Analysis");
     const basis = purchase + rehab;
-
-    // approximate interest carry on loan amount (using downPct and ratePct)
     const downFlip = basis * (downPct / 100);
     const loanFlip = Math.max(basis - downFlip, 0);
     const interestCarry = loanFlip * (ratePct / 100) * (holdingMonths / 12);
-    const otherCarry = (carryOtherMonthly || 0) * holdingMonths;
-
+    const otherCarry = (carryOtherMonthly || 0) * (holdingMonths || 0);
     const sellCosts = arv * (sellingCostPct / 100);
     const closeCosts = arv * (closingCostPct / 100);
-
     const totalCost = basis + interestCarry + otherCarry + sellCosts + closeCosts;
     const profit = arv - totalCost;
     const margin = arv > 0 ? (profit / arv) * 100 : NaN;
+    const cashInvestedFlip = downFlip + rehab;
+    const equityMultiple =
+      cashInvestedFlip > 0 ? (profit + cashInvestedFlip) / cashInvestedFlip : NaN;
 
-    line("Basis (purchase + rehab):", $(basis));
-    line(`Interest Carry (${ratePct}% for ${holdingMonths} mo):`, $(interestCarry));
-    line("Other Carry:", $(otherCarry));
-    line(`Selling Costs (${sellingCostPct}% of ARV):`, $(sellCosts));
-    line(`Closing Costs (${closingCostPct}% of ARV):`, $(closeCosts));
-    line("Total Cost:", $(totalCost));
-    line("Profit:", $(profit));
-    line("Margin:", pct(margin));
-    doc.moveDown();
+    kv("Basis (Purchase + Rehab)", $(basis));
+    kv(`Interest Carry (${num(ratePct,2)}% APR for ${num(holdingMonths)} mo)`, $(interestCarry));
+    kv("Other Carry", $(otherCarry));
+    kv(`Selling Costs (${num(sellingCostPct,1)}% of ARV)`, $(sellCosts));
+    kv(`Closing Costs (${num(closingCostPct,1)}% of ARV)`, $(closeCosts));
+    hr();
+    kv("Total Cost", $(totalCost));
+    kv("Profit", $(profit));
+    kv("Margin", pct(margin));
+    kv("Cash Invested (Down + Rehab)", $(cashInvestedFlip));
+    kv(
+      "Equity Multiple",
+      Number.isFinite(equityMultiple) ? num(equityMultiple, 2) : "—"
+    );
+    y += lineH;
   }
 
+  // Done
   doc.end();
 });
 
