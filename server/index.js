@@ -200,27 +200,56 @@ app.get("/api/deals/:id/report", (req, res) => {
   const $ = (v) => (Number.isFinite(+v) ? `$${Number(v).toLocaleString()}` : "—");
   const pct = (v, d = 1) => (Number.isFinite(+v) ? `${Number(v).toFixed(d)}%` : "—");
   const num = (v, d = 0) => (Number.isFinite(+v) ? Number(v).toFixed(d) : "—");
-  const labelW = 220;
-  const valX = 320;
-  const lineH = 16;
-  let y = 48 + 72; // start after header
+  const labelW = 220;               // left column width for labels
+  const valX   = 320;               // x for values (right side)
+  const lineH  = 16;
+  const top    = 48;                 // top margin
+  const left   = 48;                 // left margin
+  const rightX = 564;                // content width end (Letter 612pt - 48pt margin)
+  const bottom = () => doc.page.height - 48; // compute per-page in case page size changes
+  let y = top + 72;                  // after first-page header
+
+  // Paint a small header on a new page
+  const paintPageHeader = () => {
+    const brand = process.env.BRAND_NAME || "REtotalAi";
+    doc.font("Helvetica-Bold").fontSize(11).fillColor("#444").text(brand, left, top);
+    doc.font("Helvetica").fontSize(9).fillColor("#666")
+       .text(new Date().toLocaleString(), left, top + 12);
+    doc.fillColor("black");
+    y = top + 30; // leave a little space under the header
+  };
+
+  // Ensure we have space; if not, add page and repaint header
+  const ensureSpace = (lines = 1) => {
+    if (y + lineH * lines > bottom()) {
+      doc.addPage();
+      paintPageHeader();
+    }
+  };
+
+  const moveDown = (lines = 1) => {
+    ensureSpace(lines);
+    y += lineH * lines;
+  };
+
   const kv = (label, value) => {
+    ensureSpace(1);
     doc.font("Helvetica").fontSize(11);
-    doc.text(label, 48, y, { width: labelW });
-    doc.text(String(value), valX, y);
+    doc.text(label, left, y, { width: labelW });
+    doc.text(String(value), valX, y, { align: "left", width: rightX - valX });
     y += lineH;
   };
+
   const hr = () => {
-    doc
-      .moveTo(48, y + 6)
-      .lineTo(564, y + 6)
-      .strokeColor("#ddd")
-      .stroke();
+    ensureSpace(1);
+    doc.moveTo(left, y + 6).lineTo(rightX, y + 6).strokeColor("#ddd").stroke();
     y += lineH;
     doc.strokeColor("black");
   };
+
   const section = (title) => {
-    doc.font("Helvetica-Bold").fontSize(13).text(title, 48, y);
+    ensureSpace(2);
+    doc.font("Helvetica-Bold").fontSize(13).text(title, left, y);
     y += lineH;
     hr();
   };
@@ -233,6 +262,7 @@ app.get("/api/deals/:id/report", (req, res) => {
     process.env.LOGO_PATH ||
     path.join(process.cwd(), "server", "assets", "logo.png");
 
+  // Draw brand title (first page)
   doc.font("Helvetica-Bold")
     .fontSize(18)
     .text(`${BRAND} — Deal Analysis Report`, 48, 48);
@@ -251,7 +281,7 @@ app.get("/api/deals/:id/report", (req, res) => {
   // -----------------------------
   // Property summary
   // -----------------------------
-  y = 48 + 60;
+  y = top + 60;
   section("Property");
   kv("Address", deal.property?.address || "N/A");
   kv("Type", deal.property?.type || "—");
@@ -259,7 +289,7 @@ app.get("/api/deals/:id/report", (req, res) => {
   kv("After Repair Value (ARV)", $(getN("arv")));
   kv("Rehab Budget", $(getN("rehab")));
   if (Number.isFinite(+getN("rent"))) kv("Estimated Rent (monthly)", $(getN("rent")));
-  y += lineH;
+  moveDown();
 
   // -----------------------------
   // Rental Analysis
@@ -337,7 +367,7 @@ app.get("/api/deals/:id/report", (req, res) => {
     kv("GRM (Price / Annual Rent)", Number.isFinite(grm) ? num(grm, 2) : "—");
     kv("Gross Yield", pct(grossYield));
     kv("Operating Expense Ratio (OER)", pct(oer));
-    y += lineH;
+    moveDown();
   }
 
   // -----------------------------
@@ -348,7 +378,12 @@ app.get("/api/deals/:id/report", (req, res) => {
   const closingCostPct = getN("closingCostPct");
   const carryOtherMonthly = getN("carryOtherMonthly");
 
+  // If we’re low on space before starting Flip, force a new page
   if (arv > 0) {
+    if (y + lineH * 12 > bottom()) { // ~12 lines used in the Flip block
+      doc.addPage();
+      paintPageHeader();
+    }
     section("Flip Analysis");
     const basis = purchase + rehab;
     const downFlip = basis * (downPct / 100);
@@ -378,7 +413,7 @@ app.get("/api/deals/:id/report", (req, res) => {
       "Equity Multiple",
       Number.isFinite(equityMultiple) ? num(equityMultiple, 2) : "—"
     );
-    y += lineH;
+    moveDown();
   }
 
   // Done
