@@ -178,16 +178,25 @@ app.get("/api/deals/:id/report", (req, res) => {
   if (!deal) return res.status(404).send("Not found");
 
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader(
-    "Content-Disposition",
-    `inline; filename="deal-${deal.id}.pdf"`
-  );
+  res.setHeader("Content-Disposition", `inline; filename="deal-${deal.id}.pdf"`);
 
   const doc = new PDFDocument({ size: "LETTER", margin: 50 });
   doc.pipe(res);
 
-  // Title
-  doc.fontSize(18).text("Deal Analysis Report", { align: "left" });
+  const n = deal.numbers || {};
+  const p = (k, d = 0) => (Number.isFinite(+n[k]) ? +n[k] : d);
+
+  // helpers
+  const $ = (v) => (Number.isFinite(+v) ? `$${Number(v).toLocaleString()}` : "-");
+  const pct = (v) => (Number.isFinite(+v) ? `${Number(v).toFixed(1)}%` : "-");
+  const line = (label, value) => {
+    doc.font("Helvetica").fontSize(11);
+    const L = `${label}`.padEnd(20, " ");
+    doc.text(`${L} ${value}`);
+  };
+
+  // Header
+  doc.fontSize(20).text("Deal Analysis Report");
   doc.moveDown(0.5);
   doc
     .fontSize(10)
@@ -195,60 +204,128 @@ app.get("/api/deals/:id/report", (req, res) => {
     .text(`Generated: ${new Date().toLocaleString()}`);
   doc.moveDown();
   doc.fillColor("black");
-
-  // Property
-  doc.fontSize(12).text(`Property: ${deal.property.address || "N/A"}`);
-  if (deal.property.type) doc.text(`Type: ${deal.property.type}`);
+  doc.fontSize(12).text(`Property: ${deal.property?.address || "N/A"}`);
+  if (deal.property?.type) doc.text(`Type: ${deal.property.type}`);
   doc.moveDown();
 
-  // Numbers
-  const fmt = (v) => (Number.isFinite(+v) ? `$${Number(v).toLocaleString()}` : "-");
-  doc.text(`Purchase: ${fmt(deal.numbers.purchase)}`);
-  doc.text(`ARV:      ${fmt(deal.numbers.arv)}`);
-  doc.text(`Rehab:    ${fmt(deal.numbers.rehab)}`);
-  if (deal.numbers.rent != null) doc.text(`Rent:     ${fmt(deal.numbers.rent)}`);
-
-  // Financial metrics
-  const purchase = Number(deal.numbers.purchase) || 0;
-  const arv = Number(deal.numbers.arv) || 0;
-  const rehab = Number(deal.numbers.rehab) || 0;
-  const rent = Number(deal.numbers.rent) || 0;
-
-  const annualRent = rent * 12;
-  const estTaxesInsMaint = purchase * 0.03;
-  const noi = annualRent - estTaxesInsMaint;
-  const capRateVal = purchase ? (noi / purchase) * 100 : null;
-  const cashInvested = purchase * 0.2 + rehab;
-  const annualCashFlowVal = noi - purchase * 0.8 * 0.07;
-  const cashOnCashVal = cashInvested ? (annualCashFlowVal / cashInvested) * 100 : null;
-  const roiVal =
-    deal.numbers.roi ??
-    ((purchase + rehab)
-      ? ((arv - purchase - rehab) / (purchase + rehab)) * 100
-      : null);
-  const irrVal = deal.numbers.irr ?? deal.numbers.irrPct ?? null;
-
-  const fmtPct = (v) =>
-    v != null && Number.isFinite(v) ? `${v.toFixed(1)}%` : "-";
-  const fmtUsd = (v) =>
-    v != null && Number.isFinite(v)
-      ? `$${Math.round(v).toLocaleString()}`
-      : "-";
-
-  const lines = [
-    ["Cap Rate", fmtPct(capRateVal)],
-    ["Cash-on-Cash", fmtPct(cashOnCashVal)],
-    ["Annual Cash Flow", fmtUsd(annualCashFlowVal)],
-  ];
-  if (roiVal != null) lines.push(["ROI", fmtPct(roiVal)]);
-  if (irrVal != null) lines.push(["IRR", fmtPct(irrVal)]);
-
+  // Raw numbers
+  line("Purchase:", $(p("purchase")));
+  line("ARV:", $(p("arv")));
+  line("Rehab:", $(p("rehab")));
+  if (Number.isFinite(+p("rent"))) line("Rent (monthly):", $(p("rent")));
   doc.moveDown();
-  doc.font("Courier");
-  lines.forEach(([label, value]) =>
-    doc.text(`${label.padEnd(16)} ${value}`)
-  );
-  doc.font("Helvetica");
+
+  // -------- Rental Section --------
+  const rent = p("rent");
+  const purchase = p("purchase");
+  const arv = p("arv");
+  const rehab = p("rehab");
+
+  const taxes = p("taxes");
+  const insurance = p("insurance");
+  const hoa = p("hoa");
+  const vacancyPct = p("vacancyPct");
+  const maintenancePct = p("maintenancePct");
+  const managementPct = p("managementPct");
+  const otherMonthly = p("otherMonthly");
+
+  const downPct = p("downPct");
+  const ratePct = p("ratePct");
+  const termYears = p("termYears");
+
+  if (rent > 0) {
+    doc.moveDown().fontSize(14).text("Rental Analysis", { underline: true });
+    doc.moveDown(0.3);
+
+    const grossAnnual = rent * 12;
+
+    const vac = grossAnnual * (vacancyPct / 100);
+    const maint = grossAnnual * (maintenancePct / 100);
+    const mgmt = grossAnnual * (managementPct / 100);
+
+    const hoaAnnual = hoa * 12;
+    const otherAnnual = otherMonthly * 12;
+
+    const opEx = taxes + insurance + hoaAnnual + vac + maint + mgmt + otherAnnual;
+    const noi = grossAnnual - opEx;
+
+    const allIn = purchase + rehab;
+    const capRate = allIn > 0 ? (noi / allIn) * 100 : NaN;
+
+    // financing
+    const down = allIn * (downPct / 100);
+    const loanAmount = Math.max(allIn - down, 0);
+    const r = (ratePct / 100) / 12;
+    const nPmts = termYears * 12;
+    let monthlyPI = 0;
+    if (loanAmount > 0 && r > 0 && nPmts > 0) {
+      monthlyPI = (loanAmount * r) / (1 - Math.pow(1 + r, -nPmts));
+    }
+    const annualDebt = monthlyPI * 12;
+    const dscr = annualDebt > 0 ? noi / annualDebt : NaN;
+    const annualCashFlow = noi - annualDebt;
+
+    const cashInvested = down + rehab;
+    const coc = cashInvested > 0 ? (annualCashFlow / cashInvested) * 100 : NaN;
+
+    // print
+    line("Gross Rent (annual):", $(grossAnnual));
+    line("Taxes (annual):", $(taxes));
+    line("Insurance (annual):", $(insurance));
+    line("HOA (annual):", $(hoaAnnual));
+    line(`Vacancy (${vacancyPct}%):`, $(vac));
+    line(`Maintenance (${maintenancePct}%):`, $(maint));
+    line(`Mgmt (${managementPct}%):`, $(mgmt));
+    line("Other (annual):", $(otherAnnual));
+    line("Operating Exp (annual):", $(opEx));
+    line("NOI:", $(noi));
+    line("All-in Basis:", $(allIn));
+    line("Cap Rate:", pct(capRate));
+    doc.moveDown(0.3);
+    line("Loan Amount:", $(loanAmount));
+    line("Annual Debt (P&I):", $(annualDebt));
+    line("DSCR:", Number.isFinite(dscr) ? dscr.toFixed(2) : "-");
+    line("Annual Cash Flow:", $(annualCashFlow));
+    line("Cash Invested (down+rehab):", $(cashInvested));
+    line("Cash-on-Cash:", pct(coc));
+    doc.moveDown();
+  }
+
+  // -------- Flip Section --------
+  const holdingMonths = p("holdingMonths");
+  const sellingCostPct = p("sellingCostPct");
+  const closingCostPct = p("closingCostPct");
+  const carryOtherMonthly = p("carryOtherMonthly");
+
+  if (arv > 0) {
+    doc.moveDown().fontSize(14).text("Flip Analysis", { underline: true });
+    doc.moveDown(0.3);
+
+    const basis = purchase + rehab;
+
+    // approximate interest carry on loan amount (using downPct and ratePct)
+    const downFlip = basis * (downPct / 100);
+    const loanFlip = Math.max(basis - downFlip, 0);
+    const interestCarry = loanFlip * (ratePct / 100) * (holdingMonths / 12);
+    const otherCarry = (carryOtherMonthly || 0) * holdingMonths;
+
+    const sellCosts = arv * (sellingCostPct / 100);
+    const closeCosts = arv * (closingCostPct / 100);
+
+    const totalCost = basis + interestCarry + otherCarry + sellCosts + closeCosts;
+    const profit = arv - totalCost;
+    const margin = arv > 0 ? (profit / arv) * 100 : NaN;
+
+    line("Basis (purchase + rehab):", $(basis));
+    line(`Interest Carry (${ratePct}% for ${holdingMonths} mo):`, $(interestCarry));
+    line("Other Carry:", $(otherCarry));
+    line(`Selling Costs (${sellingCostPct}% of ARV):`, $(sellCosts));
+    line(`Closing Costs (${closingCostPct}% of ARV):`, $(closeCosts));
+    line("Total Cost:", $(totalCost));
+    line("Profit:", $(profit));
+    line("Margin:", pct(margin));
+    doc.moveDown();
+  }
 
   doc.end();
 });
