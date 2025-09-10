@@ -208,6 +208,48 @@ app.get("/api/deals/:id/report", (req, res) => {
   doc.text(`Rehab:    ${fmt(deal.numbers.rehab)}`);
   if (deal.numbers.rent != null) doc.text(`Rent:     ${fmt(deal.numbers.rent)}`);
 
+  // Financial metrics
+  const purchase = Number(deal.numbers.purchase) || 0;
+  const arv = Number(deal.numbers.arv) || 0;
+  const rehab = Number(deal.numbers.rehab) || 0;
+  const rent = Number(deal.numbers.rent) || 0;
+
+  const annualRent = rent * 12;
+  const estTaxesInsMaint = purchase * 0.03;
+  const noi = annualRent - estTaxesInsMaint;
+  const capRateVal = purchase ? (noi / purchase) * 100 : null;
+  const cashInvested = purchase * 0.2 + rehab;
+  const annualCashFlowVal = noi - purchase * 0.8 * 0.07;
+  const cashOnCashVal = cashInvested ? (annualCashFlowVal / cashInvested) * 100 : null;
+  const roiVal =
+    deal.numbers.roi ??
+    ((purchase + rehab)
+      ? ((arv - purchase - rehab) / (purchase + rehab)) * 100
+      : null);
+  const irrVal = deal.numbers.irr ?? deal.numbers.irrPct ?? null;
+
+  const fmtPct = (v) =>
+    v != null && Number.isFinite(v) ? `${v.toFixed(1)}%` : "-";
+  const fmtUsd = (v) =>
+    v != null && Number.isFinite(v)
+      ? `$${Math.round(v).toLocaleString()}`
+      : "-";
+
+  const lines = [
+    ["Cap Rate", fmtPct(capRateVal)],
+    ["Cash-on-Cash", fmtPct(cashOnCashVal)],
+    ["Annual Cash Flow", fmtUsd(annualCashFlowVal)],
+  ];
+  if (roiVal != null) lines.push(["ROI", fmtPct(roiVal)]);
+  if (irrVal != null) lines.push(["IRR", fmtPct(irrVal)]);
+
+  doc.moveDown();
+  doc.font("Courier");
+  lines.forEach(([label, value]) =>
+    doc.text(`${label.padEnd(16)} ${value}`)
+  );
+  doc.font("Helvetica");
+
   doc.end();
 });
 
