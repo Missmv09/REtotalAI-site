@@ -19,6 +19,7 @@ import cors from "cors";
 import express from "express";
 import bodyParser from "body-parser";
 import crypto from "crypto";
+import PDFDocument from "pdfkit";
 
 // Optional Stripe. If no key, endpoints still respond with a mock URL.
 let stripe = null;
@@ -176,11 +177,38 @@ app.get("/api/deals/:id/report", (req, res) => {
   const deal = db.deals.get(req.params.id);
   if (!deal) return res.status(404).send("Not found");
 
-  // Minimal PDF (valid) — replace with real template generator later
-  const text = `Deal Analysis Report\nProperty: ${deal.property.address || "N/A"}\nPurchase: ${deal.numbers.purchase || "-"}\nARV: ${deal.numbers.arv || "-"}\nRehab: ${deal.numbers.rehab || "-"}\nGenerated: ${new Date().toISOString()}`;
-  const pdf = `%PDF-1.3\n1 0 obj<< /Type /Catalog /Pages 2 0 R >>endobj\n2 0 obj<< /Type /Pages /Count 1 /Kids [3 0 R] >>endobj\n3 0 obj<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>endobj\n4 0 obj<< /Length  ${text.length + 91} >>stream\nBT /F1 12 Tf 50 750 Td (${text.replace(/\n/g, ") T* (")}) Tj ET\nendstream endobj\n5 0 obj<< /Type /Font /Subtype /Type1 /Name /F1 /BaseFont /Helvetica >>endobj\nxref\n0 6\n0000000000 65535 f \n0000000010 00000 n \n0000000060 00000 n \n0000000120 00000 n \n0000000210 00000 n \n0000000430 00000 n \ntrailer<< /Size 6 /Root 1 0 R >>\nstartxref\n520\n%%EOF`;
   res.setHeader("Content-Type", "application/pdf");
-  res.send(Buffer.from(pdf, "utf-8"));
+  res.setHeader(
+    "Content-Disposition",
+    `inline; filename="deal-${deal.id}.pdf"`
+  );
+
+  const doc = new PDFDocument({ size: "LETTER", margin: 50 });
+  doc.pipe(res);
+
+  // Title
+  doc.fontSize(18).text("Deal Analysis Report", { align: "left" });
+  doc.moveDown(0.5);
+  doc
+    .fontSize(10)
+    .fillColor("#555")
+    .text(`Generated: ${new Date().toLocaleString()}`);
+  doc.moveDown();
+  doc.fillColor("black");
+
+  // Property
+  doc.fontSize(12).text(`Property: ${deal.property.address || "N/A"}`);
+  if (deal.property.type) doc.text(`Type: ${deal.property.type}`);
+  doc.moveDown();
+
+  // Numbers
+  const fmt = (v) => (Number.isFinite(+v) ? `$${Number(v).toLocaleString()}` : "-");
+  doc.text(`Purchase: ${fmt(deal.numbers.purchase)}`);
+  doc.text(`ARV:      ${fmt(deal.numbers.arv)}`);
+  doc.text(`Rehab:    ${fmt(deal.numbers.rehab)}`);
+  if (deal.numbers.rent != null) doc.text(`Rent:     ${fmt(deal.numbers.rent)}`);
+
+  doc.end();
 });
 
 // ---------------------------
