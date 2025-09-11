@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, FormEvent } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { analyze, DealInputs } from '@/lib/deal/analyze';
@@ -69,12 +69,23 @@ export default function DealAnalyzerPage() {
     pdf.save('retotalai-deal.pdf');
   }
 
+  function previewPdf() {
+    downloadPdf();
+  }
+
+  async function handleGenerate(e: FormEvent) {
+    e.preventDefault();
+    calc();
+    await saveAndShare();
+  }
+
   return (
-    <div className="mx-auto max-w-6xl p-6">
-      <h1 className="text-2xl font-semibold mb-4">Deal Analyzer — {mode === 'flip' ? 'Fix & Flip' : mode}</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* LEFT: Inputs */}
-        <div className="space-y-4">
+    <form onSubmit={handleGenerate} className="min-h-[100dvh] flex flex-col">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pb-28 flex-1">
+        <h1 className="text-2xl font-semibold mb-4">Deal Analyzer — {mode === 'flip' ? 'Fix & Flip' : mode}</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* LEFT: Inputs */}
+          <div className="space-y-4">
           <Section title="Property & Purchase">
             <Row label="Purchase Price"><Input num value={state.purchasePrice} onChange={v=>upd('purchasePrice', v)} /></Row>
             <Row label="Rehab / Repair Cost"><Input num value={state.rehabCost} onChange={v=>upd('rehabCost', v)} /></Row>
@@ -115,13 +126,7 @@ export default function DealAnalyzerPage() {
             <Row label="Seller Moving"><Input num value={state.selling?.sellerMoving} onChange={v=>updSell('sellerMoving', v)} /></Row>
             <Row label="Other"><Input num value={state.selling?.other} onChange={v=>updSell('other', v)} /></Row>
           </Section>
-
-          <div className="flex gap-3">
-            <button className="px-4 py-2 rounded-lg border" onClick={calc}>Calculate</button>
-            <button className="px-4 py-2 rounded-lg border" onClick={saveAndShare}>Save Analysis & Create Share Link</button>
-            <button className="px-4 py-2 rounded-lg border" onClick={downloadPdf}>Download PDF</button>
-          </div>
-          {shareUrl && <div className="text-sm">Share URL: <a className="text-blue-600 underline" href={shareUrl} target="_blank">{shareUrl}</a></div>}
+          {shareUrl && <div className="text-sm mt-4">Share URL: <a className="text-blue-600 underline" href={shareUrl} target="_blank">{shareUrl}</a></div>}
         </div>
 
         {/* RIGHT: Outputs */}
@@ -142,7 +147,17 @@ export default function DealAnalyzerPage() {
           ) : null}
         </div>
       </div>
-    </div>
+      </div>
+      <div
+        className="sticky bottom-0 z-40 border-t bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/60"
+        style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+      >
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap gap-3 justify-end">
+          <button type="button" className="btn btn-outline" onClick={previewPdf}>Preview PDF</button>
+          <button type="submit" className="btn btn-primary min-w-40">Generate Report</button>
+        </div>
+      </div>
+    </form>
   );
 }
 
