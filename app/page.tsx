@@ -13,7 +13,7 @@ function Modal({ open, onClose, children }) {
       }}
     >
       <div
-        className="dialog-content w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl overscroll-contain"
+        className="dialog-content w-[min(96vw,900px)] rounded-2xl bg-white shadow-xl p-0"
         onClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
       >
@@ -337,18 +337,20 @@ export default function REtotalAiLandingPricing() {
 
       {/* Deal Wizard Modal */}
       <Modal open={wizardOpen} onClose={() => setWizardOpen(false)}>
-        <form
-          onSubmit={onSubmit}
-          onKeyDown={(e) => {
-            const el = e.target as HTMLElement;
-            const tag = el.tagName.toLowerCase();
-            const type = (el as HTMLInputElement).type;
-            const textLike = tag === 'textarea' || (tag === 'input' && ['text','search','email','url','tel','password','number'].includes(type));
-            if (e.key === 'Enter' && !textLike) {
-              e.preventDefault();
-            }
-          }}
-        >
+        <div className="max-h-[min(100dvh-8rem,800px)] overflow-y-auto px-6 py-4">
+          <form
+            id="dealForm"
+            onSubmit={onSubmit}
+            onKeyDown={(e) => {
+              const el = e.target as HTMLElement;
+              const tag = el.tagName.toLowerCase();
+              const type = (el as HTMLInputElement).type;
+              const textLike = tag === 'textarea' || (tag === 'input' && ['text','search','email','url','tel','password','number'].includes(type));
+              if (e.key === 'Enter' && !textLike) {
+                e.preventDefault();
+              }
+            }}
+          >
           <div className="flex items-start justify-between">
             <h3 className="text-lg font-semibold">Analyze a Deal</h3>
             <button type="button" onClick={() => setWizardOpen(false)} className="text-sm text-gray-500">Close</button>
@@ -559,19 +561,21 @@ export default function REtotalAiLandingPricing() {
               </div>
             </details>
           </div>
-          <div className="mt-5">
-            <button
-              type="submit"
-              className="px-5 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-              disabled={!canSubmit}
-            >
-              {submitting ? "Generating…" : "Generate Report"}
-            </button>
-          </div>
+          </form>
+        </div>
+        <div className="sticky bottom-0 bg-white/90 backdrop-blur border-t px-6 py-3">
+          <button
+            type="submit"
+            form="dealForm"
+            className="px-5 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+            disabled={!canSubmit}
+          >
+            {submitting ? "Generating…" : "Generate Report"}
+          </button>
           {!trial.active && (
-            <p className="mt-3 text-xs text-gray-500">Tip: Start your free trial to unlock unlimited tools for 7 days.</p>
+            <p className="mt-2 text-xs text-gray-500">Tip: Start your free trial to unlock unlimited tools for 7 days.</p>
           )}
-        </form>
+        </div>
       </Modal>
       {/* Paywall Modal */}
       <Modal open={paywallOpen} onClose={() => setPaywallOpen(false)}>
