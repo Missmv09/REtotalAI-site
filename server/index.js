@@ -430,6 +430,22 @@ app.get("/api/ping", (_req, res) => {
   res.json({ ok: true, time: new Date().toISOString() });
 });
 
+// List recent deals for test convenience
+// GET /api/deals/recent?limit=10
+app.get("/api/deals/recent", (req, res) => {
+  const lim = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
+  const items = [...db.deals.values()]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, lim)
+    .map(d => ({
+      id: d.id,
+      address: d.property?.address || null,
+      type: d.property?.type || null,
+      createdAt: d.createdAt
+    }));
+  res.json({ deals: items });
+});
+
 // Friendly landing page for the API root (safe, noindex, no-store)
 app.get("/", (_req, res) => {
   res.setHeader("Content-Type", "text/html; charset=utf-8");

@@ -1,8 +1,11 @@
+/* Global viewport + scroll safety */
+html, body, #__next, #root { min-height: 100%; }
+body { overflow-y: auto; }
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Global viewport + scroll safety */
+html, body, #__next, #root { min-height: 100%; }
+body { overflow-y: auto; }
 
-.dialog-content,
-.sheet-content {
-  overscroll-behavior: contain;
-}
+
