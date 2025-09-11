@@ -337,24 +337,31 @@ export default function REtotalAiLandingPricing() {
 
       {/* Deal Wizard Modal */}
       <Modal open={wizardOpen} onClose={() => setWizardOpen(false)}>
-        <div className="max-h-[min(100dvh-8rem,800px)] overflow-y-auto px-6 py-4">
+        <div className="px-6 pt-4 pb-2 flex items-start justify-between">
+          <h3 className="text-lg font-semibold">Analyze a Deal</h3>
+          <button
+            type="button"
+            onClick={() => setWizardOpen(false)}
+            className="text-sm text-gray-500"
+          >
+            Close
+          </button>
+        </div>
+        <div className="max-h-[min(100dvh-8rem,800px)] overflow-y-auto px-6 pb-24">
           <form
             id="dealForm"
             onSubmit={onSubmit}
             onKeyDown={(e) => {
-              const el = e.target as HTMLElement;
-              const tag = el.tagName.toLowerCase();
-              const type = (el as HTMLInputElement).type;
-              const textLike = tag === 'textarea' || (tag === 'input' && ['text','search','email','url','tel','password','number'].includes(type));
-              if (e.key === 'Enter' && !textLike) {
-                e.preventDefault();
+              if (e.key === 'Enter') {
+                const t = e.target as HTMLElement;
+                const tag = t.tagName;
+                const type = (t as HTMLInputElement).type;
+                const isTextarea = tag === 'TEXTAREA';
+                const isButton = tag === 'BUTTON' || type === 'submit';
+                if (!isTextarea && !isButton) e.preventDefault();
               }
             }}
           >
-          <div className="flex items-start justify-between">
-            <h3 className="text-lg font-semibold">Analyze a Deal</h3>
-            <button type="button" onClick={() => setWizardOpen(false)} className="text-sm text-gray-500">Close</button>
-          </div>
           <div className="mt-4 grid md:grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="text-xs text-gray-600">Property Address</label>
