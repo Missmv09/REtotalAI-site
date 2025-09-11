@@ -45,3 +45,31 @@ Run static analysis before committing changes:
 npm run lint       # ESLint for code quality
 npm run type-check # TypeScript type checking
 ```
+
+## End-to-end Deal Tests
+
+We include simple E2E tests that post realistic deals and open the generated PDFs.
+
+### macOS / Linux
+```bash
+SERVICE=https://retotalai-site.onrender.com \
+./scripts/run_deal_tests.sh
+```
+Requires `jq` and `curl`.
+
+### Windows (PowerShell)
+```powershell
+$env:SERVICE="https://retotalai-site.onrender.com"
+./scripts/run_deal_tests.ps1
+```
+
+### Postman
+Import `postman/REtotalAi_Deal_Tests.postman_collection.json`, set:
+- `baseUrl = https://retotalai-site.onrender.com`
+- `origin  = https://r-etotal-ai-site.vercel.app`
+
+### Recent deals helper
+List the latest deals to click their PDFs:
+```
+GET /api/deals/recent?limit=10
+```
