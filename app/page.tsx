@@ -3,10 +3,20 @@ import React, { useMemo, useState, useEffect } from "react";
 import { api } from "@/lib/api";
 
 function Modal({ open, onClose, children }) {
-  if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+    <div
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 ${open ? '' : 'hidden'}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+        }
+      }}
+    >
+      <div
+        className="dialog-content w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl overscroll-contain"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         {children}
       </div>
     </div>
@@ -327,7 +337,18 @@ export default function REtotalAiLandingPricing() {
 
       {/* Deal Wizard Modal */}
       <Modal open={wizardOpen} onClose={() => setWizardOpen(false)}>
-        <form onSubmit={onSubmit}>
+        <form
+          onSubmit={onSubmit}
+          onKeyDown={(e) => {
+            const el = e.target as HTMLElement;
+            const tag = el.tagName.toLowerCase();
+            const type = (el as HTMLInputElement).type;
+            const textLike = tag === 'textarea' || (tag === 'input' && ['text','search','email','url','tel','password','number'].includes(type));
+            if (e.key === 'Enter' && !textLike) {
+              e.preventDefault();
+            }
+          }}
+        >
           <div className="flex items-start justify-between">
             <h3 className="text-lg font-semibold">Analyze a Deal</h3>
             <button type="button" onClick={() => setWizardOpen(false)} className="text-sm text-gray-500">Close</button>
@@ -556,7 +577,7 @@ export default function REtotalAiLandingPricing() {
       <Modal open={paywallOpen} onClose={() => setPaywallOpen(false)}>
         <div className="flex items-start justify-between">
           <h3 className="text-lg font-semibold">Unlock more deal analyses</h3>
-          <button onClick={() => setPaywallOpen(false)} className="text-sm text-gray-500">Close</button>
+          <button type="button" onClick={() => setPaywallOpen(false)} className="text-sm text-gray-500">Close</button>
         </div>
         <p className="mt-3 text-sm text-gray-600">You&apos;ve used your free analysis. Start your 7‑day trial or choose a plan to analyze unlimited deals and generate lender-ready PDFs.</p>
         <div className="mt-5 grid sm:grid-cols-3 gap-3">

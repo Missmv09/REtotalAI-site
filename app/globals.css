@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.dialog-content,
+.sheet-content {
+  overscroll-behavior: contain;
+}
