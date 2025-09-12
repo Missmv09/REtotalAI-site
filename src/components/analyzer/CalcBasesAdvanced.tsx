@@ -1,64 +1,84 @@
-'use client';
-import React from 'react';
-import { CalcBases } from '@/lib/calc/types';
+"use client";
+import * as React from "react";
 
-interface Props {
-  bases: CalcBases;
-  onChange: (b: CalcBases) => void;
+type LoanBasis = "purchase" | "all_in";
+type PercentBasis = "gross" | "egi";
+type CapBasis = "purchase" | "all_in";
+type InvestedBasis = "down" | "down_plus_rehab" | "down_plus_rehab_closing";
+
+export interface Bases {
+  loanBasis: LoanBasis;
+  percentBasis: PercentBasis;
+  capBasis: CapBasis;
+  investedBasis: InvestedBasis;
 }
 
-export function CalcBasesAdvanced({ bases, onChange }: Props) {
-  const upd = (k: keyof CalcBases, v: any) => onChange({ ...bases, [k]: v });
+interface Props {
+  value: Bases;
+  onChange: (b: Bases) => void;
+  className?: string;
+}
+
+const Row = ({label, children}:{label:string;children:React.ReactNode}) => (
+  <div className="flex items-center justify-between gap-3 py-2">
+    <div className="text-sm font-medium">{label}</div>
+    <div className="flex gap-3">{children}</div>
+  </div>
+);
+
+function Radio<T extends string>({name, options, value, onChange}:{name:string;options:{label:string;val:T}[];value:T;onChange:(v:T)=>void}) {
   return (
-    <div className="border rounded p-4 space-y-4">
-      <div className="font-medium">Advanced math options</div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-        <label className="space-y-1">
-          <div>Loan basis</div>
-          <select
-            className="input"
-            value={bases.loanBasis}
-            onChange={(e) => upd('loanBasis', e.target.value)}
-          >
-            <option value="purchase">Purchase</option>
-            <option value="all_in">All-in</option>
-          </select>
+    <div className="flex flex-wrap gap-2">
+      {options.map(o => (
+        <label key={o.val} className="inline-flex items-center gap-1 text-sm">
+          <input type="radio" name={name} value={o.val} checked={value===o.val} onChange={() => onChange(o.val)} />
+          {o.label}
         </label>
-        <label className="space-y-1">
-          <div>% expense basis</div>
-          <select
-            className="input"
-            value={bases.percentBasis}
-            onChange={(e) => upd('percentBasis', e.target.value)}
-          >
-            <option value="gross">Gross</option>
-            <option value="egi">EGI</option>
-          </select>
-        </label>
-        <label className="space-y-1">
-          <div>Cap/GRM basis</div>
-          <select
-            className="input"
-            value={bases.capBasis}
-            onChange={(e) => upd('capBasis', e.target.value)}
-          >
-            <option value="purchase">Purchase</option>
-            <option value="all_in">All-in</option>
-          </select>
-        </label>
-        <label className="space-y-1">
-          <div>CoC invested basis</div>
-          <select
-            className="input"
-            value={bases.investedBasis}
-            onChange={(e) => upd('investedBasis', e.target.value)}
-          >
-            <option value="down">Down</option>
-            <option value="down_plus_rehab">Down + Rehab</option>
-            <option value="down_plus_rehab_closing">Down + Rehab + Closing</option>
-          </select>
-        </label>
-      </div>
+      ))}
+    </div>
+  );
+}
+
+export function CalcBasesAdvanced({ value, onChange, className }: Props) {
+  return (
+    <div className={`rounded-xl border p-3 ${className ?? ""}`}>
+      <div className="text-sm font-semibold mb-2">Advanced math options</div>
+      <Row label="Loan basis">
+        <Radio
+          name="loanBasis"
+          options={[{label:"Purchase",val:"purchase"},{label:"All-In",val:"all_in"}]}
+          value={value.loanBasis}
+          onChange={(loanBasis)=>onChange({...value, loanBasis})}
+        />
+      </Row>
+      <Row label="% expense basis">
+        <Radio
+          name="percentBasis"
+          options={[{label:"Gross",val:"gross"},{label:"EGI (Rent−Vacancy)",val:"egi"}]}
+          value={value.percentBasis}
+          onChange={(percentBasis)=>onChange({...value, percentBasis})}
+        />
+      </Row>
+      <Row label="Cap/GRM basis">
+        <Radio
+          name="capBasis"
+          options={[{label:"Purchase",val:"purchase"},{label:"All-In",val:"all_in"}]}
+          value={value.capBasis}
+          onChange={(capBasis)=>onChange({...value, capBasis})}
+        />
+      </Row>
+      <Row label="CoC invested">
+        <Radio
+          name="investedBasis"
+          options={[
+            {label:"Down",val:"down"},
+            {label:"Down+Rehab",val:"down_plus_rehab"},
+            {label:"Down+Rehab+Closing",val:"down_plus_rehab_closing"},
+          ]}
+          value={value.investedBasis}
+          onChange={(investedBasis)=>onChange({...value, investedBasis})}
+        />
+      </Row>
     </div>
   );
 }

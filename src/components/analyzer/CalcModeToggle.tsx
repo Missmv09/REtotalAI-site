@@ -1,28 +1,30 @@
-'use client';
-import React from 'react';
-import { CalcBases, CalcModePreset } from '@/lib/calc/types';
-import { CalcPresets } from '@/lib/calc/presets';
+"use client";
+import * as React from "react";
+
+export type CalcModeId = "Conservative" | "Lender" | "Broker" | "DealCheck" | "Custom";
 
 interface Props {
-  value: CalcModePreset['id'];
-  onChange: (id: CalcModePreset['id'], bases: CalcBases) => void;
+  value: CalcModeId;
+  onChange: (id: CalcModeId) => void;
+  note?: string;
+  className?: string;
 }
 
-export function CalcModeToggle({ value, onChange }: Props) {
+export function CalcModeToggle({ value, onChange, note, className }: Props) {
+  const options: CalcModeId[] = ["Conservative", "Lender", "Broker", "DealCheck", "Custom"];
   return (
-    <select
-      className="input border rounded px-2 py-1"
-      value={value}
-      onChange={(e) => {
-        const preset = CalcPresets.find((p) => p.id === e.target.value as any)!;
-        onChange(preset.id, preset.bases);
-      }}
-    >
-      {CalcPresets.map((p) => (
-        <option key={p.id} value={p.id}>
-          {p.id}
-        </option>
-      ))}
-    </select>
+    <div className={className}>
+      <label className="block text-sm font-medium mb-1">Calculation Mode</label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value as CalcModeId)}
+        className="w-full rounded-lg border px-3 py-2"
+      >
+        {options.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+      </select>
+      {note ? <p className="mt-1 text-xs text-gray-500">{note}</p> : null}
+    </div>
   );
 }

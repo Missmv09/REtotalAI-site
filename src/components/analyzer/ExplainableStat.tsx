@@ -1,23 +1,25 @@
-'use client';
-import React from 'react';
+"use client";
+import * as React from "react";
 
 interface Props {
   label: string;
-  value?: number | string;
+  value: React.ReactNode;
+  sub?: string;
   onExplain?: () => void;
+  className?: string;
 }
 
-export function ExplainableStat({ label, value, onExplain }: Props) {
-  const display = typeof value === 'number' ? value.toLocaleString(undefined,{maximumFractionDigits:2}) : (value ?? '—');
+export function ExplainableStat({ label, value, sub, onExplain, className }: Props) {
   return (
-    <div className="rounded-2xl border p-4 bg-white space-y-1">
-      <div className="text-sm opacity-60">{label}</div>
-      <div className="text-xl font-semibold">{display}</div>
-      {onExplain && (
-        <button type="button" className="text-xs text-indigo-600" onClick={onExplain}>
-          Explain
-        </button>
-      )}
+    <div className={`rounded-xl border p-3 ${className ?? ""}`}>
+      <div className="text-xs text-gray-500">{label}</div>
+      <div className="text-lg font-semibold">{value}</div>
+      <div className="flex items-center justify-between mt-1">
+        <div className="text-xs text-gray-500">{sub}</div>
+        {onExplain ? (
+          <button type="button" className="text-xs underline" onClick={onExplain}>Explain</button>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -1,36 +1,27 @@
-'use client';
-import React from 'react';
-import { DealInput, CalcBases } from '@/lib/calc/types';
-import { rentalKPIs, flipKPIs } from '@/lib/calc/formulas';
+"use client";
+import * as React from "react";
 
-interface Props {
-  input: DealInput;
-  bases: CalcBases;
+export interface ScenarioCard {
+  title: string;
+  items: { label: string; value: string }[];
 }
 
-export function ScenarioCompare({ input, bases }: Props) {
-  const hold = rentalKPIs(input, bases);
-  const brrrr = rentalKPIs(input, bases); // placeholder identical
-  const flip = flipKPIs(input);
+export function ScenarioCompare({ scenarios }: { scenarios: ScenarioCard[] }) {
   return (
-    <div className="grid md:grid-cols-3 gap-4 text-sm">
-      <div className="border rounded p-3">
-        <div className="font-medium mb-1">Hold</div>
-        <div>Cap: {hold.capRate.toFixed(3)}</div>
-        <div>DSCR: {hold.dscr.toFixed(2)}</div>
-        <div>CF: {hold.annualCF.toFixed(0)}</div>
-      </div>
-      <div className="border rounded p-3">
-        <div className="font-medium mb-1">BRRRR</div>
-        <div>Cap: {brrrr.capRate.toFixed(3)}</div>
-        <div>DSCR: {brrrr.dscr.toFixed(2)}</div>
-        <div>CF: {brrrr.annualCF.toFixed(0)}</div>
-      </div>
-      <div className="border rounded p-3">
-        <div className="font-medium mb-1">Flip</div>
-        <div>Profit: {flip.profit.toFixed(0)}</div>
-        <div>Margin: {(flip.margin * 100).toFixed(2)}%</div>
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      {scenarios.map((s, i) => (
+        <div key={i} className="rounded-xl border p-3">
+          <div className="text-sm font-semibold mb-2">{s.title}</div>
+          <ul className="space-y-1">
+            {s.items.map((it, j) => (
+              <li key={j} className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">{it.label}</span>
+                <span className="font-medium">{it.value}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }

@@ -1,10 +1,10 @@
 'use client';
 import React, { useState } from 'react';
-import { DealInput, CalcBases } from '@/lib/calc/types';
+import { DealInput } from '@/lib/calc/types';
 import { CalcPresets } from '@/lib/calc/presets';
-import { rentalKPIs } from '@/lib/calc/formulas';
-import { CalcModeToggle } from '@/components/analyzer/CalcModeToggle';
-import { CalcBasesAdvanced } from '@/components/analyzer/CalcBasesAdvanced';
+import { rentalKPIs, flipKPIs } from '@/lib/calc/formulas';
+import { CalcModeToggle, CalcModeId } from '@/components/analyzer/CalcModeToggle';
+import { CalcBasesAdvanced, Bases } from '@/components/analyzer/CalcBasesAdvanced';
 import { ExplainableStat } from '@/components/analyzer/ExplainableStat';
 import { ScenarioCompare } from '@/components/analyzer/ScenarioCompare';
 import { SensitivityTornado } from '@/components/analyzer/SensitivityTornado';
@@ -32,17 +32,45 @@ const defaultInput: DealInput = {
 };
 
 export default function DealAnalyzerPage() {
-  const [mode, setMode] = useState<keyof typeof presetMap>('Conservative');
-  const [bases, setBases] = useState<CalcBases>(CalcPresets.find(p=>p.id==='Conservative')!.bases);
-  const [input, setInput] = useState<DealInput>(defaultInput);
+  const [mode, setMode] = useState<CalcModeId>('Conservative');
+  const [bases, setBases] = useState<Bases>(CalcPresets.find(p=>p.id==='Conservative')!.bases);
+  const [input] = useState<DealInput>(defaultInput);
   const kpis = rentalKPIs(input, bases);
+  const note = CalcPresets.find(p=>p.id===mode)?.notes?.[0];
+
+  const hold = rentalKPIs(input, bases);
+  const brrrr = rentalKPIs(input, bases);
+  const flip = flipKPIs(input);
+  const scenarios = [
+    { title: 'Hold', items: [
+      { label: 'Cap', value: hold.capRate.toFixed(3) },
+      { label: 'DSCR', value: hold.dscr.toFixed(2) },
+      { label: 'CF', value: hold.annualCF.toFixed(0) }
+    ]},
+    { title: 'BRRRR', items: [
+      { label: 'Cap', value: brrrr.capRate.toFixed(3) },
+      { label: 'DSCR', value: brrrr.dscr.toFixed(2) },
+      { label: 'CF', value: brrrr.annualCF.toFixed(0) }
+    ]},
+    { title: 'Flip', items: [
+      { label: 'Profit', value: flip.profit.toFixed(0) },
+      { label: 'Margin', value: (flip.margin*100).toFixed(2)+'%' }
+    ]}
+  ];
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex items-center gap-3">
-        <CalcModeToggle value={mode as any} onChange={(id,b)=>{setMode(id as any); setBases(b);}} />
-        <CalcBasesAdvanced bases={bases} onChange={setBases} />
-      </div>
+      <CalcModeToggle
+        value={mode}
+        onChange={(id) => {
+          setMode(id);
+          const preset = CalcPresets.find(p=>p.id===id);
+          if (preset) setBases(preset.bases);
+        }}
+        note={note}
+      />
+
+      <CalcBasesAdvanced value={bases} onChange={setBases} />
 
       <div className="grid md:grid-cols-3 gap-4">
         <ExplainableStat label="Cap Rate" value={(kpis.capRate*100).toFixed(2)+"%"} onExplain={()=>alert(kpis.explain.NOI)} />
@@ -50,7 +78,7 @@ export default function DealAnalyzerPage() {
         <ExplainableStat label="Annual CF" value={kpis.annualCF.toFixed(0)} onExplain={()=>alert(kpis.explain.GAR)} />
       </div>
 
-      <ScenarioCompare input={input} bases={bases} />
+      <ScenarioCompare scenarios={scenarios} />
       <SensitivityTornado input={input} bases={bases} metric="annualCF" />
 
       <StickyActionBar>
@@ -59,11 +87,3 @@ export default function DealAnalyzerPage() {
     </div>
   );
 }
-
-const presetMap = {
-  Conservative: true,
-  Lender: true,
-  Broker: true,
-  DealCheck: true,
-  Custom: true
-};
