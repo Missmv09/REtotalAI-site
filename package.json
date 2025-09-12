@@ -8,7 +8,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node tests/propertyValuation.test.mjs",
+    "test": "vitest run -c vitest.config.ts",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "health": "curl -i $RENDER_API_URL/health",
@@ -42,6 +42,7 @@
     "postcss": "^8.4.31",
     "prisma": "^5.13.0",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^1.5.0"
   }
 }
