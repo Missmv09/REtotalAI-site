@@ -176,7 +176,7 @@ export default function REtotalAiLandingPricing() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 text-gray-900">
+    <div className="min-h-[100dvh] bg-gradient-to-b from-white to-gray-50 text-gray-900">
       {/* Nav */}
       <header className="sticky top-0 z-40 backdrop-blur bg-white/70 border-b">
         <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
