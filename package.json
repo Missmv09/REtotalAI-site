@@ -19,7 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^5.13.0",
-    "@sparticuz/chromium": "^138.0.2",
+    "@sparticuz/chromium": "^129.0.0",
     "chart.js": "^4.4.1",
     "cors": "^2.8.5",
     "framer-motion": "^10.18.0",
@@ -27,7 +27,7 @@
     "jspdf": "^3.0.2",
     "lucide-react": "^0.368.0",
     "next": "^14.1.0",
-    "puppeteer-core": "^24.20.0",
+    "puppeteer-core": "^23.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "stripe": "^12.18.0",
