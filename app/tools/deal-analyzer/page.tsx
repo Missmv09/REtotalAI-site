@@ -1,6 +1,5 @@
 'use client';
-import { useState, useRef, FormEvent } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useRef, FormEvent, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { analyze, DealInputs } from '@/lib/deal/analyze';
@@ -9,9 +8,14 @@ import { AddToCompareButton } from '@/components/compare/AddToCompareButton';
 
 const money = (n: number) => `$${Number(n || 0).toLocaleString()}`;
 
+export const dynamic = "force-dynamic";
+
 export default function DealAnalyzerPage() {
-  const searchParams = useSearchParams();
-  const dealId = searchParams.get('id') || '';
+  const [dealId, setDealId] = useState('');
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    setDealId(sp.get('id') || '');
+  }, []);
   const [mode] = useState<'flip'|'buyhold'|'brrrr'>('flip'); // tabs can be added
   const [state, setState] = useState<DealInputs>({
     mode: 'flip',

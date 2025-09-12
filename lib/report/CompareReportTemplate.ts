@@ -57,10 +57,10 @@ export function renderCompareReportHTML({ deals, mode }: { deals: any[]; mode: s
     kpis: compute(d),
   }));
   const ranges = {
-    dscr: [Math.min(...rows.map(r => r.kpis.dscr || 0)), Math.max(...rows.map(r => r.kpis.dscr || 0))],
-    cap: [Math.min(...rows.map(r => r.kpis.capRate || 0)), Math.max(...rows.map(r => r.kpis.capRate || 0))],
-    cf: [Math.min(...rows.map(r => r.kpis.annualCF || 0)), Math.max(...rows.map(r => r.kpis.annualCF || 0))],
-    profit: [Math.min(...rows.map(r => r.kpis.profit || 0)), Math.max(...rows.map(r => r.kpis.profit || 0))],
+    dscr: [Math.min(...rows.map(r => r.kpis.dscr || 0)), Math.max(...rows.map(r => r.kpis.dscr || 0))] as [number, number],
+    cap: [Math.min(...rows.map(r => r.kpis.capRate || 0)), Math.max(...rows.map(r => r.kpis.capRate || 0))] as [number, number],
+    cf: [Math.min(...rows.map(r => r.kpis.annualCF || 0)), Math.max(...rows.map(r => r.kpis.annualCF || 0))] as [number, number],
+    profit: [Math.min(...rows.map(r => r.kpis.profit || 0)), Math.max(...rows.map(r => r.kpis.profit || 0))] as [number, number],
   };
   const weights = { dscr: 40, cap: 30, cf: 20, profit: 10 };
   const scored = rows.map(r => ({
