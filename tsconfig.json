@@ -33,11 +33,17 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "jest.config.ts",
+    "playwright.config.ts",
+    "postcss.config.ts",
+    "tailwind.config.ts"
   ]
 }
