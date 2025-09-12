@@ -1,13 +1,17 @@
 'use client';
 import { useState, useRef, FormEvent } from 'react';
+import { useSearchParams } from 'next/navigation';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { analyze, DealInputs } from '@/lib/deal/analyze';
 import { api } from '@/lib/api';
+import { AddToCompareButton } from '@/components/compare/AddToCompareButton';
 
 const money = (n: number) => `$${Number(n || 0).toLocaleString()}`;
 
 export default function DealAnalyzerPage() {
+  const searchParams = useSearchParams();
+  const dealId = searchParams.get('id') || '';
   const [mode] = useState<'flip'|'buyhold'|'brrrr'>('flip'); // tabs can be added
   const [state, setState] = useState<DealInputs>({
     mode: 'flip',
@@ -82,7 +86,10 @@ export default function DealAnalyzerPage() {
   return (
     <form onSubmit={handleGenerate} className="min-h-[100dvh] flex flex-col">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pb-28 flex-1">
-        <h1 className="text-2xl font-semibold mb-4">Deal Analyzer — {mode === 'flip' ? 'Fix & Flip' : mode}</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-semibold">Deal Analyzer — {mode === 'flip' ? 'Fix & Flip' : mode}</h1>
+          {dealId ? <AddToCompareButton dealId={dealId} /> : null}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* LEFT: Inputs */}
           <div className="space-y-4">

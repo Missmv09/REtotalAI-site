@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { AddToCompareButton } from '@/components/compare/AddToCompareButton';
 
 async function fetchDeals() {
   return api('/api/deals', { cache: 'no-store' });
@@ -19,7 +20,10 @@ export default async function DealsPage() {
                 {`Purchase $${Number(d.purchasePrice).toLocaleString()} · Rehab $${Number(d.rehabCost).toLocaleString()} · ARV $${Number(d.arv ?? 0).toLocaleString()}`}
               </div>
             </div>
-            <Link href={`/tools/deal-analyzer?id=${d.id}`} className="px-4 py-2 rounded-lg border">Open</Link>
+            <div className="flex items-center gap-3">
+              <AddToCompareButton dealId={d.id} />
+              <Link href={`/tools/deal-analyzer?id=${d.id}`} className="px-4 py-2 rounded-lg border">Open</Link>
+            </div>
           </div>
         ))}
       </div>
