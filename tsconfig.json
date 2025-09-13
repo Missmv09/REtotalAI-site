@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": { "@/*": ["src/*", "./*"] },
+    "paths": { "@/*": ["src/*"] },
     "target": "es2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "skipLibCheck": true,
@@ -16,7 +16,7 @@
     "jsx": "preserve",
     "incremental": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "app/**/*.ts", "app/**/*.tsx", "lib/**/*.ts", "lib/**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", ".next/types/**/*.ts"],
   "exclude": [
     "node_modules",
     "vite.config.ts",
