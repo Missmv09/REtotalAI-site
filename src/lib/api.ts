@@ -1,3 +1,6 @@
+// @server-only
+// Minimal fetch helpers used by compare/analyzer pages.
+
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 if (process.env.NODE_ENV !== "production" && !(process.env.NEXT_PUBLIC_API_URL ?? "")) {
@@ -19,3 +22,26 @@ export async function api(path: string, init?: RequestInit) {
   return res.json();
 }
 
+export async function fetchDeal(
+  id: string,
+  opts: { origin?: string; init?: RequestInit } = {}
+) {
+  const base =
+    opts.origin ??
+    (typeof window !== "undefined"
+      ? ""
+      : process.env.SITE_URL || "");
+  const res = await fetch(`${base}/api/deals/${id}`, {
+    cache: "no-store",
+    ...(opts.init || {}),
+  });
+  if (!res.ok) throw new Error(`fetchDeal ${id} ${res.status}`);
+  return res.json();
+}
+
+export async function fetchDeals(
+  ids: string[],
+  opts: { origin?: string; init?: RequestInit } = {}
+) {
+  return Promise.all(ids.map((id) => fetchDeal(id, opts)));
+}
