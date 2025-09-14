@@ -188,6 +188,7 @@ export default function REtotalAiLandingPricing() {
             <a href="#features" className="hover:text-gray-900">Features</a>
             <a href="#pricing" className="hover:text-gray-900">Pricing</a>
             <a href="#how" className="hover:text-gray-900">How it works</a>
+            <a href="/compare" className="hover:text-gray-900">Compare</a>
           </nav>
           <div className="flex items-center gap-3">
             {trial.active && trial.endsAt ? (
