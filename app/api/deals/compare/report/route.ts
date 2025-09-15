@@ -4,7 +4,7 @@ export const revalidate = 0;
 export const maxDuration = 60;
 
 import { NextResponse } from "next/server";
-import { renderCompareReportHTML } from "@/report/CompareReportTemplate";
+import { renderCompareReportHTML } from "@/lib/report/CompareReportTemplate";
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 
@@ -22,8 +22,9 @@ export async function GET(req: Request) {
 
   const browser = await puppeteer.launch({
     args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
     executablePath: await chromium.executablePath(),
-    headless: true
+    headless: chromium.headless,
   });
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: "networkidle0" });

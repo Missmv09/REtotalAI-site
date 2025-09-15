@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
-import { CalcPresets } from "@/calc/presets";
-import type { CalcModePreset, CalcBases } from "@/calc/types";
+import { CalcPresets } from "@/lib/calc/presets";
+import type { CalcModePreset, CalcBases } from "@/lib/calc/types";
 import { CalcBasesAdvanced } from "@/components/analyzer/CalcBasesAdvanced";
 
 const KPI_CHOICES = [
