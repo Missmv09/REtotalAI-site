@@ -1,7 +1,7 @@
 // @server-only
 /* eslint-disable @next/next/no-head-element */
-import { DEFAULT_KPI_COLUMNS } from "@/lib/compare/columns";
-import { compositeScore } from "@/lib/compare/score";
+import { DEFAULT_KPI_COLUMNS } from "@/compare/columns";
+import { compositeScore } from "@/compare/score";
 
 function compute(deal: any) {
   const n = deal.numbers || {};

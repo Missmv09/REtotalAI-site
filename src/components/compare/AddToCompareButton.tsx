@@ -1,5 +1,5 @@
 "use client";
-import { useCompareSet } from "@/lib/compare/compareStore";
+import { useCompareSet } from "@/compare/compareStore";
 
 export function AddToCompareButton({ dealId }: { dealId: string }) {
   const { ids, add, remove } = useCompareSet();

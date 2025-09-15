@@ -4,7 +4,7 @@ export const revalidate = 0;
 export const maxDuration = 60;
 
 import { NextResponse } from "next/server";
-import { renderCompareReportHTML } from "@/lib/report/CompareReportTemplate";
+import { renderCompareReportHTML } from "@/report/CompareReportTemplate";
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 

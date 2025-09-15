@@ -1,13 +1,13 @@
 "use client";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { useCompareSet } from "@/lib/compare/compareStore";
+import { useCompareSet } from "@/compare/compareStore";
 import { CompareToolbar, KpiKey } from "@/components/compare/CompareToolbar";
 import { CompareTable, CompareRow } from "@/components/compare/CompareTable";
 import { CompareCharts } from "@/components/compare/CompareCharts";
-import { CalcPresets } from "@/lib/calc/presets";
-import type { CalcBases } from "@/lib/calc/types";
-import { compositeScore } from "@/lib/compare/score";
+import { CalcPresets } from "@/calc/presets";
+import type { CalcBases } from "@/calc/types";
+import { compositeScore } from "@/compare/score";
 
 export default function CompareClient() {
   const sp = useSearchParams();

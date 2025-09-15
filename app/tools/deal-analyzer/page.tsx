@@ -2,7 +2,7 @@
 import { useState, useRef, FormEvent, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { analyze, DealInputs } from '@/lib/deal/analyze';
+import { analyze, DealInputs } from '@/deal/analyze';
 import { api } from '@/lib/api';
 import { AddToCompareButton } from '@/components/compare/AddToCompareButton';
 
