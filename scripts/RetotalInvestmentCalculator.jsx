@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Calculator, DollarSign, TrendingUp, AlertTriangle, BarChart3, Settings, ArrowLeft, Save, Download } from 'lucide-react';
 
 const RetotalInvestmentCalculator = () => {
@@ -115,7 +115,7 @@ const RetotalInvestmentCalculator = () => {
   });
 
   // Smart defaults and warnings
-  const getSmartDefaults = (type) => {
+  const getSmartDefaults = useCallback((type) => {
     const defaults = {
       cash: { rate: 0, points: 0, term_months: 0, flat_fees: 0 },
       conventional: { rate: 0.07, points: 0.01, term_months: 360, flat_fees: 500, max_ltv: 0.8 },
@@ -123,10 +123,10 @@ const RetotalInvestmentCalculator = () => {
       brrrr: { rate: 0.08, points: 0.015, term_months: 360, flat_fees: 750, max_ltv: 0.75 }
     };
     return defaults[type] || defaults.hard_money;
-  };
+  }, []);
 
   // Auto-populate property taxes based on ZIP or property value
-  const estimatePropertyTaxes = (propertyValue, zipCode = '') => {
+  const estimatePropertyTaxes = useCallback((propertyValue, zipCode = '') => {
     // National average is ~1.1% annually, but varies by state
     const stateRates = {
       '90': 0.0075, // CA
@@ -135,11 +135,11 @@ const RetotalInvestmentCalculator = () => {
       '33': 0.0083, // FL
       default: 0.011
     };
-    
+
     const zipPrefix = zipCode.substring(0, 2);
     const rate = stateRates[zipPrefix] || stateRates.default;
     return Math.round((propertyValue * rate) / 12);
-  };
+  }, []);
 
   // Core calculations
   const calculations = useMemo(() => {
@@ -269,7 +269,7 @@ const RetotalInvestmentCalculator = () => {
   }, [data]);
 
   // Validate inputs and generate warnings
-  const validateInputs = () => {
+  const validateInputs = useCallback(() => {
     const newWarnings = [];
     
     // Contingency warnings
@@ -336,7 +336,7 @@ const RetotalInvestmentCalculator = () => {
     }
     
     setWarnings(newWarnings);
-  };
+  }, [calculations, data]);
 
   // Update financing when tab changes
   useEffect(() => {
@@ -348,17 +348,17 @@ const RetotalInvestmentCalculator = () => {
         newFinancing[key] = defaults[key];
       }
     });
-    
+
     setData(prev => ({
       ...prev,
       financing: newFinancing
     }));
-  }, [activeTab, savedScenarios]);
+  }, [activeTab, getSmartDefaults, savedScenarios]);
 
   // Validate inputs whenever data changes
   useEffect(() => {
     validateInputs();
-  }, [data, calculations]);
+  }, [validateInputs]);
 
   // Auto-update property taxes when ZIP or property value changes
   useEffect(() => {
@@ -368,7 +368,7 @@ const RetotalInvestmentCalculator = () => {
         updateField('costs', 'taxes_mo', estimatedTaxes);
       }
     }
-  }, [data.property.pp, data.property.zip_code]);
+  }, [data.costs.taxes_mo, data.property.pp, data.property.zip_code, estimatePropertyTaxes, updateField]);
 
   // Plain English explanation
   const getPlainEnglishSummary = () => {
@@ -431,7 +431,7 @@ const RetotalInvestmentCalculator = () => {
     return flags;
   }, [data, calculations]);
 
-  const updateField = (section, field, value) => {
+  const updateField = useCallback((section, field, value) => {
     setData(prev => ({
       ...prev,
       [section]: {
@@ -439,7 +439,7 @@ const RetotalInvestmentCalculator = () => {
         [field]: value
       }
     }));
-    
+
     // Save scenario when financing changes
     if (section === 'financing') {
       setSavedScenarios(prev => ({
@@ -450,7 +450,7 @@ const RetotalInvestmentCalculator = () => {
         }
       }));
     }
-  };
+  }, [activeTab]);
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
