@@ -25,6 +25,13 @@ export interface ClosingCostBases {
   refi_loan?: number | null;
 }
 
+export interface Totals {
+  purchase: number;
+  exit: number;
+  total: number;
+  financeable: number;
+}
+
 export interface ClosingCostsSectionProps {
   title?: string;
   exitKind: ExitKind;                       // determines which bases are selectable
