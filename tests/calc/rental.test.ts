@@ -2,6 +2,11 @@ import { describe, expect, test } from 'vitest';
 import { rentalKPIs } from '@/lib/calc/formulas';
 import { CalcPresets } from '@/lib/calc/presets';
 
+const TOLERANCE = 1e-2;
+const expectClose = (actual: number, expected: number) => {
+  expect(Math.abs(actual - expected)).toBeLessThanOrEqual(TOLERANCE);
+};
+
 const conservative = CalcPresets.find(p => p.id === 'Conservative')!.bases;
 
 test('Rental stronger case matches expected KPIs', () => {
@@ -21,6 +26,39 @@ test('Rental stronger case matches expected KPIs', () => {
   expect(k.dscr).toBeCloseTo(1.11, 2);
   expect(Math.round(k.annualCF)).toBeCloseTo(1334, -1);
   expect(k.oer).toBeCloseTo(0.4108, 3);
+});
+
+test('Rental Test Case A aligns with baseline KPIs', () => {
+  const deal = {
+    purchase: 399700,
+    arv: 420000,
+    rehab: 15334,
+    rent: 3039.3224,
+    taxes: 7200,
+    insurance: 1000,
+    hoaMonthly: 0,
+    otherMonthly: 50,
+    vacancyPct: 5,
+    managementPct: 8,
+    maintenancePct: 5,
+    downPct: 25,
+    ratePct: 6.7573,
+    termYears: 30
+  };
+
+  const bases = {
+    loanBasis: 'purchase',
+    percentBasis: 'egi',
+    capBasis: 'purchase',
+    investedBasis: 'down_plus_rehab'
+  } as const;
+
+  const k = rentalKPIs(deal as any, bases);
+  expectClose(k.pmtMonthly, 1945.79);
+  expectClose(k.noi, 21344);
+  expectClose(k.capRate, 0.0534);
+  expectClose(k.annualCF / 12, -167.13);
+  expectClose(k.coc, -0.0174);
 });
 
 describe('DealCheck mode parity', () => {
