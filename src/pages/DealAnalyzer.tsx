@@ -1,6 +1,9 @@
 // src/pages/DealAnalyzer.tsx
 import React, { useState } from "react";
-import ClosingCostsSection, { Totals as ClosingTotals } from "../components/ClosingCostsSection";
+import ClosingCostsSection, {
+  ClosingCostItem,
+  Totals as ClosingTotals,
+} from "../components/ClosingCostsSection";
 import HoldCostsSection, { HoldTotals } from "../components/HoldCostsSection";
 import FinalOutputsPanel from "../components/FinalOutputsPanel";
 
@@ -17,7 +20,13 @@ export default function DealAnalyzer() {
   // ------------------------
   // State for modules
   // ------------------------
-  const [closingTotals, setClosingTotals] = useState<ClosingTotals>({ purchase: 0, exit: 0, total: 0, financeable: 0 });
+  const [closingItems, setClosingItems] = useState<ClosingCostItem[]>([]);
+  const [closingTotals, setClosingTotals] = useState<ClosingTotals>({
+    purchase: 0,
+    exit: 0,
+    total: 0,
+    financeable: 0,
+  });
   const [holdTotals, setHoldTotals] = useState<HoldTotals>({ monthly: 0, oneTime: 0, monthsHeld: 0, total: 0 });
   const [monthlyOpex, setMonthlyOpex] = useState(0);
 
@@ -27,8 +36,18 @@ export default function DealAnalyzer() {
 
       {/* Closing Costs */}
       <ClosingCostsSection
-        bases={{ purchasePrice, loanAmount, salePrice: arv, refiLoan: loanAmount }}
-        onChange={(_, totals) => setClosingTotals(totals)}
+        exitKind="sale"
+        bases={{
+          loan_amount: loanAmount,
+          purchase_price: purchasePrice,
+          sale_price: arv,
+          refi_loan: loanAmount,
+        }}
+        value={closingItems}
+        onChange={(items, total) => {
+          setClosingItems(items);
+          setClosingTotals({ purchase: total, exit: 0, total, financeable: 0 });
+        }}
       />
 
       {/* Hold Costs for Flip */}

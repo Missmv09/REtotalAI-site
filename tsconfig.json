@@ -4,6 +4,12 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "@components/*": [
+        "src/components/*"
+      ],
+      "@lib/*": [
+        "src/lib/*"
       ]
     },
     "target": "es2017",
