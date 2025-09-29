@@ -376,6 +376,10 @@ app.get("/api/deals/:id/report", (req, res) => {
   const holdingMonths = getN("holdingMonths");
   const sellingCostPct = getN("sellingCostPct");
   const closingCostPct = getN("closingCostPct");
+  const hasClosingCostsTotal = Object.prototype.hasOwnProperty.call(n, "closingCostsTotal");
+  const hasClosingCosts = Object.prototype.hasOwnProperty.call(n, "closingCosts");
+  const closingCostsFromItemsRaw = hasClosingCostsTotal ? Number(n.closingCostsTotal) : (hasClosingCosts ? Number(n.closingCosts) : NaN);
+  const closingCostsFromItems = Number.isFinite(closingCostsFromItemsRaw) ? closingCostsFromItemsRaw : null;
   const carryOtherMonthly = getN("carryOtherMonthly");
 
   // If we’re low on space before starting Flip, force a new page
@@ -391,7 +395,7 @@ app.get("/api/deals/:id/report", (req, res) => {
     const interestCarry = loanFlip * (ratePct / 100) * (holdingMonths / 12);
     const otherCarry = (carryOtherMonthly || 0) * (holdingMonths || 0);
     const sellCosts = arv * (sellingCostPct / 100);
-    const closeCosts = arv * (closingCostPct / 100);
+    const closeCosts = closingCostsFromItems != null ? closingCostsFromItems : arv * (closingCostPct / 100);
     const totalCost = basis + interestCarry + otherCarry + sellCosts + closeCosts;
     const profit = arv - totalCost;
     const margin = arv > 0 ? (profit / arv) * 100 : NaN;
@@ -403,7 +407,8 @@ app.get("/api/deals/:id/report", (req, res) => {
     kv(`Interest Carry (${num(ratePct,2)}% APR for ${num(holdingMonths)} mo)`, $(interestCarry));
     kv("Other Carry", $(otherCarry));
     kv(`Selling Costs (${num(sellingCostPct,1)}% of ARV)`, $(sellCosts));
-    kv(`Closing Costs (${num(closingCostPct,1)}% of ARV)`, $(closeCosts));
+    const closingLabel = closingCostsFromItems != null ? "Closing Costs (itemized)" : `Closing Costs (${num(closingCostPct,1)}% of ARV)`;
+    kv(closingLabel, $(closeCosts));
     hr();
     kv("Total Cost", $(totalCost));
     kv("Profit", $(profit));
