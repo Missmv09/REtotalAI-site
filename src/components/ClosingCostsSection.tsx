@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useId } from "react";
 import type { ChangeEvent, FC } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2 } from "lucide-react";
@@ -66,24 +66,38 @@ function describeItem(it: ClosingCostItem): string {
   return `$${formatCurrency(it.value)} fixed`;
 }
 
-// Lightweight, accessible help tooltip
-const HelpTip: React.FC<{ text: string }> = ({ text }) => (
-  <span className="group relative ml-1 inline-flex align-middle">
-    <span
-      aria-label="Help"
-      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-neutral-300 bg-white text-[10px] leading-none text-neutral-600"
-      role="img"
-    >
-      ?
+const HelpTip: React.FC<{ text: string }> = ({ text }) => {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+
+  return (
+    <span className="relative ml-1 inline-flex align-middle">
+      <button
+        type="button"
+        aria-describedby={id}
+        aria-expanded={open}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        onClick={() => setOpen((o) => !o)} // tap-friendly
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-neutral-300 bg-white text-[10px] leading-none text-neutral-700"
+        title={text}
+      >
+        ?
+      </button>
+      {open && (
+        <span
+          id={id}
+          role="tooltip"
+          className="absolute left-1/2 top-[130%] z-50 -translate-x-1/2 whitespace-pre rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-700 shadow-md"
+        >
+          {text}
+        </span>
+      )}
     </span>
-    <span
-      role="tooltip"
-      className="pointer-events-none absolute left-1/2 top-[130%] z-20 hidden -translate-x-1/2 whitespace-pre rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-700 shadow-md group-hover:block"
-    >
-      {text}
-    </span>
-  </span>
-);
+  );
+};
 
 function getBasisAmount(bases: ClosingCostBases, basis: Basis): number {
   switch (basis) {
@@ -222,7 +236,7 @@ export const ClosingCostsSection: FC<ClosingCostsSectionProps> = ({
                 return (
                   <div
                     key={it.id}
-                    className="grid grid-cols-12 items-start gap-2 rounded-md border border-neutral-200 p-2"
+                    className="grid grid-cols-12 items-start gap-2 rounded-md border border-neutral-200 p-2 overflow-visible"
                   >
                     {/* Name */}
                     <div className="col-span-4">
