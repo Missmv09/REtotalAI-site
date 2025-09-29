@@ -56,6 +56,35 @@ const labelForBasis: Record<Basis, string> = {
   refi_loan: "Refi Loan Amount",
 };
 
+const formatCurrency = (n: number) =>
+  n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+function describeItem(it: ClosingCostItem): string {
+  if (it.type === "percent") {
+    return `${it.value}% of ${labelForBasis[it.basis]}`;
+  }
+  return `$${formatCurrency(it.value)} fixed`;
+}
+
+// Lightweight, accessible help tooltip
+const HelpTip: React.FC<{ text: string }> = ({ text }) => (
+  <span className="group relative ml-1 inline-flex align-middle">
+    <span
+      aria-label="Help"
+      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-neutral-300 bg-white text-[10px] leading-none text-neutral-600"
+      role="img"
+    >
+      ?
+    </span>
+    <span
+      role="tooltip"
+      className="pointer-events-none absolute left-1/2 top-[130%] z-20 hidden -translate-x-1/2 whitespace-pre rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-700 shadow-md group-hover:block"
+    >
+      {text}
+    </span>
+  </span>
+);
+
 function getBasisAmount(bases: ClosingCostBases, basis: Basis): number {
   switch (basis) {
     case "loan_amount":
@@ -119,15 +148,17 @@ export const ClosingCostsSection: FC<ClosingCostsSectionProps> = ({
   }, [items, total, onChange]);
 
   const addItem = useCallback(() => {
-    const defaultBasis: Basis = selectableBases[0] ?? "loan_amount";
+    const defaultBasis: Basis = selectableBases.includes("purchase_price")
+      ? "purchase_price"
+      : selectableBases[0] ?? "loan_amount";
     setItems((prev) => [
       ...prev,
       {
         id: uid(),
         name: "New Cost",
-        type: "fixed",
+        type: "percent",
         basis: defaultBasis,
-        value: 0,
+        value: 1,
       },
     ]);
   }, [selectableBases]);
@@ -191,62 +222,93 @@ export const ClosingCostsSection: FC<ClosingCostsSectionProps> = ({
                 return (
                   <div
                     key={it.id}
-                    className="grid grid-cols-12 items-center gap-2 rounded-md border border-neutral-200 p-2"
+                    className="grid grid-cols-12 items-start gap-2 rounded-md border border-neutral-200 p-2"
                   >
-                    <input
-                      className="col-span-4 rounded-md border px-2 py-1"
-                      placeholder="Item name"
-                      value={it.name}
-                      onChange={onNameChange(it.id)}
-                    />
-
-                    <select
-                      className="col-span-2 rounded-md border px-2 py-1"
-                      value={it.type}
-                      onChange={onTypeChange(it.id)}
-                    >
-                      <option value="fixed">Fixed $</option>
-                      <option value="percent">% of Basis</option>
-                    </select>
-
-                    <select
-                      className="col-span-3 rounded-md border px-2 py-1 disabled:opacity-50"
-                      value={it.basis}
-                      onChange={onBasisChange(it.id)}
-                      disabled={it.type === "fixed"}
-                    >
-                      {selectableBases.map((b) => (
-                        <option key={b} value={b}>
-                          {labelForBasis[b]}
-                        </option>
-                      ))}
-                    </select>
-
-                    <div className="col-span-2 flex items-center gap-1">
+                    {/* Name */}
+                    <div className="col-span-4">
+                      <div className="mb-1 flex items-center text-xs text-neutral-600">
+                        Name <HelpTip text={"Label for this cost line (e.g., Title & Escrow, Loan Origination)."} />
+                      </div>
                       <input
-                        className="w-full rounded-md border px-2 py-1 text-right"
-                        type="number"
-                        min={0}
-                        step={it.type === "percent" ? 0.01 : 1}
-                        value={Number.isFinite(it.value) ? it.value : 0}
-                        onChange={onValueChange(it.id)}
+                        className="w-full rounded-md border px-2 py-1"
+                        placeholder="e.g., Loan Origination"
+                        value={it.name}
+                        onChange={onNameChange(it.id)}
                       />
-                      <span className="text-sm text-neutral-500">
-                        {it.type === "percent" ? "%" : "$"}
-                      </span>
                     </div>
 
-                    <button
-                      type="button"
-                      aria-label="Remove item"
-                      className="col-span-1 flex items-center justify-center rounded-md border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-100"
-                      onClick={() => removeItem(it.id)}
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {/* Type */}
+                    <div className="col-span-2">
+                      <div className="mb-1 flex items-center text-xs text-neutral-600">
+                        Type <HelpTip text={"Fixed $ = enter a dollar amount.\n% of Basis = enter a percent that multiplies a chosen basis (Purchase Price, Loan Amount, etc.)."} />
+                      </div>
+                      <select
+                        className="w-full rounded-md border px-2 py-1"
+                        value={it.type}
+                        onChange={onTypeChange(it.id)}
+                      >
+                        <option value="fixed">Fixed $</option>
+                        <option value="percent">% of Basis</option>
+                      </select>
+                    </div>
 
-                    <div className="col-span-12 text-right text-sm text-neutral-600">
-                      Line total: ${computed.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    {/* Basis */}
+                    <div className="col-span-3">
+                      <div className="mb-1 flex items-center text-xs text-neutral-600">
+                        Basis <HelpTip text={"Which number your % applies to.\nPurchase Price = acquisition price\nLoan Amount = mortgage principal\nSale Price = exit sale price\nRefi Loan Amount = new loan at refi"} />
+                      </div>
+                      <select
+                        className="w-full rounded-md border px-2 py-1 disabled:opacity-50"
+                        value={it.basis}
+                        onChange={onBasisChange(it.id)}
+                        disabled={it.type === "fixed"}
+                      >
+                        {selectableBases.map((b) => (
+                          <option key={b} value={b}>
+                            {labelForBasis[b]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Value */}
+                    <div className="col-span-2">
+                      <div className="mb-1 flex items-center text-xs text-neutral-600">
+                        Value <HelpTip text={"Enter a whole number or decimal.\nIf Type = % of Basis, enter just the number (e.g., 3 for 3%).\nIf Type = Fixed $, enter the dollar amount (e.g., 1200)."} />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <input
+                          className="w-full rounded-md border px-2 py-1 text-right"
+                          type="number"
+                          min={0}
+                          step={it.type === "percent" ? 0.01 : 1}
+                          value={Number.isFinite(it.value) ? it.value : 0}
+                          onChange={onValueChange(it.id)}
+                        />
+                        <span className="text-sm text-neutral-500">
+                          {it.type === "percent" ? "%" : "$"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Remove */}
+                    <div className="col-span-1">
+                      <div className="mb-1 flex items-center text-xs text-neutral-600">
+                        Remove <HelpTip text={"Delete this line item."} />
+                      </div>
+                      <button
+                        type="button"
+                        aria-label="Remove item"
+                        className="flex w-full items-center justify-center rounded-md border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-100"
+                        onClick={() => removeItem(it.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+
+                    {/* Line total */}
+                    <div className="col-span-12 text-right text-xs text-neutral-600">
+                      Line total: ${formatCurrency(computed)}
                     </div>
                   </div>
                 );
@@ -261,8 +323,22 @@ export const ClosingCostsSection: FC<ClosingCostsSectionProps> = ({
                   <Plus size={16} /> Add Cost
                 </button>
 
-                <div className="text-right text-base font-semibold">
-                  Total Closing Costs: ${total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                <div className="text-right">
+                  <div className="text-base font-semibold">
+                    Total Closing Costs: ${formatCurrency(total)}
+                  </div>
+                  {items.length > 0 && (
+                    <div className="text-xs text-neutral-500">
+                      (
+                      {items.map((it, i) => (
+                        <span key={it.id}>
+                          {it.name}: {describeItem(it)}
+                          {i < items.length - 1 ? "; " : ""}
+                        </span>
+                      ))}
+                      )
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
