@@ -59,12 +59,17 @@ export default function DealAnalyzerPage() {
   const brrrr = rentalKPIs(dealInput, bases);
   const flip = flipKPIs(dealInput);
 
+  const purchasePrice = dealInput.purchase ?? 0;
+  const salePrice = dealInput.arv ?? 0;
+  const loanAmount = kpis.loanAmount;
+  const refiLoanAmount = exitMode === 'refi' ? kpis.loanAmount : undefined;
+
   const closingBases: ClosingCostBases = useMemo(() => ({
-    loan_amount: kpis.loanAmount,
-    purchase_price: dealInput.purchase,
-    sale_price: exitMode === 'sale' ? dealInput.arv : undefined,
-    refi_loan: exitMode === 'refi' ? kpis.loanAmount : undefined,
-  }), [dealInput.arv, dealInput.purchase, exitMode, kpis.loanAmount]);
+    loan_amount: loanAmount,
+    purchase_price: purchasePrice,
+    sale_price: exitMode === 'sale' ? salePrice : undefined,
+    refi_loan: exitMode === 'refi' ? refiLoanAmount : undefined,
+  }), [loanAmount, purchasePrice, salePrice, exitMode, refiLoanAmount]);
 
   const closingBreakdown = useMemo(() =>
     closingCostsItems.map(item => ({
