@@ -12,7 +12,6 @@ import { StickyActionBar } from '@/components/analyzer/StickyActionBar';
 import ClosingCostsSection, {
   type ClosingCostBases,
   type ClosingCostItem,
-  computeItemAmount,
 } from '@/components/ClosingCostsSection';
 
 const defaultInput: DealInput = {
@@ -70,14 +69,6 @@ export default function DealAnalyzerPage() {
     sale_price: exitMode === 'sale' ? salePrice : undefined,
     refi_loan: exitMode === 'refi' ? refiLoanAmount : undefined,
   }), [loanAmount, purchasePrice, salePrice, exitMode, refiLoanAmount]);
-
-  const closingBreakdown = useMemo(() =>
-    closingCostsItems.map(item => ({
-      id: item.id,
-      name: item.name,
-      amount: computeItemAmount(item, closingBases),
-    })),
-  [closingCostsItems, closingBases]);
   const scenarios = [
     { title: 'Hold', items: [
       { label: 'Cap', value: hold.capRate.toFixed(3) },
@@ -119,27 +110,6 @@ export default function DealAnalyzerPage() {
           setClosingCostsTotal(total);
         }}
       />
-
-      <div className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-lg font-semibold">Closing Costs Summary</h2>
-          <span className="text-sm text-neutral-500">
-            Total: $
-            {closingCostsTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-          </span>
-        </div>
-        <ul className="mt-3 space-y-1 text-sm text-neutral-700">
-          {closingBreakdown.map(item => (
-            <li key={item.id} className="flex items-center justify-between gap-3">
-              <span>{item.name}</span>
-              <span>
-                $
-                {item.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
 
       <div className="grid md:grid-cols-3 gap-4">
         <ExplainableStat label="Cap Rate" value={(kpis.capRate*100).toFixed(2)+"%"} onExplain={()=>alert(kpis.explain.NOI)} />
