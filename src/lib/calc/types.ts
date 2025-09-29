@@ -10,7 +10,7 @@ export interface DealInput {
   vacancyPct: number; managementPct: number; maintenancePct: number;
   downPct: number; ratePct: number; termYears: number;
   holdingMonths?: number; carryOtherMonthly?: number;
-  sellingCostPct?: number; closingCostPct?: number;
+  sellingCostPct?: number; closingCostPct?: number; closingCosts?: number;
 }
 
 export interface CalcBases {

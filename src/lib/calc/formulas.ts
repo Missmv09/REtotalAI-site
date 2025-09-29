@@ -69,7 +69,7 @@ export function flipKPIs(d: DealInput): FlipKPIs {
   const interestCarry = loan * (d.ratePct / 100) * ((d.holdingMonths ?? 0) / 12);
   const otherCarry = (d.carryOtherMonthly ?? 0) * (d.holdingMonths ?? 0);
   const selling = d.arv * ((d.sellingCostPct ?? 0) / 100);
-  const closing = d.arv * ((d.closingCostPct ?? 0) / 100);
+  const closing = d.closingCosts ?? d.arv * ((d.closingCostPct ?? 0) / 100);
   const totalCost = basis + interestCarry + otherCarry + selling + closing;
   const profit = d.arv - totalCost;
   const margin = d.arv ? profit / d.arv : NaN;

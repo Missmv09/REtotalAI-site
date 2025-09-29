@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { DealInput } from '@/lib/calc/types';
 import { CalcPresets } from '@/lib/calc/presets';
 import { rentalKPIs, flipKPIs } from '@/lib/calc/formulas';
@@ -9,6 +9,11 @@ import { ExplainableStat } from '@/components/analyzer/ExplainableStat';
 import { ScenarioCompare } from '@/components/analyzer/ScenarioCompare';
 import { SensitivityTornado } from '@/components/analyzer/SensitivityTornado';
 import { StickyActionBar } from '@/components/analyzer/StickyActionBar';
+import ClosingCostsSection, {
+  type ClosingCostBases,
+  type ClosingCostItem,
+  computeItemAmount,
+} from '@/components/ClosingCostsSection';
 
 const defaultInput: DealInput = {
   purchase: 180000,
@@ -35,12 +40,39 @@ export default function DealAnalyzerPage() {
   const [mode, setMode] = useState<CalcModeId>('Conservative');
   const [bases, setBases] = useState<Bases>(CalcPresets.find(p=>p.id==='Conservative')!.bases);
   const [input] = useState<DealInput>(defaultInput);
-  const kpis = rentalKPIs(input, bases);
+  const [closingCostsItems, setClosingCostsItems] = useState<ClosingCostItem[]>([
+    { id: 'cc-1', name: 'Closing Costs', type: 'percent', basis: 'purchase_price', value: 3 },
+    { id: 'cc-2', name: 'Loan Origination', type: 'percent', basis: 'loan_amount', value: 1 },
+  ]);
+  const [closingCostsTotal, setClosingCostsTotal] = useState(0);
+  const [exitMode] = useState<'sale' | 'refi'>('sale');
+
+  const dealInput = useMemo<DealInput>(() => ({
+    ...input,
+    closingCosts: closingCostsTotal,
+  }), [input, closingCostsTotal]);
+
+  const kpis = rentalKPIs(dealInput, bases);
   const note = CalcPresets.find(p=>p.id===mode)?.notes?.[0];
 
-  const hold = rentalKPIs(input, bases);
-  const brrrr = rentalKPIs(input, bases);
-  const flip = flipKPIs(input);
+  const hold = rentalKPIs(dealInput, bases);
+  const brrrr = rentalKPIs(dealInput, bases);
+  const flip = flipKPIs(dealInput);
+
+  const closingBases: ClosingCostBases = useMemo(() => ({
+    loan_amount: kpis.loanAmount,
+    purchase_price: dealInput.purchase,
+    sale_price: exitMode === 'sale' ? dealInput.arv : undefined,
+    refi_loan: exitMode === 'refi' ? kpis.loanAmount : undefined,
+  }), [dealInput.arv, dealInput.purchase, exitMode, kpis.loanAmount]);
+
+  const closingBreakdown = useMemo(() =>
+    closingCostsItems.map(item => ({
+      id: item.id,
+      name: item.name,
+      amount: computeItemAmount(item, closingBases),
+    })),
+  [closingCostsItems, closingBases]);
   const scenarios = [
     { title: 'Hold', items: [
       { label: 'Cap', value: hold.capRate.toFixed(3) },
@@ -72,6 +104,38 @@ export default function DealAnalyzerPage() {
 
       <CalcBasesAdvanced value={bases} onChange={setBases} />
 
+      <ClosingCostsSection
+        title="Closing Costs"
+        exitKind={exitMode === 'refi' ? 'refi' : 'sale'}
+        bases={closingBases}
+        value={closingCostsItems}
+        onChange={(items, total) => {
+          setClosingCostsItems(items);
+          setClosingCostsTotal(total);
+        }}
+      />
+
+      <div className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-lg font-semibold">Closing Costs Summary</h2>
+          <span className="text-sm text-neutral-500">
+            Total: $
+            {closingCostsTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </span>
+        </div>
+        <ul className="mt-3 space-y-1 text-sm text-neutral-700">
+          {closingBreakdown.map(item => (
+            <li key={item.id} className="flex items-center justify-between gap-3">
+              <span>{item.name}</span>
+              <span>
+                $
+                {item.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       <div className="grid md:grid-cols-3 gap-4">
         <ExplainableStat label="Cap Rate" value={(kpis.capRate*100).toFixed(2)+"%"} onExplain={()=>alert(kpis.explain.NOI)} />
         <ExplainableStat label="DSCR" value={kpis.dscr.toFixed(2)} onExplain={()=>alert(kpis.explain.PMT)} />
@@ -79,7 +143,7 @@ export default function DealAnalyzerPage() {
       </div>
 
       <ScenarioCompare scenarios={scenarios} />
-      <SensitivityTornado input={input} bases={bases} metric="annualCF" />
+      <SensitivityTornado input={dealInput} bases={bases} metric="annualCF" />
 
       <StickyActionBar>
         <button type="button" className="btn btn-primary min-w-40">Generate Report</button>
