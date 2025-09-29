@@ -80,7 +80,7 @@ const HelpTip: React.FC<{ text: string }> = ({ text }) => {
         onMouseLeave={() => setOpen(false)}
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
-        onClick={() => setOpen((o) => !o)} // tap-friendly
+        onClick={() => setOpen((o) => !o)}
         className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-neutral-300 bg-white text-[10px] leading-none text-neutral-700"
         title={text}
       >
@@ -162,20 +162,17 @@ export const ClosingCostsSection: FC<ClosingCostsSectionProps> = ({
   }, [items, total, onChange]);
 
   const addItem = useCallback(() => {
-    const defaultBasis: Basis = selectableBases.includes("purchase_price")
-      ? "purchase_price"
-      : selectableBases[0] ?? "loan_amount";
     setItems((prev) => [
       ...prev,
       {
         id: uid(),
         name: "New Cost",
         type: "percent",
-        basis: defaultBasis,
+        basis: "purchase_price",
         value: 1,
       },
     ]);
-  }, [selectableBases]);
+  }, []);
 
   const removeItem = useCallback((id: string) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
