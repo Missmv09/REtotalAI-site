@@ -1,9 +1,13 @@
 'use client';
-import { useState, useRef, FormEvent } from 'react';
+import { useState, useRef, useMemo, FormEvent } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { analyze, DealInputs } from '@/lib/deal/analyze';
 import { api } from '@/lib/api';
+import ClosingCostsSection, {
+  type ClosingCostBases,
+  type ClosingCostItem,
+} from '@/components/ClosingCostsSection';
 
 const money = (n: number) => `$${Number(n || 0).toLocaleString()}`;
 
@@ -19,9 +23,47 @@ export default function DealAnalyzerPage() {
     holdingMonthly: { taxes: 250, insurance: 120, utilities: 90, hoa: 0, maintenance: 100 },
     selling: { agentCommissionPct: 5.0, titleEscrow: 2000, transferTaxesRecording: 1200, attorney: 750, marketing: 500, sellerMoving: 400, other: 0 }
   });
+  const [closingCostsItems, setClosingCostsItems] = useState<ClosingCostItem[]>([
+    { id: 'cc-1', name: 'Closing Costs', type: 'percent', basis: 'purchase_price', value: 3 },
+    { id: 'cc-2', name: 'Loan Origination', type: 'percent', basis: 'loan_amount', value: 1 },
+  ]);
+  const [closingCostsTotal, setClosingCostsTotal] = useState(0);
   const [out, setOut] = useState<any>(null);
   const pdfRef = useRef<HTMLDivElement>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+
+  const exitMode: 'sale' | 'refi' = state.mode === 'brrrr' ? 'refi' : 'sale';
+
+  const loanAmount = useMemo(() => {
+    const purchase = Number(state.purchasePrice) || 0;
+    const arv = Number(state.arv) || 0;
+    const downPayment = Number(state.loan.downPayment) || 0;
+    const ltv = (state.loan.ltvPct ?? 80) / 100;
+
+    if (state.loan.type === 'cash') return 0;
+    if (state.loan.type === 'hard_money') {
+      const cap = (arv > 0 ? arv : purchase) * ltv;
+      return Math.max(0, Math.min(cap, purchase));
+    }
+    const byLtv = purchase * ltv;
+    const byDown = purchase - downPayment;
+    return Math.max(0, Math.min(byLtv, byDown));
+  }, [state.purchasePrice, state.arv, state.loan.type, state.loan.ltvPct, state.loan.downPayment]);
+
+  const refiLoanAmount = useMemo(() => {
+    if (exitMode !== 'refi') return undefined;
+    const arv = Number(state.arv) || 0;
+    const ltv = (state.loan.ltvPct ?? 75) / 100;
+    if (!arv || !ltv) return undefined;
+    return Math.max(0, arv * ltv);
+  }, [exitMode, state.arv, state.loan.ltvPct]);
+
+  const closingBases: ClosingCostBases = useMemo(() => ({
+    loan_amount: loanAmount,
+    purchase_price: Number(state.purchasePrice) || 0,
+    sale_price: exitMode === 'sale' ? Number(state.arv) || 0 : undefined,
+    refi_loan: exitMode === 'refi' ? refiLoanAmount : undefined,
+  }), [exitMode, loanAmount, refiLoanAmount, state.purchasePrice, state.arv]);
 
   function upd<K extends keyof DealInputs>(k: K, v: DealInputs[K]) { setState(s => ({ ...s, [k]: v })); }
   function updLoan(k: keyof DealInputs['loan'], v: any) { setState(s => ({ ...s, loan: { ...s.loan, [k]: v }})); }
@@ -32,7 +74,7 @@ export default function DealAnalyzerPage() {
     setState(s => ({ ...s, selling: { ...(s.selling || {}), [k]: v }}));
   }
 
-  function calc() { setOut(analyze(state)); }
+  function calc() { setOut(analyze({ ...state, closingCosts: closingCostsTotal })); }
 
   async function saveAndShare() {
       // 1) Create a deal
@@ -49,9 +91,9 @@ export default function DealAnalyzerPage() {
       // 2) Save run snapshot via analyze API
       const outputs = await api(`/api/deals/${id}/analyze`, {
         method: 'POST',
-        body: JSON.stringify(state)
+        body: JSON.stringify({ ...state, closingCosts: closingCostsTotal, closingCostItems: closingCostsItems })
       });
-      setOut(outputs);
+      setOut({ ...outputs, closingCost: outputs?.closingCost ?? closingCostsTotal });
 
       // 3) Create/reuse share link
       const { url } = await api(`/api/deals/${id}/share`, { method: 'POST' });
@@ -126,6 +168,19 @@ export default function DealAnalyzerPage() {
             <Row label="Seller Moving"><Input num value={state.selling?.sellerMoving} onChange={v=>updSell('sellerMoving', v)} /></Row>
             <Row label="Other"><Input num value={state.selling?.other} onChange={v=>updSell('other', v)} /></Row>
           </Section>
+          <Section title="Closing Costs">
+            <div className="md:col-span-2">
+              <ClosingCostsSection
+                exitKind={exitMode}
+                bases={closingBases}
+                value={closingCostsItems}
+                onChange={(items, total) => {
+                  setClosingCostsItems(items);
+                  setClosingCostsTotal(total);
+                }}
+              />
+            </div>
+          </Section>
           {shareUrl && <div className="text-sm mt-4">Share URL: <a className="text-blue-600 underline" href={shareUrl} target="_blank">{shareUrl}</a></div>}
         </div>
 
@@ -135,6 +190,7 @@ export default function DealAnalyzerPage() {
           <KPI title="Financing Cost" value={out?.financingCost}/>
           <KPI title="Holding Cost" value={out?.holdingCost}/>
           <KPI title="Selling Cost" value={out?.sellingCost}/>
+          <KPI title="Closing Cost" value={out?.closingCost}/>
           <KPI title="Profit" value={out?.profit}/>
           <KPI title="ROI" value={out ? `${(out.roi*100).toFixed(2)}%` : undefined}/>
           {out?.warnings?.length ? (

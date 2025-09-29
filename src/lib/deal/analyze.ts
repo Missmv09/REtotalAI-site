@@ -32,6 +32,7 @@ export type DealInputs = {
   holdingMonthly?: HoldingMonthly;       // monthly carry during hold/rehab
   selling?: SellingBreakdown;            // Flip selling costs
   sellingCostPct?: number;               // fallback simple % of ARV (unused if breakdown present)
+  closingCosts?: number;                 // total closing costs from itemized module
 };
 
 export type DealOutputs = {
@@ -40,6 +41,7 @@ export type DealOutputs = {
   financingCost: number;     // points + interest
   holdingCost: number;       // monthly carry * months
   sellingCost: number;       // agent + itemized closing/marketing/moving
+  closingCost: number;       // purchase + exit closing total
   totalInvestment: number;   // cash in + above costs
   profit: number;            // ARV - (all-in)
   roi: number;               // profit / totalInvestment
@@ -94,11 +96,13 @@ export function analyzeFlip(inp: DealInputs): DealOutputs {
     sellingCost = salePrice * (num(inp.sellingCostPct) / 100);
   }
 
+  const closingCost = num(inp.closingCosts);
+
   // Total investment (actual cash out)
   const cashPortion = Math.max(0, pp - loanAmount) + num(inp.rehabCost);
-  const totalInvestment = cashPortion + financingCost + holdingCost + sellingCost;
+  const totalInvestment = cashPortion + financingCost + holdingCost + sellingCost + closingCost;
 
-  const profit = salePrice - (pp + num(inp.rehabCost) + financingCost + holdingCost + sellingCost);
+  const profit = salePrice - (pp + num(inp.rehabCost) + financingCost + holdingCost + sellingCost + closingCost);
   const roi = totalInvestment > 0 ? profit / totalInvestment : 0;
 
   const warnings: string[] = [];
@@ -106,7 +110,7 @@ export function analyzeFlip(inp: DealInputs): DealOutputs {
   if (inp.loan.type !== 'cash' && months > 0 && rate === 0) warnings.push('Interest rate is 0% but a financed loan is selected.');
   if (inp.loan.type === 'hard_money' && (termMonths ?? 0) > 12) warnings.push('Hard money term > 12 months is uncommon.');
 
-  return { salePrice, loanAmount, financingCost, holdingCost, sellingCost, totalInvestment, profit, roi, warnings };
+  return { salePrice, loanAmount, financingCost, holdingCost, sellingCost, closingCost, totalInvestment, profit, roi, warnings };
 }
 
 export function analyze(inputs: DealInputs): DealOutputs {
