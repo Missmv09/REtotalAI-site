@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Confirming...</title>
+</head>
+<body>
+  <p>Thanks! Signing you in...</p>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = supabase.createClient("https://YOURPROJECTID.supabase.co", "YOUR_PUBLIC_ANON_KEY");
+    sb.auth.getSession().then(() => window.location.replace("/app.html"));
+  </script>
+</body>
+</html>
