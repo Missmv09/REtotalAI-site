@@ -8,15 +8,24 @@
         console.log('[API]', baseUrl);
     }
 
+    const DEFAULT_SUPABASE_URL = 'https://xxznsuufzcysqzqqqaqo.supabase.co';
+    const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4em5zdXVmemN5c3F6cXFxYXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1MzUxNzcsImV4cCI6MjA3MjExMTE3N30.Dizsg4ZtMhwdos15UxfqPIJ2bS6IeFBRfed4pETiG14';
+
     const supabaseUrl = isBrowser
-        ? window.SUPABASE_URL || document.querySelector('meta[name="supabase-url"]')?.content || ''
+        ? window.SUPABASE_URL
+            || document.querySelector('meta[name="supabase-url"]')?.content
+            || DEFAULT_SUPABASE_URL
         : '';
     const supabaseAnonKey = isBrowser
-        ? window.SUPABASE_ANON_KEY || document.querySelector('meta[name="supabase-anon-key"]')?.content || ''
+        ? window.SUPABASE_ANON_KEY
+            || document.querySelector('meta[name="supabase-anon-key"]')?.content
+            || DEFAULT_SUPABASE_ANON_KEY
         : '';
 
     const supabaseClient = (isBrowser && window.supabase && supabaseUrl && supabaseAnonKey)
-        ? window.supabase.createClient(supabaseUrl, supabaseAnonKey)
+        ? window.supabase.createClient(supabaseUrl, supabaseAnonKey, {
+            auth: { persistSession: true, autoRefreshToken: true }
+        })
         : null;
 
     if (!supabaseClient && isBrowser && window.supabase && (supabaseUrl || supabaseAnonKey)) {
@@ -170,19 +179,34 @@
 
         try {
             if (supabaseClient) {
-                const { error } = await supabaseClient.auth.signUp({
+                const { data, error } = await supabaseClient.auth.signUp({
                     email,
                     password,
                     options: {
-                        data: { full_name: name }
+                        data: { full_name: name },
+                        emailRedirectTo: `${window.location.origin}/auth/callback.html`
                     }
                 });
 
                 if (error) {
+                    const msg = error.message || 'Signup failed';
+                    if (/redirect_to/i.test(msg)) {
+                        alert('Invalid redirect URL. Add your domain in Supabase → Auth → URL Configuration.');
+                        return;
+                    }
+                    if (/signups? not allowed/i.test(msg)) {
+                        alert('Email signups are disabled in Supabase Auth.');
+                        return;
+                    }
                     throw error;
                 }
 
-                alert('Signup successful! Please check your email to confirm your account.');
+                if (data?.user && !data.session) {
+                    alert('Check your email to confirm your account.');
+                } else {
+                    alert('Signup successful!');
+                    window.location.href = '/app.html';
+                }
                 closeAuthModal();
                 return;
             }
@@ -231,6 +255,7 @@
 
                 alert('Login successful!');
                 closeAuthModal();
+                window.location.href = '/app.html';
                 return;
             }
 

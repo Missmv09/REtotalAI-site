@@ -6,32 +6,24 @@
     <title>Log In - REtotalAI</title>
     <link rel="stylesheet" href="styles/main.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="scripts/main.js"></script>
 </head>
 <body>
-    <div style="max-width: 500px; margin: 5% auto; background: white; border-radius: 1rem; padding: 2.5rem; border: 1px solid var(--border);">
-        <h2 style="color: var(--primary); margin-bottom: 1rem; font-family: Georgia, serif;">Welcome Back</h2>
-        <p style="color: var(--gray); margin-bottom: 2rem;">Log in to access your real estate tools</p>
-
-        <div style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Email</label>
-            <input type="email" id="loginEmail" placeholder="john@example.com" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
-        </div>
-
-        <div style="margin-bottom: 1.5rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--dark); font-weight: 600;">Password</label>
-            <input type="password" id="loginPassword" placeholder="••••••••" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem;">
-        </div>
-
-        <button onclick="handleLogin()" style="width: 100%; background: var(--accent); color: white; padding: 0.875rem; border-radius: 0.5rem; font-weight: 600; border: none; cursor: pointer; font-size: 1rem;">
-            Log In
-        </button>
-
-        <p style="text-align: center; margin-top: 1.5rem; color: var(--gray);">
-            Don't have an account?
-            <a href="signup.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">Sign Up Free</a>
-        </p>
+  <div style="max-width:500px;margin:5% auto;background:#fff;border:1px solid var(--border);border-radius:1rem;padding:2.5rem;">
+    <h2 style="color:var(--primary);margin-bottom:1rem;font-family:Georgia,serif;">Welcome Back</h2>
+    <p style="color:var(--gray);margin-bottom:2rem;">Log in to your account</p>
+    <div style="margin-bottom:1rem;">
+      <label>Email</label>
+      <input id="loginEmail" type="email" placeholder="john@example.com" style="width:100%;padding:.75rem;border:2px solid var(--border);border-radius:.5rem;">
     </div>
-    <script src="scripts/main.js"></script>
+    <div style="margin-bottom:1.5rem;">
+      <label>Password</label>
+      <input id="loginPassword" type="password" placeholder="••••••••" style="width:100%;padding:.75rem;border:2px solid var(--border);border-radius:.5rem;">
+    </div>
+    <button onclick="handleLogin()" style="width:100%;background:var(--accent);color:#fff;padding:.875rem;border:none;border-radius:.5rem;font-weight:600;">
+      Log In
+    </button>
+  </div>
 </body>
 </html>
 
