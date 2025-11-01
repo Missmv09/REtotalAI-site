@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>REtotalAI App</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>REtotalAI</h1>
+  <p id="who"></p>
+  <button id="logoutBtn">Log out</button>
+
+  <script>
+    const sb = supabase.createClient(
+      "https://xxznsuufzcysqzqqqaqo.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4em5zdXVmemN5c3F6cXFxYXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1MzUxNzcsImV4cCI6MjA3MjExMTE3N30.Dizsg4ZtMhwdos15UxfqPIJ2bS6IeFBRfed4pETiG14"
+    );
+    (async () => {
+      const { data } = await sb.auth.getUser();
+      document.getElementById('who').textContent =
+        data?.user?.email ? `Signed in as ${data.user.email}` : 'Not signed in';
+    })();
+    document.getElementById('logoutBtn').onclick = async () => {
+      await sb.auth.signOut();
+      window.location.href = "/login.html";
+    };
+  </script>
+</body>
+</html>
