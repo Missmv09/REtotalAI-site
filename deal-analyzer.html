@@ -110,6 +110,30 @@
             transform: translateY(-1px);
         }
 
+        .auth-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-email {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .auth-signout {
+            background: white;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+
+        .auth-signout:hover {
+            background: var(--accent);
+            color: white;
+        }
+
         /* Main Container */
         .container {
             max-width: 1400px;
@@ -491,6 +515,10 @@
 
     <!-- Main Content -->
     <div class="container">
+        <div class="auth-bar">
+            <span class="auth-email" id="authEmail">Checking account...</span>
+            <button class="btn auth-signout" id="signOutBtn">Sign Out</button>
+        </div>
         <!-- Tool Header -->
         <div class="tool-header">
             <h1 class="tool-title">Deal Analyzer</h1>
@@ -793,6 +821,8 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/protected.js"></script>
     <script>
         // Strategy switching
         document.querySelectorAll('.strategy-btn').forEach(btn => {
@@ -1060,7 +1090,26 @@
         });
 
         // Load example data on page load
-        window.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('DOMContentLoaded', async function() {
+            const authed = await requireAuth();
+            if (!authed) {
+                return;
+            }
+
+            const emailEl = document.getElementById('authEmail');
+            const email = await currentUserEmail();
+            if (emailEl) {
+                emailEl.textContent = email ? `Signed in as ${email}` : 'Signed in';
+            }
+
+            const signOutBtn = document.getElementById('signOutBtn');
+            if (signOutBtn) {
+                signOutBtn.addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    await signOut();
+                });
+            }
+
             // Pre-fill with example data
             document.getElementById('purchasePrice').value = '350000';
             document.getElementById('monthlyRent').value = '2500';
@@ -1068,7 +1117,7 @@
             document.getElementById('interestRate').value = '7.5';
             document.getElementById('propertyTax').value = '4200';
             document.getElementById('insurance').value = '1800';
-            
+
             // Calculate with example data
             calculateDeal();
         });
