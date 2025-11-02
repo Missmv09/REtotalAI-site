@@ -5,9 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>REtotalAI Deal Analyzer</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="scripts/protected.js"></script>
 </head>
 <body class="bg-gray-100 p-4">
+  <div class="flex justify-end items-center gap-3 mb-4 text-sm text-slate-600">
+    <span id="reactAuthEmail" class="font-medium">Checking account...</span>
+    <button id="reactSignOut" class="px-3 py-1 border border-amber-500 text-amber-600 rounded-md hover:bg-amber-50 transition">
+      Sign Out
+    </button>
+  </div>
   <div id="root"></div>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const authed = await requireAuth();
+      if (!authed) {
+        return;
+      }
+
+      const email = await currentUserEmail();
+      const emailEl = document.getElementById('reactAuthEmail');
+      if (emailEl) {
+        emailEl.textContent = email ? `Signed in as ${email}` : 'Signed in';
+      }
+
+      const signOutBtn = document.getElementById('reactSignOut');
+      if (signOutBtn) {
+        signOutBtn.addEventListener('click', async (event) => {
+          event.preventDefault();
+          await signOut();
+        });
+      }
+    });
+  </script>
   <script type="module">
     import React from 'https://cdn.skypack.dev/react@18.2.0';
     import { createRoot } from 'https://cdn.skypack.dev/react-dom@18.2.0/client';
@@ -21,7 +51,14 @@
       </>
     );
 
-    createRoot(document.getElementById('root')).render(<App />);
+    (async () => {
+      const authed = await requireAuth();
+      if (!authed) {
+        return;
+      }
+
+      createRoot(document.getElementById('root')).render(<App />);
+    })();
   </script>
 </body>
 </html>

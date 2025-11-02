@@ -596,8 +596,8 @@
                     🏠 REtotal<span>AI</span>
                 </div>
                 <div class="user-info">
-                    <div class="user-name">Sarah Johnson</div>
-                    <div class="user-plan">Professional Plan</div>
+                    <div class="user-name" id="userName">Loading account...</div>
+                    <div class="user-plan" id="userEmail">&nbsp;</div>
                 </div>
             </div>
 
@@ -669,7 +669,7 @@
                         <span class="nav-icon">❓</span>
                         Help Center
                     </a>
-                    <a href="#" class="nav-item">
+                    <a href="#" class="nav-item" id="logoutNav">
                         <span class="nav-icon">🚪</span>
                         Log Out
                     </a>
@@ -681,7 +681,7 @@
         <main class="main-content">
             <!-- Top Bar -->
             <div class="topbar">
-                <h1 class="page-title">Welcome back, Sarah!</h1>
+                <h1 class="page-title">Welcome back, <span id="welcomeName">Investor</span>!</h1>
                 <div class="topbar-actions">
                     <div class="search-bar">
                         <input type="text" placeholder="Search properties, tools...">
@@ -902,13 +902,45 @@
         </main>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/protected.js"></script>
     <script>
-        // Animate stats on load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            const authed = await requireAuth();
+            if (!authed) {
+                return;
+            }
+
+            const email = await currentUserEmail();
+            const displayName = email ? email.split('@')[0] : 'Investor';
+
+            const userNameEl = document.getElementById('userName');
+            const userEmailEl = document.getElementById('userEmail');
+            const welcomeNameEl = document.getElementById('welcomeName');
+
+            if (userNameEl) {
+                userNameEl.textContent = displayName;
+            }
+
+            if (userEmailEl) {
+                userEmailEl.textContent = email || 'Member';
+            }
+
+            if (welcomeNameEl) {
+                welcomeNameEl.textContent = displayName;
+            }
+
+            const logoutLink = document.getElementById('logoutNav');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    await signOut();
+                });
+            }
+
             // Animate stat values
             const statValues = document.querySelectorAll('.stat-value');
             statValues.forEach(stat => {
-                const finalValue = stat.textContent;
                 stat.style.opacity = '0';
                 setTimeout(() => {
                     stat.style.transition = 'opacity 0.5s';
@@ -922,7 +954,6 @@
                     e.preventDefault();
                     const toolName = this.querySelector('.tool-quick-name').textContent;
                     console.log(`Launching ${toolName}...`);
-                    // Here you would navigate to the tool
                 });
             });
 
@@ -957,7 +988,6 @@
             const searchInput = document.querySelector('.search-bar input');
             searchInput.addEventListener('input', function(e) {
                 console.log('Searching for:', e.target.value);
-                // Implement search functionality
             });
 
             // Simulate real-time updates
@@ -976,7 +1006,6 @@
             }, 5000);
         });
 
-        // Add pulse animation
         const style = document.createElement('style');
         style.textContent = `
             @keyframes pulse {
