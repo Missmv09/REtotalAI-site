@@ -234,6 +234,36 @@
         }
     }
 
+    function getSafeRedirectPath() {
+        const defaultPath = '/app.html';
+
+        if (!isBrowser) {
+            return defaultPath;
+        }
+
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const next = params.get('next');
+            if (!next) {
+                return defaultPath;
+            }
+
+            const candidate = new URL(next, window.location.origin);
+            if (candidate.origin !== window.location.origin) {
+                return defaultPath;
+            }
+
+            if (!candidate.pathname.startsWith('/')) {
+                return defaultPath;
+            }
+
+            return `${candidate.pathname}${candidate.search}${candidate.hash}`;
+        } catch (err) {
+            console.warn('[Auth] Invalid redirect path provided.', err);
+            return defaultPath;
+        }
+    }
+
     async function handleLogin() {
         const emailInput = document.getElementById('loginEmail');
         const passwordInput = document.getElementById('loginPassword');
@@ -253,9 +283,10 @@
                     throw error;
                 }
 
+                const redirectPath = getSafeRedirectPath();
                 alert('Login successful!');
                 closeAuthModal();
-                window.location.href = '/app.html';
+                window.location.assign(redirectPath);
                 return;
             }
 
@@ -267,8 +298,10 @@
                 });
 
                 if (res.ok) {
+                    const redirectPath = getSafeRedirectPath();
                     alert('Login successful!');
                     closeAuthModal();
+                    window.location.assign(redirectPath);
                 } else {
                     alert('Login failed');
                 }
