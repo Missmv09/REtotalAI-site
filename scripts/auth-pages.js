@@ -50,7 +50,7 @@ async function handleLogin() {
 
     const params = new URLSearchParams(location.search);
     const next = params.get("next");
-    location.href = next || "/app.html";
+
   } catch (e) {
     console.error(e);
     alert('Login failed');
