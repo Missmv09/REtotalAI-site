@@ -50,8 +50,7 @@ async function handleLogin() {
 
     const params = new URLSearchParams(location.search);
     const next = params.get("next");
-    const isSafe = next && next.startsWith("/") && !next.startsWith("//");
-    location.href = isSafe ? next : "/app.html";
+
   } catch (e) {
     console.error(e);
     alert('Login failed');
