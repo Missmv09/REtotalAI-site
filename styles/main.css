@@ -276,6 +276,9 @@
         }
 
         .tool-card {
+            display: block;
+            color: inherit;
+            text-decoration: none;
             background: white;
             border-radius: 1rem;
             padding: 2rem;
@@ -400,6 +403,22 @@
             align-items: center;
             padding-top: 1.5rem;
             border-top: 1px solid var(--border);
+        }
+
+        .btn-tool {
+            display: inline-block;
+            background: var(--dark);
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .btn-tool:hover {
+            background: var(--primary);
+            transform: translateY(-1px);
         }
 
         .tool-badge {
