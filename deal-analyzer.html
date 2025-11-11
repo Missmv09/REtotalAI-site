@@ -3,61 +3,270 @@
 <head>
   <meta charset="UTF-8" />
   <title>Deal Analyzer • REtotalAI</title>
-  <!-- auth guard + supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/scripts/auth.js"></script>
   <style>
-    body { font-family:sans-serif; max-width:700px; margin:40px auto; line-height:1.6; }
-    h2 { color:#111; }
-    input { width:100%; padding:10px; margin:8px 0; border:1px solid #ccc; border-radius:4px; font-size:16px; }
-    button { padding:10px 16px; border:none; background:#222; color:#fff; border-radius:6px; cursor:pointer; }
-    .result { background:#f9f9f9; border-radius:6px; padding:15px; margin-top:20px; display:none; }
-    .result h3 { margin-top:0; }
+    body { font-family:sans-serif; max-width:1000px; margin:40px auto; line-height:1.5; }
+    h2 { margin:0 0 8px }
+    h3 { margin:24px 0 8px }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+    .card { border:1px solid #eee; border-radius:12px; padding:14px; }
+    input { width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-size:14px; }
+    label { font-size:13px; color:#444; display:block; margin-bottom:6px }
+    button { padding:10px 16px; border:none; background:#111; color:#fff; border-radius:8px; cursor:pointer; }
+    button.secondary { background:#555 }
+    button.danger { background:#b00020 }
+    .result { display:none; border-radius:12px; padding:16px; border:1px solid #eee; background:#fafafa; }
+    .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-top:12px }
+    .kpi { background:#fff; border:1px solid #eee; border-radius:10px; padding:12px }
+    .kpi h4 { margin:0 0 6px; font-size:13px; color:#555 }
+    .kpi div { font-size:18px; font-weight:700 }
+    .verdict { margin-top:16px; padding:12px 14px; border-radius:10px; font-weight:600 }
+    .good { background:#ecfbf1; color:#0f7b3a; border:1px solid #b8efd1 }
+    .maybe { background:#fff8e6; color:#8a5b00; border:1px solid #ffe2a9 }
+    .bad { background:#ffecec; color:#a30000; border:1px solid #ffc2c2 }
+    table { width:100%; border-collapse:collapse; margin-top:16px; }
+    th, td { padding:10px; border-bottom:1px solid #eee; text-align:left; font-size:14px; }
+    th { background:#fafafa; }
+    .right { text-align:right }
+    .muted { color:#666; font-size:12px }
   </style>
 </head>
 <body>
   <h2>Deal Analyzer</h2>
-  <p>Enter your property details:</p>
+  <p class="muted">Enter assumptions. Defaults are conservative and can be tuned per market.</p>
 
-  <label>Purchase Price</label>
-  <input type="number" id="price" placeholder="e.g. 400000" inputmode="decimal">
+  <!-- Purchase / Loan -->
+  <div class="card">
+    <h3>Purchase & Financing</h3>
+    <div class="grid">
+      <div><label>Purchase Price ($)</label><input id="price" type="number" placeholder="400000"></div>
+      <div><label>Down Payment (%)</label><input id="downPct" type="number" placeholder="20" value="20"></div>
+      <div><label>Interest Rate (%, annual)</label><input id="rate" type="number" step="0.01" placeholder="6.75" value="6.75"></div>
+      <div><label>Term (years)</label><input id="term" type="number" placeholder="30" value="30"></div>
+      <div><label>Closing Costs (%)</label><input id="closingPct" type="number" step="0.1" placeholder="3" value="3"></div>
+    </div>
+  </div>
 
-  <label>Monthly Rent</label>
-  <input type="number" id="rent" placeholder="e.g. 2800" inputmode="decimal">
+  <!-- Income -->
+  <div class="card">
+    <h3>Income</h3>
+    <div class="grid">
+      <div><label>Monthly Rent ($)</label><input id="rent" type="number" placeholder="2800"></div>
+      <div><label>Other Monthly Income ($)</label><input id="otherIncome" type="number" placeholder="0" value="0"></div>
+      <div><label>Vacancy (%)</label><input id="vacancyPct" type="number" step="0.5" placeholder="5" value="5"></div>
+    </div>
+  </div>
 
-  <label>Monthly Expenses (taxes, insurance, etc.)</label>
-  <input type="number" id="expenses" placeholder="e.g. 600" inputmode="decimal">
+  <!-- Operating Expenses -->
+  <div class="card">
+    <h3>Operating Expenses (Monthly)</h3>
+    <div class="grid">
+      <div><label>Taxes ($)</label><input id="taxes" type="number" placeholder="300"></div>
+      <div><label>Insurance ($)</label><input id="insurance" type="number" placeholder="120"></div>
+      <div><label>HOA ($)</label><input id="hoa" type="number" placeholder="0"></div>
+      <div><label>Utilities ($)</label><input id="utilities" type="number" placeholder="0"></div>
+      <div><label>Mgmt (% of Rent)</label><input id="mgmtPct" type="number" placeholder="8" value="8"></div>
+      <div><label>Maintenance (% of Rent)</label><input id="maintPct" type="number" placeholder="5" value="5"></div>
+      <div><label>CapEx (% of Rent)</label><input id="capexPct" type="number" placeholder="5" value="5"></div>
+    </div>
+  </div>
 
-  <button onclick="analyze()">Analyze Deal</button>
+  <div class="grid" style="margin:12px 0">
+    <button onclick="analyze()">Analyze Deal</button>
+    <button id="saveBtn" class="secondary" onclick="saveDeal()" disabled title="Analyze first">Save</button>
+  </div>
 
   <div id="results" class="result">
     <h3>Results</h3>
-    <p><strong>ROI:</strong> <span id="roi"></span>%</p>
-    <p><strong>Cap Rate:</strong> <span id="capRate"></span>%</p>
-    <p><strong>Cash Flow:</strong> $<span id="cashFlow"></span>/month</p>
+    <div class="kpis">
+      <div class="kpi"><h4>Cap Rate</h4><div id="capRate">—</div></div>
+      <div class="kpi"><h4>DSCR</h4><div id="dscr">—</div></div>
+      <div class="kpi"><h4>Cash-on-Cash</h4><div id="coc">—</div></div>
+      <div class="kpi"><h4>Cash Flow / mo</h4><div id="cashFlow">—</div></div>
+      <div class="kpi"><h4>Debt Service / mo</h4><div id="pmt">—</div></div>
+    </div>
+    <div id="verdict" class="verdict">—</div>
+    <p class="muted">Notes: NOI excludes debt service; Cap Rate = NOI/Price. DSCR = NOI / Annual Debt Service. CoC uses cash invested (down + closing).</p>
   </div>
 
+  <section style="margin-top:28px">
+    <h3>Your Recent Analyses</h3>
+    <table id="dealsTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th class="right">Price</th>
+          <th class="right">Rent</th>
+          <th class="right">DSCR</th>
+          <th class="right">CoC %</th>
+          <th class="right">Cap %</th>
+          <th class="right">CF/mo</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="dealsBody"><tr><td colspan="8" class="muted">Loading…</td></tr></tbody>
+    </table>
+  </section>
+
   <script>
-    (async()=>{ await requireAuth(); })();
+    (async () => {
+      const ok = await requireAuth();
+      if (!ok) return;
+      await loadRecent();
+    })();
+
+    let lastCalc = null;
+
+    function n(v){ return Number(v || 0); }
+    function pct(v){ return Number(v || 0)/100; }
+    function fmt(n){ return Number(n).toLocaleString(undefined,{maximumFractionDigits:2}); }
+
+    function pmt(rate, nper, pv) {
+      // rate per period (monthly), nper in months, pv loan amount
+      if (rate === 0) return -(pv / nper);
+      const r = rate;
+      return -(pv * r * Math.pow(1+r, nper)) / (Math.pow(1+r, nper) - 1);
+    }
 
     function analyze() {
-      const price = Number(document.getElementById("price").value);
-      const rent = Number(document.getElementById("rent").value);
-      const expenses = Number(document.getElementById("expenses").value || 0);
-      if (!price || !rent) return alert("Please enter price and rent.");
+      const price = n(document.getElementById("price").value);
+      const downPct = pct(document.getElementById("downPct").value);
+      const rate = pct(document.getElementById("rate").value) / 12; // monthly
+      const termYears = n(document.getElementById("term").value);
+      const closingPct = pct(document.getElementById("closingPct").value);
 
-      const annualRent = rent * 12;
-      const annualExpenses = expenses * 12;
-      const netAnnual = annualRent - annualExpenses;
+      const rent = n(document.getElementById("rent").value);
+      const otherIncome = n(document.getElementById("otherIncome").value);
+      const vacancyPct = pct(document.getElementById("vacancyPct").value);
 
-      const capRate = ((netAnnual / price) * 100).toFixed(2);
-      const roi = ((netAnnual / price) * 100).toFixed(2); // simple ROI; refine later with financing
-      const cashFlow = (rent - expenses).toFixed(2);
+      const taxes = n(document.getElementById("taxes").value);
+      const insurance = n(document.getElementById("insurance").value);
+      const hoa = n(document.getElementById("hoa").value);
+      const utilities = n(document.getElementById("utilities").value);
+      const mgmtPct = pct(document.getElementById("mgmtPct").value);
+      const maintPct = pct(document.getElementById("maintPct").value);
+      const capexPct = pct(document.getElementById("capexPct").value);
 
-      document.getElementById("roi").textContent = roi;
-      document.getElementById("capRate").textContent = capRate;
-      document.getElementById("cashFlow").textContent = cashFlow;
+      if (!price || !rent) return alert("Please enter at least Price and Rent.");
+
+      // Loan math
+      const downPayment = price * downPct;
+      const closingCosts = price * closingPct;
+      const loanAmount = Math.max(price - downPayment, 0);
+      const months = termYears * 12;
+      const monthlyDebt = -pmt(rate, months, loanAmount); // positive number
+      const annualDebt = monthlyDebt * 12;
+
+      // Income / OpEx
+      const grossRentMo = rent + otherIncome;
+      const vacancyLossMo = grossRentMo * vacancyPct;
+      const mgmtMo = rent * mgmtPct;
+      const maintMo = rent * maintPct;
+      const capexMo = rent * capexPct;
+
+      const opexMo = taxes + insurance + hoa + utilities + mgmtMo + maintMo + capexMo;
+      const noiAnnual = (grossRentMo - vacancyLossMo - opexMo) * 12;
+
+      // Metrics
+      const capRate = (noiAnnual / price) * 100;
+      const dscr = annualDebt > 0 ? (noiAnnual / annualDebt) : Infinity;
+      const monthlyCashFlow = (grossRentMo - vacancyLossMo - opexMo - monthlyDebt);
+      const annualCF = monthlyCashFlow * 12;
+      const cashInvested = downPayment + closingCosts;
+      const coc = cashInvested > 0 ? (annualCF / cashInvested) * 100 : 0;
+
+      // Render
+      document.getElementById("capRate").textContent = `${fmt(capRate)}%`;
+      document.getElementById("dscr").textContent = dscr === Infinity ? "∞" : fmt(dscr);
+      document.getElementById("coc").textContent = `${fmt(coc)}%`;
+      document.getElementById("cashFlow").textContent = `$${fmt(monthlyCashFlow)}`;
+      document.getElementById("pmt").textContent = `$${fmt(monthlyDebt)}`;
       document.getElementById("results").style.display = "block";
+
+      // Verdict (expert rule-of-thumb)
+      const verdictEl = document.getElementById("verdict");
+      const v = buildVerdict({ dscr, coc, capRate, monthlyCashFlow });
+      verdictEl.className = `verdict ${v.className}`;
+      verdictEl.textContent = v.message;
+
+      // store
+      lastCalc = {
+        price, rent, expenses: opexMo, // legacy column keeps monthly opex
+        down_payment_pct: downPct*100, interest_rate: (rate*12)*100, term_years: termYears,
+        closing_cost_pct: closingPct*100, other_income: otherIncome, vacancy_pct: vacancyPct*100,
+        taxes_monthly: taxes, insurance_monthly: insurance, hoa_monthly: hoa, utilities_monthly: utilities,
+        mgmt_pct: mgmtPct*100, maint_pct: maintPct*100, capex_pct: capexPct*100,
+        roi: 0, cap_rate: Number(capRate.toFixed(2)), cash_flow: Number(monthlyCashFlow.toFixed(2)),
+        dscr: Number((dscr===Infinity? 9999 : dscr).toFixed(3)), coc: Number(coc.toFixed(2))
+      };
+      document.getElementById("saveBtn").disabled = false;
+      document.getElementById("saveBtn").title = "";
+    }
+
+    function buildVerdict({ dscr, coc, capRate, monthlyCashFlow }) {
+      // Investor guidance (conservative):
+      // DSCR >= 1.25 strong; 1.10–1.24 marginal; <1.10 risky
+      // CoC >= 8% strong; 5–7.9% marginal
+      // Cashflow > $100/mo preferred buffer
+      let score = 0;
+      if (dscr >= 1.25) score += 2; else if (dscr >= 1.1) score += 1;
+      if (coc >= 8) score += 2; else if (coc >= 5) score += 1;
+      if (monthlyCashFlow >= 100) score += 1;
+      if (capRate >= 7) score += 1; // market dependent
+
+      if (score >= 5) {
+        return { className: "good", message: "BUY: DSCR and CoC look strong with positive cash flow. This pencils for most lenders and conservative investors." };
+      } else if (score >= 3) {
+        return { className: "maybe", message: "MAYBE: Numbers are close. Improve price, down payment, or rate; or raise rent / trim expenses to reach DSCR ≥ 1.25 and CoC ≥ 8%." };
+      } else {
+        return { className: "bad", message: "PASS: DSCR and CoC are weak and/or cash flow is thin/negative. Rework terms or find a stronger deal." };
+      }
+    }
+
+    async function saveDeal() {
+      if (!lastCalc) return alert("Analyze a deal first.");
+      const { data: userData } = await sb.auth.getUser();
+      const user_id = userData?.user?.id;
+      if (!user_id) return alert("Not signed in");
+
+      const payload = { user_id, ...lastCalc };
+      const { error } = await sb.from("deals").insert(payload);
+      if (error) { console.error(error); return alert("Save failed: " + (error.message || "Unknown error")); }
+      alert("Saved ✓");
+      await loadRecent();
+    }
+
+    async function loadRecent() {
+      const { data, error } = await sb
+        .from("deals")
+        .select("id, created_at, price, rent, cap_rate, dscr, coc, cash_flow")
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      const body = document.getElementById("dealsBody");
+      if (error) { console.error(error); body.innerHTML = `<tr><td colspan="8" class="muted">Failed to load: ${error.message}</td></tr>`; return; }
+      if (!data || data.length === 0) { body.innerHTML = `<tr><td colspan="8" class="muted">No saved analyses yet.</td></tr>`; return; }
+
+      body.innerHTML = data.map(r => `
+        <tr>
+          <td>${new Date(r.created_at).toLocaleString()}</td>
+          <td class="right">$${fmt(r.price)}</td>
+          <td class="right">$${fmt(r.rent)}</td>
+          <td class="right">${r.dscr === 9999 ? "∞" : fmt(r.dscr)}</td>
+          <td class="right">${fmt(r.coc)}%</td>
+          <td class="right">${fmt(r.cap_rate)}%</td>
+          <td class="right">$${fmt(r.cash_flow)}</td>
+          <td class="right"><button class="danger" onclick="delDeal('${r.id}')">Delete</button></td>
+        </tr>
+      `).join("");
+    }
+
+    async function delDeal(id) {
+      if (!confirm("Delete this analysis?")) return;
+      const { error } = await sb.from("deals").delete().eq("id", id);
+      if (error) { console.error(error); return alert("Delete failed: " + (error.message || "Unknown error")); }
+      await loadRecent();
     }
   </script>
 </body>
