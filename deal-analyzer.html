@@ -6,16 +6,17 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/scripts/auth.js"></script>
   <style>
-    body { font-family:sans-serif; max-width:1000px; margin:40px auto; line-height:1.5; }
+    body { font-family:sans-serif; max-width:1100px; margin:40px auto; line-height:1.5; }
     h2 { margin:0 0 8px }
     h3 { margin:24px 0 8px }
     .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
-    .card { border:1px solid #eee; border-radius:12px; padding:14px; }
+    .card { border:1px solid #eee; border-radius:12px; padding:14px; background:#fff; }
     input { width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-size:14px; }
     label { font-size:13px; color:#444; display:block; margin-bottom:6px }
     button { padding:10px 16px; border:none; background:#111; color:#fff; border-radius:8px; cursor:pointer; }
     button.secondary { background:#555 }
     button.danger { background:#b00020 }
+    button.ghost { background:#f5f5f5; color:#111; border:1px solid #ddd }
     .result { display:none; border-radius:12px; padding:16px; border:1px solid #eee; background:#fafafa; }
     .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-top:12px }
     .kpi { background:#fff; border:1px solid #eee; border-radius:10px; padding:12px }
@@ -25,16 +26,20 @@
     .good { background:#ecfbf1; color:#0f7b3a; border:1px solid #b8efd1 }
     .maybe { background:#fff8e6; color:#8a5b00; border:1px solid #ffe2a9 }
     .bad { background:#ffecec; color:#a30000; border:1px solid #ffc2c2 }
-    table { width:100%; border-collapse:collapse; margin-top:16px; }
+    .tips { margin-top:14px; padding:12px 14px; border-radius:10px; background:#fff; border:1px solid #eee }
+    .tips h4 { margin:0 0 8px; font-size:14px; color:#333 }
+    .tips ul { margin:0; padding-left:18px }
+    table { width:100%; border-collapse:collapse; margin-top:16px; background:#fff; border-radius:10px; overflow:hidden }
     th, td { padding:10px; border-bottom:1px solid #eee; text-align:left; font-size:14px; }
     th { background:#fafafa; }
     .right { text-align:right }
     .muted { color:#666; font-size:12px }
+    .win { background:#ecfbf1 }
   </style>
 </head>
 <body>
   <h2>Deal Analyzer</h2>
-  <p class="muted">Enter assumptions. Defaults are conservative and can be tuned per market.</p>
+  <p class="muted">Mortgage, DSCR, CoC, Cap Rate, Cash Flow + expert verdict and scenario comparison.</p>
 
   <!-- Purchase / Loan -->
   <div class="card">
@@ -75,6 +80,7 @@
   <div class="grid" style="margin:12px 0">
     <button onclick="analyze()">Analyze Deal</button>
     <button id="saveBtn" class="secondary" onclick="saveDeal()" disabled title="Analyze first">Save</button>
+    <button class="ghost" onclick="snapshotBaseline()">Save as Baseline</button>
   </div>
 
   <div id="results" class="result">
@@ -87,7 +93,53 @@
       <div class="kpi"><h4>Debt Service / mo</h4><div id="pmt">—</div></div>
     </div>
     <div id="verdict" class="verdict">—</div>
-    <p class="muted">Notes: NOI excludes debt service; Cap Rate = NOI/Price. DSCR = NOI / Annual Debt Service. CoC uses cash invested (down + closing).</p>
+
+    <div class="tips" id="tweakBox" style="display:none">
+      <h4>What to tweak</h4>
+      <ul id="tweakList"></ul>
+      <p class="muted">Targets: DSCR ≥ 1.25, CoC ≥ 8%, cash flow ≥ $100/mo.</p>
+    </div>
+
+    <!-- Compare Scenarios -->
+    <div class="card" style="margin-top:16px">
+      <h3>Compare Scenarios</h3>
+      <p class="muted" id="baselineNote">Baseline: <em>not captured yet</em>. Click “Save as Baseline”.</p>
+
+      <div class="grid">
+        <div class="card">
+          <h4 style="margin-top:0">Scenario B (quick tweaks)</h4>
+          <div class="grid">
+            <div><label>Price Cut ($)</label><input id="b_priceCut" type="number" placeholder="e.g. 15000"></div>
+            <div><label>Rent Increase ($/mo)</label><input id="b_rentUp" type="number" placeholder="e.g. 150"></div>
+            <div><label>Rate Buydown (pts %)</label><input id="b_rateDown" type="number" step="0.125" placeholder="e.g. 0.5"></div>
+            <div><label>Extra Down (% of Price)</label><input id="b_downUpPct" type="number" step="0.5" placeholder="e.g. 5"></div>
+            <div><label>Expense Trim ($/mo)</label><input id="b_expTrim" type="number" placeholder="e.g. 50"></div>
+          </div>
+          <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap">
+            <button class="ghost" onclick="recalcScenarioB()">Preview Scenario B</button>
+            <button class="secondary" onclick="applyScenarioB()">Apply Scenario B to inputs</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4 style="margin-top:0">Side-by-side KPIs</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th class="right">Baseline</th>
+                <th class="right">Scenario B</th>
+              </tr>
+            </thead>
+            <tbody id="cmpBody">
+              <tr><td colspan="3" class="muted">Enter tweaks and click “Preview Scenario B”.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <p class="muted" style="margin-top:8px">Notes: NOI excludes debt service; Cap Rate = NOI/Price. DSCR = NOI / Annual Debt Service. CoC uses cash invested (down + closing).</p>
   </div>
 
   <section style="margin-top:28px">
@@ -110,120 +162,307 @@
   </section>
 
   <script>
-    (async () => {
-      const ok = await requireAuth();
-      if (!ok) return;
-      await loadRecent();
-    })();
+    (async () => { const ok = await requireAuth(); if (!ok) return; await loadRecent(); })();
 
     let lastCalc = null;
+    let baseline = null;
 
+    // ---------- helpers ----------
     function n(v){ return Number(v || 0); }
     function pct(v){ return Number(v || 0)/100; }
     function fmt(n){ return Number(n).toLocaleString(undefined,{maximumFractionDigits:2}); }
+    function roundTo(val, step){ return Math.round(val/step)*step; }
 
     function pmt(rate, nper, pv) {
-      // rate per period (monthly), nper in months, pv loan amount
       if (rate === 0) return -(pv / nper);
       const r = rate;
       return -(pv * r * Math.pow(1+r, nper)) / (Math.pow(1+r, nper) - 1);
     }
 
-    function analyze() {
-      const price = n(document.getElementById("price").value);
-      const downPct = pct(document.getElementById("downPct").value);
-      const rate = pct(document.getElementById("rate").value) / 12; // monthly
-      const termYears = n(document.getElementById("term").value);
-      const closingPct = pct(document.getElementById("closingPct").value);
+    // ---------- I/O ----------
+    function readInputs(){
+      return {
+        price: n(document.getElementById("price").value),
+        downPct: pct(document.getElementById("downPct").value),
+        rateAnnual: pct(document.getElementById("rate").value),
+        termYears: n(document.getElementById("term").value),
+        closingPct: pct(document.getElementById("closingPct").value),
 
-      const rent = n(document.getElementById("rent").value);
-      const otherIncome = n(document.getElementById("otherIncome").value);
-      const vacancyPct = pct(document.getElementById("vacancyPct").value);
+        rent: n(document.getElementById("rent").value),
+        otherIncome: n(document.getElementById("otherIncome").value),
+        vacancyPct: pct(document.getElementById("vacancyPct").value),
 
-      const taxes = n(document.getElementById("taxes").value);
-      const insurance = n(document.getElementById("insurance").value);
-      const hoa = n(document.getElementById("hoa").value);
-      const utilities = n(document.getElementById("utilities").value);
-      const mgmtPct = pct(document.getElementById("mgmtPct").value);
-      const maintPct = pct(document.getElementById("maintPct").value);
-      const capexPct = pct(document.getElementById("capexPct").value);
+        taxes: n(document.getElementById("taxes").value),
+        insurance: n(document.getElementById("insurance").value),
+        hoa: n(document.getElementById("hoa").value),
+        utilities: n(document.getElementById("utilities").value),
+        mgmtPct: pct(document.getElementById("mgmtPct").value),
+        maintPct: pct(document.getElementById("maintPct").value),
+        capexPct: pct(document.getElementById("capexPct").value)
+      };
+    }
+    function writeInputs(obj){
+      if ('price' in obj) document.getElementById("price").value = obj.price;
+      if ('downPct' in obj) document.getElementById("downPct").value = (obj.downPct*100).toFixed(2);
+      if ('rateAnnual' in obj) document.getElementById("rate").value = (obj.rateAnnual*100).toFixed(3);
+      if ('termYears' in obj) document.getElementById("term").value = obj.termYears;
+      if ('closingPct' in obj) document.getElementById("closingPct").value = (obj.closingPct*100).toFixed(2);
 
-      if (!price || !rent) return alert("Please enter at least Price and Rent.");
+      if ('rent' in obj) document.getElementById("rent").value = obj.rent;
+      if ('otherIncome' in obj) document.getElementById("otherIncome").value = obj.otherIncome ?? 0;
+      if ('vacancyPct' in obj) document.getElementById("vacancyPct").value = (obj.vacancyPct*100).toFixed(2);
 
-      // Loan math
-      const downPayment = price * downPct;
-      const closingCosts = price * closingPct;
-      const loanAmount = Math.max(price - downPayment, 0);
-      const months = termYears * 12;
-      const monthlyDebt = -pmt(rate, months, loanAmount); // positive number
+      if ('taxes' in obj) document.getElementById("taxes").value = obj.taxes ?? 0;
+      if ('insurance' in obj) document.getElementById("insurance").value = obj.insurance ?? 0;
+      if ('hoa' in obj) document.getElementById("hoa").value = obj.hoa ?? 0;
+      if ('utilities' in obj) document.getElementById("utilities").value = obj.utilities ?? 0;
+      if ('mgmtPct' in obj) document.getElementById("mgmtPct").value = (obj.mgmtPct*100).toFixed(2);
+      if ('maintPct' in obj) document.getElementById("maintPct").value = (obj.maintPct*100).toFixed(2);
+      if ('capexPct' in obj) document.getElementById("capexPct").value = (obj.capexPct*100).toFixed(2);
+    }
+
+    // ---------- Core calc ----------
+    function calcKPIs(ctx){
+      const rate = ctx.rateAnnual/12;
+      const downPayment = ctx.price * ctx.downPct;
+      const closingCosts = ctx.price * ctx.closingPct;
+      const loanAmount = Math.max(ctx.price - downPayment, 0);
+      const months = ctx.termYears * 12;
+      const monthlyDebt = -pmt(rate, months, loanAmount);
       const annualDebt = monthlyDebt * 12;
 
-      // Income / OpEx
-      const grossRentMo = rent + otherIncome;
-      const vacancyLossMo = grossRentMo * vacancyPct;
-      const mgmtMo = rent * mgmtPct;
-      const maintMo = rent * maintPct;
-      const capexMo = rent * capexPct;
+      const grossRentMo = ctx.rent + ctx.otherIncome;
+      const vacancyLossMo = grossRentMo * ctx.vacancyPct;
+      const mgmtMo = ctx.rent * ctx.mgmtPct;
+      const maintMo = ctx.rent * ctx.maintPct;
+      const capexMo = ctx.rent * ctx.capexPct;
 
-      const opexMo = taxes + insurance + hoa + utilities + mgmtMo + maintMo + capexMo;
+      const opexMo = ctx.taxes + ctx.insurance + ctx.hoa + ctx.utilities + mgmtMo + maintMo + capexMo;
       const noiAnnual = (grossRentMo - vacancyLossMo - opexMo) * 12;
 
-      // Metrics
-      const capRate = (noiAnnual / price) * 100;
+      const capRate = (noiAnnual / ctx.price) * 100;
       const dscr = annualDebt > 0 ? (noiAnnual / annualDebt) : Infinity;
       const monthlyCashFlow = (grossRentMo - vacancyLossMo - opexMo - monthlyDebt);
       const annualCF = monthlyCashFlow * 12;
       const cashInvested = downPayment + closingCosts;
       const coc = cashInvested > 0 ? (annualCF / cashInvested) * 100 : 0;
 
-      // Render
-      document.getElementById("capRate").textContent = `${fmt(capRate)}%`;
-      document.getElementById("dscr").textContent = dscr === Infinity ? "∞" : fmt(dscr);
-      document.getElementById("coc").textContent = `${fmt(coc)}%`;
-      document.getElementById("cashFlow").textContent = `$${fmt(monthlyCashFlow)}`;
-      document.getElementById("pmt").textContent = `$${fmt(monthlyDebt)}`;
+      return { capRate, dscr, coc, monthlyCashFlow, monthlyDebt, annualDebt, noiAnnual, cashInvested,
+               downPayment, closingCosts, opexMo, grossRentMo, vacancyLossMo };
+    }
+
+    function analyze() {
+      const ctx = readInputs();
+      if (!ctx.price || !ctx.rent) return alert("Please enter at least Price and Rent.");
+
+      const k = calcKPIs(ctx);
+
+      document.getElementById("capRate").textContent = `${fmt(k.capRate)}%`;
+      document.getElementById("dscr").textContent = k.dscr===Infinity? "∞" : fmt(k.dscr);
+      document.getElementById("coc").textContent = `${fmt(k.coc)}%`;
+      document.getElementById("cashFlow").textContent = `$${fmt(k.monthlyCashFlow)}`;
+      document.getElementById("pmt").textContent = `$${fmt(k.monthlyDebt)}`;
       document.getElementById("results").style.display = "block";
 
-      // Verdict (expert rule-of-thumb)
       const verdictEl = document.getElementById("verdict");
-      const v = buildVerdict({ dscr, coc, capRate, monthlyCashFlow });
+      const v = buildVerdict({ dscr:k.dscr, coc:k.coc, capRate:k.capRate, monthlyCashFlow:k.monthlyCashFlow });
       verdictEl.className = `verdict ${v.className}`;
       verdictEl.textContent = v.message;
 
-      // store
+      buildTweaks({ ...ctx, ...k });
+
       lastCalc = {
-        price, rent, expenses: opexMo, // legacy column keeps monthly opex
-        down_payment_pct: downPct*100, interest_rate: (rate*12)*100, term_years: termYears,
-        closing_cost_pct: closingPct*100, other_income: otherIncome, vacancy_pct: vacancyPct*100,
-        taxes_monthly: taxes, insurance_monthly: insurance, hoa_monthly: hoa, utilities_monthly: utilities,
-        mgmt_pct: mgmtPct*100, maint_pct: maintPct*100, capex_pct: capexPct*100,
-        roi: 0, cap_rate: Number(capRate.toFixed(2)), cash_flow: Number(monthlyCashFlow.toFixed(2)),
-        dscr: Number((dscr===Infinity? 9999 : dscr).toFixed(3)), coc: Number(coc.toFixed(2))
+        price: ctx.price, rent: ctx.rent, expenses: k.opexMo,
+        down_payment_pct: ctx.downPct*100, interest_rate: ctx.rateAnnual*100, term_years: ctx.termYears,
+        closing_cost_pct: ctx.closingPct*100, other_income: ctx.otherIncome, vacancy_pct: ctx.vacancyPct*100,
+        taxes_monthly: ctx.taxes, insurance_monthly: ctx.insurance, hoa_monthly: ctx.hoa, utilities_monthly: ctx.utilities,
+        mgmt_pct: ctx.mgmtPct*100, maint_pct: ctx.maintPct*100, capex_pct: ctx.capexPct*100,
+        roi: 0, cap_rate: Number(k.capRate.toFixed(2)), cash_flow: Number(k.monthlyCashFlow.toFixed(2)),
+        dscr: Number((k.dscr===Infinity? 9999 : k.dscr).toFixed(3)), coc: Number(k.coc.toFixed(2))
       };
       document.getElementById("saveBtn").disabled = false;
       document.getElementById("saveBtn").title = "";
     }
 
     function buildVerdict({ dscr, coc, capRate, monthlyCashFlow }) {
-      // Investor guidance (conservative):
-      // DSCR >= 1.25 strong; 1.10–1.24 marginal; <1.10 risky
-      // CoC >= 8% strong; 5–7.9% marginal
-      // Cashflow > $100/mo preferred buffer
       let score = 0;
       if (dscr >= 1.25) score += 2; else if (dscr >= 1.1) score += 1;
       if (coc >= 8) score += 2; else if (coc >= 5) score += 1;
       if (monthlyCashFlow >= 100) score += 1;
-      if (capRate >= 7) score += 1; // market dependent
+      if (capRate >= 7) score += 1;
 
-      if (score >= 5) {
-        return { className: "good", message: "BUY: DSCR and CoC look strong with positive cash flow. This pencils for most lenders and conservative investors." };
-      } else if (score >= 3) {
-        return { className: "maybe", message: "MAYBE: Numbers are close. Improve price, down payment, or rate; or raise rent / trim expenses to reach DSCR ≥ 1.25 and CoC ≥ 8%." };
-      } else {
-        return { className: "bad", message: "PASS: DSCR and CoC are weak and/or cash flow is thin/negative. Rework terms or find a stronger deal." };
-      }
+      if (score >= 5) return { className:"good", message:"BUY: DSCR and CoC look strong with positive cash flow. This pencils for most lenders and conservative investors." };
+      if (score >= 3) return { className:"maybe", message:"MAYBE: Close. Improve price/down/rate or raise rent / trim expenses to reach DSCR ≥ 1.25 and CoC ≥ 8%." };
+      return { className:"bad", message:"PASS: DSCR/CoC weak or cash flow thin/negative. Renegotiate terms or move on." };
     }
 
+    // ---------- What to tweak ----------
+    function buildTweaks(ctx) {
+      const T_DSCR=1.25, T_COC=8, T_CF=100;
+      const effRentFactor = Math.max(0.01, 1 - ctx.vacancyPct - ctx.mgmtPct - ctx.maintPct - ctx.capexPct);
+      const list = [];
+      const dscrGap = Math.max(0, T_DSCR - (ctx.dscr===Infinity? 10 : ctx.dscr));
+      const cocGap  = Math.max(0, T_COC - ctx.coc);
+      const cfGap   = Math.max(0, T_CF - ctx.monthlyCashFlow);
+
+      if (dscrGap > 0 && isFinite(ctx.annualDebt) && ctx.annualDebt > 0) {
+        const reqNOI = T_DSCR * ctx.annualDebt;
+        const deltaNOIannual = Math.max(0, reqNOI - ctx.noiAnnual);
+        const deltaRentMo = (deltaNOIannual / 12) / effRentFactor;
+        if (deltaRentMo > 1) list.push(`Increase rent by ~ $${fmt(roundTo(deltaRentMo,25))}/mo to reach DSCR 1.25.`);
+      }
+
+      const cut = findPriceCutForTargetDSCR(ctx, T_DSCR);
+      if (dscrGap > 0 && cut > 0) list.push(`Negotiate price down ~ $${fmt(roundTo(cut,1000))} to reach DSCR 1.25.`);
+
+      const buy = findRateBuydownForTargetDSCR(ctx, T_DSCR);
+      if (dscrGap > 0 && buy > 0.001) list.push(`Buy rate down ~ ${fmt(roundTo(buy*100,0.125))}% (points) to reach DSCR 1.25.`);
+
+      const addDown = findExtraDownForTargetDSCR(ctx, T_DSCR);
+      if (dscrGap > 0 && addDown > 0) list.push(`Increase down payment by ~ ${fmt(roundTo(addDown*100,1))}% of price to reach DSCR 1.25.`);
+
+      if (cocGap > 0 && ctx.cashInvested > 0) {
+        const targetCFannual = 0.08 * ctx.cashInvested;
+        const deltaCFannual = Math.max(0, targetCFannual - (ctx.monthlyCashFlow*12));
+        const deltaCFmo = deltaCFannual/12;
+        const rentNeed = deltaCFmo / effRentFactor;
+        if (rentNeed > 1) list.push(`For CoC 8%: raise rent ~ $${fmt(roundTo(rentNeed,25))}/mo (or trim expenses by ~$${fmt(roundTo(deltaCFmo,25))}/mo).`);
+        else list.push(`For CoC 8%: trim expenses by ~$${fmt(roundTo(deltaCFmo,25))}/mo.`);
+      }
+
+      if (cfGap > 0) {
+        const rentNeed = cfGap / effRentFactor;
+        list.push(`Build $100/mo buffer: add ~$${fmt(roundTo(rentNeed,25))}/mo rent or cut ~$${fmt(roundTo(cfGap,25))}/mo expenses.`);
+      }
+
+      if (list.length===0) list.push("Numbers meet conservative thresholds. Consider a small rate buydown for safety and set aside 6–12 months of reserves.");
+
+      document.getElementById("tweakList").innerHTML = list.map(li=>`<li>${li}</li>`).join("");
+      document.getElementById("tweakBox").style.display = "block";
+    }
+
+    function cloneAndRecalc(ctx, overrides) {
+      const price = overrides.price ?? ctx.price;
+      const downPct = overrides.downPct ?? ctx.downPct;
+      const rateAnnual = overrides.rateAnnual ?? ctx.rateAnnual;
+      const rate = rateAnnual/12;
+      const termYears = ctx.termYears;
+
+      const loanAmount = Math.max(price - price*downPct, 0);
+      const months = termYears * 12;
+      const monthlyDebt = -pmt(rate, months, loanAmount);
+      const annualDebt = monthlyDebt * 12;
+      const noiAnnual = ctx.noiAnnual;
+
+      const dscr = annualDebt > 0 ? (noiAnnual / annualDebt) : Infinity;
+      return { dscr, monthlyDebt, annualDebt };
+    }
+    function findPriceCutForTargetDSCR(ctx, target) {
+      let lo=0, hi=ctx.price*0.30, ans=0;
+      for (let i=0;i<25;i++){ const mid=(lo+hi)/2; const { dscr }=cloneAndRecalc(ctx,{price:ctx.price-mid,downPct:ctx.downPct});
+        if (dscr>=target){ ans=mid; hi=mid-100; } else { lo=mid+100; } }
+      return Math.max(0,ans);
+    }
+    function findRateBuydownForTargetDSCR(ctx, target) {
+      let lo=0, hi=0.03, ans=0;
+      for (let i=0;i<30;i++){ const mid=(lo+hi)/2; const { dscr }=cloneAndRecalc(ctx,{rateAnnual:Math.max(0.001,ctx.rateAnnual-mid)});
+        if (dscr>=target){ ans=mid; hi=mid-0.0005; } else { lo=mid+0.0005; } }
+      return Math.max(0,ans);
+    }
+    function findExtraDownForTargetDSCR(ctx, target) {
+      let lo=0, hi=0.20, ans=0;
+      for (let i=0;i<25;i++){ const mid=(lo+hi)/2; const newDown=Math.min(0.90,ctx.downPct+mid); const { dscr }=cloneAndRecalc(ctx,{downPct:newDown});
+        if (dscr>=target){ ans=mid; hi=mid-0.005; } else { lo=mid+0.005; } }
+      return Math.max(0,ans);
+    }
+
+    // ---------- Baseline & Compare ----------
+    function snapshotBaseline(){
+      const ctx = readInputs();
+      if (!ctx.price || !ctx.rent) return alert("Enter Price and Rent first, then click Analyze (optional) and Save as Baseline.");
+      baseline = ctx;
+      document.getElementById("baselineNote").innerHTML = `Baseline captured • Price $${fmt(ctx.price)}, Rent $${fmt(ctx.rent)}, Rate ${(ctx.rateAnnual*100).toFixed(2)}%`;
+      // Pre-fill Scenario B with smart guesses based on tweak helper
+      document.getElementById("b_priceCut").value = Math.round(ctx.price*0.03); // ~3% cut
+      document.getElementById("b_rentUp").value = 100;
+      document.getElementById("b_rateDown").value = 0.5;
+      document.getElementById("b_downUpPct").value = 5;
+      document.getElementById("b_expTrim").value = 50;
+    }
+
+    function recalcScenarioB(){
+      if (!baseline) return alert("Click “Save as Baseline” first.");
+      const tweaks = {
+        priceCut: n(document.getElementById("b_priceCut").value),
+        rentUp: n(document.getElementById("b_rentUp").value),
+        rateDownPts: n(document.getElementById("b_rateDown").value),
+        downUpPct: n(document.getElementById("b_downUpPct").value)/100,
+        expTrim: n(document.getElementById("b_expTrim").value)
+      };
+
+      const A = baseline;
+      const Ares = calcKPIs(A);
+
+      const B = { ...A };
+      B.price = Math.max(0, A.price - tweaks.priceCut);
+      B.rent  = Math.max(0, A.rent + tweaks.rentUp);
+      B.rateAnnual = Math.max(0.001, A.rateAnnual - (tweaks.rateDownPts/100));
+      B.downPct = Math.min(0.90, A.downPct + tweaks.downUpPct);
+      // distribute expense trim across fixed buckets proportionally (taxes/ins/hoa/utils)
+      const fixSum = (A.taxes + A.insurance + A.hoa + A.utilities) || 1;
+      const t = tweaks.expTrim;
+      B.taxes = Math.max(0, A.taxes - t*(A.taxes/fixSum));
+      B.insurance = Math.max(0, A.insurance - t*(A.insurance/fixSum));
+      B.hoa = Math.max(0, A.hoa - t*(A.hoa/fixSum));
+      B.utilities = Math.max(0, A.utilities - t*(A.utilities/fixSum));
+
+      const Bres = calcKPIs(B);
+      renderCompare(Ares, Bres);
+    }
+
+    function renderCompare(A, B){
+      const rows = [
+        ["Cap Rate", `${fmt(A.capRate)}%`, `${fmt(B.capRate)}%`, (x,y)=>x<y],
+        ["DSCR",     A.dscr===Infinity?"∞":fmt(A.dscr), B.dscr===Infinity?"∞":fmt(B.dscr), (x,y)=> (x==='∞'?Infinity:x) < (y==='∞'?Infinity:y)],
+        ["CoC",      `${fmt(A.coc)}%`, `${fmt(B.coc)}%`, (x,y)=>parseFloat(x)<parseFloat(y)],
+        ["CF / mo",  `$${fmt(A.monthlyCashFlow)}`, `$${fmt(B.monthlyCashFlow)}`, (x,y)=>parseFloat(x.replace(/[$,]/g,''))<parseFloat(y.replace(/[$,]/g,''))],
+        ["Debt / mo",`$${fmt(A.monthlyDebt)}`, `$${fmt(B.monthlyDebt)}`, (x,y)=>parseFloat(x.replace(/[$,]/g,''))>parseFloat(y.replace(/[$,]/g,''))],
+      ];
+      const body = document.getElementById("cmpBody");
+      body.innerHTML = rows.map(([label,a,b,isBetterB])=>{
+        const winB = isBetterB(a,b) ? ' class="win right"' : ' class="right"';
+        return `<tr><td>${label}</td><td class="right">${a}</td><td${winB}>${b}</td></tr>`;
+      }).join("");
+    }
+
+    function applyScenarioB(){
+      if (!baseline) return alert("Click “Save as Baseline” first, then Preview B.");
+      const tweaks = {
+        priceCut: n(document.getElementById("b_priceCut").value),
+        rentUp: n(document.getElementById("b_rentUp").value),
+        rateDownPts: n(document.getElementById("b_rateDown").value),
+        downUpPct: n(document.getElementById("b_downUpPct").value)/100,
+        expTrim: n(document.getElementById("b_expTrim").value)
+      };
+      const A = baseline;
+      const B = { ...A };
+      B.price = Math.max(0, A.price - tweaks.priceCut);
+      B.rent  = Math.max(0, A.rent + tweaks.rentUp);
+      B.rateAnnual = Math.max(0.001, A.rateAnnual - (tweaks.rateDownPts/100));
+      B.downPct = Math.min(0.90, A.downPct + tweaks.downUpPct);
+      const fixSum = (A.taxes + A.insurance + A.hoa + A.utilities) || 1;
+      const t = tweaks.expTrim;
+      B.taxes = Math.max(0, A.taxes - t*(A.taxes/fixSum));
+      B.insurance = Math.max(0, A.insurance - t*(A.insurance/fixSum));
+      B.hoa = Math.max(0, A.hoa - t*(A.hoa/fixSum));
+      B.utilities = Math.max(0, A.utilities - t*(A.utilities/fixSum));
+
+      writeInputs(B);
+      analyze(); // recalc with applied numbers
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ---------- Save / Load ----------
     async function saveDeal() {
       if (!lastCalc) return alert("Analyze a deal first.");
       const { data: userData } = await sb.auth.getUser();
