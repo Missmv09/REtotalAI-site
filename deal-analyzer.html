@@ -7,16 +7,17 @@
   <script src="/scripts/auth.js"></script>
   <style>
     body { font-family:sans-serif; max-width:1100px; margin:40px auto; line-height:1.5; }
-    h2 { margin:0 0 8px }
+    h2 { margin:0 0 4px }
     h3 { margin:24px 0 8px }
     .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
     .card { border:1px solid #eee; border-radius:12px; padding:14px; background:#fff; }
     input { width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-size:14px; }
     label { font-size:13px; color:#444; display:block; margin-bottom:6px }
-    button { padding:10px 16px; border:none; background:#111; color:#fff; border-radius:8px; cursor:pointer; }
+    button { padding:10px 16px; border:none; background:#111; color:#fff; border-radius:8px; cursor:pointer; font-size:14px; }
     button.secondary { background:#555 }
     button.danger { background:#b00020 }
     button.ghost { background:#f5f5f5; color:#111; border:1px solid #ddd }
+    button[disabled] { opacity:0.6; cursor:not-allowed; }
     .result { display:none; border-radius:12px; padding:16px; border:1px solid #eee; background:#fafafa; }
     .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-top:12px }
     .kpi { background:#fff; border:1px solid #eee; border-radius:10px; padding:12px }
@@ -35,11 +36,66 @@
     .right { text-align:right }
     .muted { color:#666; font-size:12px }
     .win { background:#ecfbf1 }
+
+    .plan-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .plan-badge {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 10px; border-radius:999px; background:#f5f5f5;
+      font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#444;
+    }
+    .plan-dot {
+      width:7px; height:7px; border-radius:50%;
+      background:#999;
+    }
+    .plan-dot.pro { background:#0f7b3a; }
+    .plan-dot.free { background:#d97706; }
+
+    /* Upgrade modal */
+    .upgrade-backdrop {
+      position:fixed; inset:0; background:rgba(0,0,0,0.4);
+      display:none; align-items:center; justify-content:center; z-index:50;
+    }
+    .upgrade-modal {
+      background:#fff; max-width:420px; width:90%;
+      border-radius:18px; padding:20px 20px 16px;
+      box-shadow:0 18px 40px rgba(0,0,0,0.18);
+    }
+    .upgrade-modal h3 { margin:0 0 6px; font-size:18px; }
+    .upgrade-modal p { margin:4px 0; font-size:14px; }
+    .chip-row { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 4px; }
+    .chip {
+      font-size:11px; padding:4px 8px; border-radius:999px;
+      background:#f3f4ff; color:#3730a3; border:1px solid #e0e7ff;
+    }
+    .upgrade-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+    .btn-text { background:transparent; border:none; color:#555; padding:8px 10px; border-radius:8px; cursor:pointer; }
+    .btn-primary {
+      background:#111827; color:#fff; border-radius:999px;
+      padding:8px 16px; border:none; cursor:pointer; font-size:14px;
+    }
+    .btn-primary a { color:inherit; text-decoration:none; }
+
+    .locked-label {
+      font-size:11px; text-transform:uppercase; letter-spacing:0.08em;
+      color:#b45309; display:inline-flex; align-items:center; gap:4px;
+    }
+    .lock-icon {
+      width:12px; height:12px; border-radius:3px; border:1px solid #b45309;
+      display:inline-flex; align-items:center; justify-content:center; font-size:9px;
+    }
   </style>
 </head>
 <body>
-  <h2>Deal Analyzer</h2>
-  <p class="muted">Mortgage, DSCR, CoC, Cap Rate, Cash Flow + expert verdict and scenario comparison.</p>
+  <div class="plan-row">
+    <div>
+      <h2>Deal Analyzer</h2>
+      <p class="muted">Mortgage, DSCR, CoC, Cap Rate, Cash Flow + expert verdict, scenario comparison, and history.</p>
+    </div>
+    <div class="plan-badge" id="planBadge">
+      <span class="plan-dot free" id="planDot"></span>
+      <span id="planBadgeText">Free plan</span>
+    </div>
+  </div>
 
   <!-- Purchase / Loan -->
   <div class="card">
@@ -79,8 +135,8 @@
 
   <div class="grid" style="margin:12px 0">
     <button onclick="analyze()">Analyze Deal</button>
-    <button id="saveBtn" class="secondary" onclick="saveDeal()" disabled title="Analyze first">Save</button>
-    <button class="ghost" onclick="snapshotBaseline()">Save as Baseline</button>
+    <button id="saveBtn" class="secondary" onclick="saveDeal()" disabled title="Analyze first">Save Deal</button>
+    <button class="ghost" onclick="snapshotBaseline()">Save as Baseline for Comparison</button>
   </div>
 
   <div id="results" class="result">
@@ -95,15 +151,25 @@
     <div id="verdict" class="verdict">—</div>
 
     <div class="tips" id="tweakBox" style="display:none">
-      <h4>What to tweak</h4>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h4>What to tweak</h4>
+        <span class="locked-label" id="tweakLockLabel" style="display:none;">
+          <span class="lock-icon">🔒</span> Pro Tip Stream
+        </span>
+      </div>
       <ul id="tweakList"></ul>
       <p class="muted">Targets: DSCR ≥ 1.25, CoC ≥ 8%, cash flow ≥ $100/mo.</p>
     </div>
 
     <!-- Compare Scenarios -->
     <div class="card" style="margin-top:16px">
-      <h3>Compare Scenarios</h3>
-      <p class="muted" id="baselineNote">Baseline: <em>not captured yet</em>. Click “Save as Baseline”.</p>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0 0 4px">Compare Scenarios</h3>
+        <span class="locked-label" id="scenarioLockLabel">
+          <span class="lock-icon">🔒</span> Premium Feature
+        </span>
+      </div>
+      <p class="muted" id="baselineNote">Baseline: <em>not captured yet</em>. Click “Save as Baseline for Comparison”.</p>
 
       <div class="grid">
         <div class="card">
@@ -162,22 +228,125 @@
     </table>
   </section>
 
-  <script>
-    (async () => { const ok = await requireAuth(); if (!ok) return; await loadRecent(); })();
+  <!-- Upgrade modal -->
+  <div class="upgrade-backdrop" id="upgradeModal" onclick="backdropClick(event)">
+    <div class="upgrade-modal">
+      <h3 id="upgradeTitle">Unlock pro investor tools</h3>
+      <p id="upgradeMessage">
+        Saving deals, scenario comparison, and tweak suggestions are part of the REtotalAI premium toolkit.
+      </p>
+      <div class="chip-row">
+        <span class="chip">Unlimited saved deals</span>
+        <span class="chip">Scenario A/B compare</span>
+        <span class="chip">DSCR & CoC guidance</span>
+      </div>
+      <p class="muted">Upgrade in under 60 seconds. No long-term contracts.</p>
+      <div class="upgrade-actions">
+        <button class="btn-text" type="button" onclick="closeUpgradeModal()">Maybe later</button>
+        <button class="btn-primary" type="button">
+          <a href="/pricing.html" id="upgradeCtaLink">View pricing & upgrade</a>
+        </button>
+      </div>
+    </div>
+  </div>
 
+  <script>
     let lastCalc = null;
     let baseline = null;
+    let currentPlan = "free";
+
+    (async () => {
+      const ok = await requireAuth();
+      if (!ok) return;
+
+      try {
+        const { data: userData } = await sb.auth.getUser();
+        const user = userData?.user;
+        currentPlan = (user?.user_metadata?.plan) || "free"; // "free" | "starter" | "pro"
+      } catch (e) {
+        console.error("Failed to load user plan", e);
+        currentPlan = "free";
+      }
+
+      applyPlanGating();
+      await loadRecent();
+    })();
 
     // ---------- helpers ----------
     function n(v){ return Number(v || 0); }
     function pct(v){ return Number(v || 0)/100; }
-    function fmt(n){ return Number(n).toLocaleString(undefined,{maximumFractionDigits:2}); }
+    function fmt(num){ return Number(num).toLocaleString(undefined,{maximumFractionDigits:2}); }
     function roundTo(val, step){ return Math.round(val/step)*step; }
 
     function pmt(rate, nper, pv) {
       if (rate === 0) return -(pv / nper);
       const r = rate;
       return -(pv * r * Math.pow(1+r, nper)) / (Math.pow(1+r, nper) - 1);
+    }
+
+    function applyPlanGating(){
+      const badgeText = document.getElementById("planBadgeText");
+      const dot = document.getElementById("planDot");
+      if (badgeText && dot) {
+        if (currentPlan === "free") {
+          badgeText.textContent = "Free plan";
+          dot.classList.remove("pro");
+          dot.classList.add("free");
+        } else if (currentPlan === "pro") {
+          badgeText.textContent = "Pro plan";
+          dot.classList.remove("free");
+          dot.classList.add("pro");
+        } else {
+          badgeText.textContent = "Starter plan";
+          dot.classList.remove("free");
+          dot.classList.add("pro");
+        }
+      }
+
+      const scenarioLock = document.getElementById("scenarioLockLabel");
+      const tweakLock = document.getElementById("tweakLockLabel");
+      if (currentPlan === "free") {
+        if (scenarioLock) scenarioLock.style.display = "inline-flex";
+        if (tweakLock) tweakLock.style.display = "inline-flex";
+      } else {
+        if (scenarioLock) scenarioLock.style.display = "none";
+        if (tweakLock) tweakLock.style.display = "none";
+      }
+    }
+
+    // ---------- Modal ----------
+    function openUpgradeModal(reason){
+      const modal = document.getElementById("upgradeModal");
+      const title = document.getElementById("upgradeTitle");
+      const msg = document.getElementById("upgradeMessage");
+
+      if (!modal) return;
+      if (reason === "save") {
+        title.textContent = "Unlock saved deal history";
+        msg.textContent = "Saving deals and building a portfolio history is part of the REtotalAI premium toolkit.";
+      } else if (reason === "baseline" || reason === "scenario") {
+        title.textContent = "Unlock Scenario B comparison";
+        msg.textContent = "Scenario comparison and Baseline vs. Scenario B analysis are available on paid plans.";
+      } else if (reason === "tweaks") {
+        title.textContent = "Unlock pro tweak suggestions";
+        msg.textContent = "Dynamic DSCR, CoC, and cash flow tweak suggestions are part of the REtotalAI premium toolkit.";
+      } else {
+        title.textContent = "Unlock pro investor tools";
+        msg.textContent = "Premium plans unlock saved deals, scenario comparison, and pro guidance.";
+      }
+
+      modal.style.display = "flex";
+    }
+
+    function closeUpgradeModal(){
+      const modal = document.getElementById("upgradeModal");
+      if (modal) modal.style.display = "none";
+    }
+
+    function backdropClick(e){
+      if (e.target && e.target.id === "upgradeModal") {
+        closeUpgradeModal();
+      }
     }
 
     // ---------- I/O ----------
@@ -202,24 +371,25 @@
         capexPct: pct(document.getElementById("capexPct").value)
       };
     }
+
     function writeInputs(obj){
-      if ('price' in obj) document.getElementById("price").value = obj.price;
-      if ('downPct' in obj) document.getElementById("downPct").value = (obj.downPct*100).toFixed(2);
-      if ('rateAnnual' in obj) document.getElementById("rate").value = (obj.rateAnnual*100).toFixed(3);
-      if ('termYears' in obj) document.getElementById("term").value = obj.termYears;
-      if ('closingPct' in obj) document.getElementById("closingPct").value = (obj.closingPct*100).toFixed(2);
+      if ("price" in obj) document.getElementById("price").value = obj.price;
+      if ("downPct" in obj) document.getElementById("downPct").value = (obj.downPct*100).toFixed(2);
+      if ("rateAnnual" in obj) document.getElementById("rate").value = (obj.rateAnnual*100).toFixed(3);
+      if ("termYears" in obj) document.getElementById("term").value = obj.termYears;
+      if ("closingPct" in obj) document.getElementById("closingPct").value = (obj.closingPct*100).toFixed(2);
 
-      if ('rent' in obj) document.getElementById("rent").value = obj.rent;
-      if ('otherIncome' in obj) document.getElementById("otherIncome").value = obj.otherIncome ?? 0;
-      if ('vacancyPct' in obj) document.getElementById("vacancyPct").value = (obj.vacancyPct*100).toFixed(2);
+      if ("rent" in obj) document.getElementById("rent").value = obj.rent;
+      if ("otherIncome" in obj) document.getElementById("otherIncome").value = obj.otherIncome ?? 0;
+      if ("vacancyPct" in obj) document.getElementById("vacancyPct").value = (obj.vacancyPct*100).toFixed(2);
 
-      if ('taxes' in obj) document.getElementById("taxes").value = obj.taxes ?? 0;
-      if ('insurance' in obj) document.getElementById("insurance").value = obj.insurance ?? 0;
-      if ('hoa' in obj) document.getElementById("hoa").value = obj.hoa ?? 0;
-      if ('utilities' in obj) document.getElementById("utilities").value = obj.utilities ?? 0;
-      if ('mgmtPct' in obj) document.getElementById("mgmtPct").value = (obj.mgmtPct*100).toFixed(2);
-      if ('maintPct' in obj) document.getElementById("maintPct").value = (obj.maintPct*100).toFixed(2);
-      if ('capexPct' in obj) document.getElementById("capexPct").value = (obj.capexPct*100).toFixed(2);
+      if ("taxes" in obj) document.getElementById("taxes").value = obj.taxes ?? 0;
+      if ("insurance" in obj) document.getElementById("insurance").value = obj.insurance ?? 0;
+      if ("hoa" in obj) document.getElementById("hoa").value = obj.hoa ?? 0;
+      if ("utilities" in obj) document.getElementById("utilities").value = obj.utilities ?? 0;
+      if ("mgmtPct" in obj) document.getElementById("mgmtPct").value = (obj.mgmtPct*100).toFixed(2);
+      if ("maintPct" in obj) document.getElementById("maintPct").value = (obj.maintPct*100).toFixed(2);
+      if ("capexPct" in obj) document.getElementById("capexPct").value = (obj.capexPct*100).toFixed(2);
     }
 
     // ---------- Core calc ----------
@@ -248,13 +418,19 @@
       const cashInvested = downPayment + closingCosts;
       const coc = cashInvested > 0 ? (annualCF / cashInvested) * 100 : 0;
 
-      return { capRate, dscr, coc, monthlyCashFlow, monthlyDebt, annualDebt, noiAnnual, cashInvested,
-               downPayment, closingCosts, opexMo, grossRentMo, vacancyLossMo };
+      return {
+        capRate, dscr, coc, monthlyCashFlow, monthlyDebt, annualDebt,
+        noiAnnual, cashInvested, downPayment, closingCosts,
+        opexMo, grossRentMo, vacancyLossMo
+      };
     }
 
     function analyze() {
       const ctx = readInputs();
-      if (!ctx.price || !ctx.rent) return alert("Please enter at least Price and Rent.");
+      if (!ctx.price || !ctx.rent) {
+        alert("Please enter at least Price and Rent.");
+        return;
+      }
 
       const k = calcKPIs(ctx);
 
@@ -266,7 +442,12 @@
       document.getElementById("results").style.display = "block";
 
       const verdictEl = document.getElementById("verdict");
-      const v = buildVerdict({ dscr:k.dscr, coc:k.coc, capRate:k.capRate, monthlyCashFlow:k.monthlyCashFlow });
+      const v = buildVerdict({
+        dscr:k.dscr,
+        coc:k.coc,
+        capRate:k.capRate,
+        monthlyCashFlow:k.monthlyCashFlow
+      });
       verdictEl.className = `verdict ${v.className}`;
       verdictEl.textContent = v.message;
 
@@ -281,8 +462,14 @@
         roi: 0, cap_rate: Number(k.capRate.toFixed(2)), cash_flow: Number(k.monthlyCashFlow.toFixed(2)),
         dscr: Number((k.dscr===Infinity? 9999 : k.dscr).toFixed(3)), coc: Number(k.coc.toFixed(2))
       };
-      document.getElementById("saveBtn").disabled = false;
-      document.getElementById("saveBtn").title = "";
+
+      const saveBtn = document.getElementById("saveBtn");
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.title = currentPlan === "free"
+          ? "Premium feature: upgrade to save your deals."
+          : "";
+      }
     }
 
     function buildVerdict({ dscr, coc, capRate, monthlyCashFlow }) {
@@ -299,6 +486,14 @@
 
     // ---------- What to tweak ----------
     function buildTweaks(ctx) {
+      if (currentPlan === "free") {
+        // Show lock label but still show a single teaser suggestion
+        const list = [`Upgrade to unlock full tweak suggestions for DSCR, CoC, and cash flow tuning.`];
+        document.getElementById("tweakList").innerHTML = list.map(li=>`<li>${li}</li>`).join("");
+        document.getElementById("tweakBox").style.display = "block";
+        return;
+      }
+
       const T_DSCR=1.25, T_COC=8, T_CF=100;
       const effRentFactor = Math.max(0.01, 1 - ctx.vacancyPct - ctx.mgmtPct - ctx.maintPct - ctx.capexPct);
       const list = [];
@@ -358,46 +553,68 @@
       const dscr = annualDebt > 0 ? (noiAnnual / annualDebt) : Infinity;
       return { dscr, monthlyDebt, annualDebt };
     }
+
     function findPriceCutForTargetDSCR(ctx, target) {
       let lo=0, hi=ctx.price*0.30, ans=0;
-      for (let i=0;i<25;i++){ const mid=(lo+hi)/2; const { dscr }=cloneAndRecalc(ctx,{price:ctx.price-mid,downPct:ctx.downPct});
-        if (dscr>=target){ ans=mid; hi=mid-100; } else { lo=mid+100; } }
-      return Math.max(0,ans);
-    }
-    function findRateBuydownForTargetDSCR(ctx, target) {
-      let lo=0, hi=0.03, ans=0;
-      for (let i=0;i<30;i++){ const mid=(lo+hi)/2; const { dscr }=cloneAndRecalc(ctx,{rateAnnual:Math.max(0.001,ctx.rateAnnual-mid)});
-        if (dscr>=target){ ans=mid; hi=mid-0.0005; } else { lo=mid+0.0005; } }
-      return Math.max(0,ans);
-    }
-    function findExtraDownForTargetDSCR(ctx, target) {
-      let lo=0, hi=0.20, ans=0;
-      for (let i=0;i<25;i++){ const mid=(lo+hi)/2; const newDown=Math.min(0.90,ctx.downPct+mid); const { dscr }=cloneAndRecalc(ctx,{downPct:newDown});
-        if (dscr>=target){ ans=mid; hi=mid-0.005; } else { lo=mid+0.005; } }
+      for (let i=0;i<25;i++){
+        const mid=(lo+hi)/2;
+        const { dscr }=cloneAndRecalc(ctx,{price:ctx.price-mid,downPct:ctx.downPct});
+        if (dscr>=target){ ans=mid; hi=mid-100; } else { lo=mid+100; }
+      }
       return Math.max(0,ans);
     }
 
-    // ---------- Baseline & Compare ----------
+    function findRateBuydownForTargetDSCR(ctx, target) {
+      let lo=0, hi=0.03, ans=0;
+      for (let i=0;i<30;i++){
+        const mid=(lo+hi)/2;
+        const { dscr }=cloneAndRecalc(ctx,{rateAnnual:Math.max(0.001,ctx.rateAnnual-mid)});
+        if (dscr>=target){ ans=mid; hi=mid-0.0005; } else { lo=mid+0.0005; }
+      }
+      return Math.max(0,ans);
+    }
+
+    function findExtraDownForTargetDSCR(ctx, target) {
+      let lo=0, hi=0.20, ans=0;
+      for (let i=0;i<25;i++){
+        const mid=(lo+hi)/2;
+        const newDown=Math.min(0.90,ctx.downPct+mid);
+        const { dscr }=cloneAndRecalc(ctx,{downPct:newDown});
+        if (dscr>=target){ ans=mid; hi=mid-0.005; } else { lo=mid+0.005; }
+      }
+      return Math.max(0,ans);
+    }
+
+    // ---------- Baseline & Scenario B ----------
     function snapshotBaseline(){
+      if (currentPlan === "free") {
+        openUpgradeModal("baseline");
+        return;
+      }
       const ctx = readInputs();
-      if (!ctx.price || !ctx.rent) return alert("Enter Price and Rent first, then click Analyze (optional) and Save as Baseline.");
+      if (!ctx.price || !ctx.rent) {
+        alert("Enter Price and Rent first, then click Analyze (optional) and Save as Baseline.");
+        return;
+      }
       baseline = ctx;
-      document.getElementById("baselineNote").innerHTML = `Baseline captured • Price $${fmt(ctx.price)}, Rent $${fmt(ctx.rent)}, Rate ${(ctx.rateAnnual*100).toFixed(2)}%`;
-      // Pre-fill Scenario B with smart guesses based on tweak helper
-      document.getElementById("b_priceCut").value = Math.round(ctx.price*0.03); // ~3% cut
+      document.getElementById("baselineNote").innerHTML =
+        `Baseline captured • Price $${fmt(ctx.price)}, Rent $${fmt(ctx.rent)}, Rate ${(ctx.rateAnnual*100).toFixed(2)}%`;
+
+      document.getElementById("b_priceCut").value = Math.round(ctx.price*0.03);
       document.getElementById("b_rentUp").value = 100;
       document.getElementById("b_rateDown").value = 0.5;
       document.getElementById("b_downUpPct").value = 5;
       document.getElementById("b_expTrim").value = 50;
     }
 
-    function recalcScenarioB(){
-      if (!baseline) return alert("Click “Save as Baseline” first.");
+    function buildScenarioBFromBaseline(){
+      if (!baseline) return null;
+
       const tweaks = {
         priceCut: n(document.getElementById("b_priceCut").value),
         rentUp: n(document.getElementById("b_rentUp").value),
         rateDownPts: n(document.getElementById("b_rateDown").value),
-        downUpPct: n(document.getElementById("b_downUpPct").value)/100,
+        downUpPct: n(document.getElementById("b_downUpPct").value) / 100,
         expTrim: n(document.getElementById("b_expTrim").value)
       };
 
@@ -409,7 +626,7 @@
       B.rent  = Math.max(0, A.rent + tweaks.rentUp);
       B.rateAnnual = Math.max(0.001, A.rateAnnual - (tweaks.rateDownPts/100));
       B.downPct = Math.min(0.90, A.downPct + tweaks.downUpPct);
-      // distribute expense trim across fixed buckets proportionally (taxes/ins/hoa/utils)
+
       const fixSum = (A.taxes + A.insurance + A.hoa + A.utilities) || 1;
       const t = tweaks.expTrim;
       B.taxes = Math.max(0, A.taxes - t*(A.taxes/fixSum));
@@ -418,7 +635,21 @@
       B.utilities = Math.max(0, A.utilities - t*(A.utilities/fixSum));
 
       const Bres = calcKPIs(B);
-      renderCompare(Ares, Bres);
+      return { baselineCtx:A, baselineKPIs:Ares, scenarioCtx:B, scenarioKPIs:Bres };
+    }
+
+    function recalcScenarioB(){
+      if (currentPlan === "free") {
+        openUpgradeModal("scenario");
+        return;
+      }
+      if (!baseline) {
+        alert("Click “Save as Baseline for Comparison” first.");
+        return;
+      }
+      const pack = buildScenarioBFromBaseline();
+      if (!pack) return;
+      renderCompare(pack.baselineKPIs, pack.scenarioKPIs);
     }
 
     function renderCompare(A, B){
@@ -427,7 +658,7 @@
         ["DSCR",     A.dscr===Infinity?"∞":fmt(A.dscr), B.dscr===Infinity?"∞":fmt(B.dscr), (x,y)=> (x==='∞'?Infinity:x) < (y==='∞'?Infinity:y)],
         ["CoC",      `${fmt(A.coc)}%`, `${fmt(B.coc)}%`, (x,y)=>parseFloat(x)<parseFloat(y)],
         ["CF / mo",  `$${fmt(A.monthlyCashFlow)}`, `$${fmt(B.monthlyCashFlow)}`, (x,y)=>parseFloat(x.replace(/[$,]/g,''))<parseFloat(y.replace(/[$,]/g,''))],
-        ["Debt / mo",`$${fmt(A.monthlyDebt)}`, `$${fmt(B.monthlyDebt)}`, (x,y)=>parseFloat(x.replace(/[$,]/g,''))>parseFloat(y.replace(/[$,]/g,''))],
+        ["Debt / mo",`$${fmt(A.monthlyDebt)}`, `$${fmt(B.monthlyDebt)}`, (x,y)=>parseFloat(x.replace(/[$,]/g,''))>parseFloat(y.replace(/[$,]/g,''))]
       ];
       const body = document.getElementById("cmpBody");
       body.innerHTML = rows.map(([label,a,b,isBetterB])=>{
@@ -437,96 +668,69 @@
     }
 
     function applyScenarioB(){
-      if (!baseline) return alert("Click “Save as Baseline” first, then Preview B.");
-      const tweaks = {
-        priceCut: n(document.getElementById("b_priceCut").value),
-        rentUp: n(document.getElementById("b_rentUp").value),
-        rateDownPts: n(document.getElementById("b_rateDown").value),
-        downUpPct: n(document.getElementById("b_downUpPct").value)/100,
-        expTrim: n(document.getElementById("b_expTrim").value)
-      };
-      const A = baseline;
-      const B = { ...A };
-      B.price = Math.max(0, A.price - tweaks.priceCut);
-      B.rent  = Math.max(0, A.rent + tweaks.rentUp);
-      B.rateAnnual = Math.max(0.001, A.rateAnnual - (tweaks.rateDownPts/100));
-      B.downPct = Math.min(0.90, A.downPct + tweaks.downUpPct);
-      const fixSum = (A.taxes + A.insurance + A.hoa + A.utilities) || 1;
-      const t = tweaks.expTrim;
-      B.taxes = Math.max(0, A.taxes - t*(A.taxes/fixSum));
-      B.insurance = Math.max(0, A.insurance - t*(A.insurance/fixSum));
-      B.hoa = Math.max(0, A.hoa - t*(A.hoa/fixSum));
-      B.utilities = Math.max(0, A.utilities - t*(A.utilities/fixSum));
-
-      writeInputs(B);
-      analyze(); // recalc with applied numbers
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (currentPlan === "free") {
+        openUpgradeModal("scenario");
+        return;
+      }
+      if (!baseline) {
+        alert("Click “Save as Baseline for Comparison” first, then Preview B.");
+        return;
+      }
+      const pack = buildScenarioBFromBaseline();
+      if (!pack) return;
+      writeInputs(pack.scenarioCtx);
+      analyze();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     async function saveScenarioB() {
+      if (currentPlan === "free") {
+        openUpgradeModal("scenario");
+        return;
+      }
       if (!baseline) {
-        alert("Click “Save as Baseline” first, then set your Scenario B tweaks.");
+        alert("Capture a baseline first, then set Scenario B tweaks.");
         return;
       }
 
-      // Rebuild Scenario B using the same tweak logic as applyScenarioB
-      const tweaks = {
-        priceCut: n(document.getElementById("b_priceCut").value),
-        rentUp: n(document.getElementById("b_rentUp").value),
-        rateDownPts: n(document.getElementById("b_rateDown").value),
-        downUpPct: n(document.getElementById("b_downUpPct").value) / 100,
-        expTrim: n(document.getElementById("b_expTrim").value)
-      };
+      const pack = buildScenarioBFromBaseline();
+      if (!pack) {
+        alert("Unable to build Scenario B. Check your inputs.");
+        return;
+      }
 
-      const A = baseline;
-      const B = { ...A };
+      const ctx = pack.scenarioCtx;
+      const k = pack.scenarioKPIs;
 
-      B.price = Math.max(0, A.price - tweaks.priceCut);
-      B.rent  = Math.max(0, A.rent + tweaks.rentUp);
-      B.rateAnnual = Math.max(0.001, A.rateAnnual - (tweaks.rateDownPts / 100));
-      B.downPct = Math.min(0.90, A.downPct + tweaks.downUpPct);
-
-      const fixSum = (A.taxes + A.insurance + A.hoa + A.utilities) || 1;
-      const t = tweaks.expTrim;
-      B.taxes = Math.max(0, A.taxes - t * (A.taxes / fixSum));
-      B.insurance = Math.max(0, A.insurance - t * (A.insurance / fixSum));
-      B.hoa = Math.max(0, A.hoa - t * (A.hoa / fixSum));
-      B.utilities = Math.max(0, A.utilities - t * (A.utilities / fixSum));
-
-      // Recalculate KPIs for Scenario B
-      const k = calcKPIs(B);
-
-      // Get current user from Supabase auth
-      const { data: userData } = await sb.auth.getUser();
+      const { data:userData } = await sb.auth.getUser();
       const user_id = userData?.user?.id;
       if (!user_id) {
-        alert("Not signed in.");
+        alert("Not signed in");
         return;
       }
 
-      // Match the deals table schema (same shape as saveDeal / lastCalc)
       const payload = {
         user_id,
-        price: B.price,
-        rent: B.rent,
+        price: ctx.price,
+        rent: ctx.rent,
         expenses: k.opexMo,
-        down_payment_pct: B.downPct * 100,
-        interest_rate: B.rateAnnual * 100,
-        term_years: B.termYears,
-        closing_cost_pct: B.closingPct * 100,
-        other_income: B.otherIncome,
-        vacancy_pct: B.vacancyPct * 100,
-        taxes_monthly: B.taxes,
-        insurance_monthly: B.insurance,
-        hoa_monthly: B.hoa,
-        utilities_monthly: B.utilities,
-        mgmt_pct: B.mgmtPct * 100,
-        maint_pct: B.maintPct * 100,
-        capex_pct: B.capexPct * 100,
+        down_payment_pct: ctx.downPct*100,
+        interest_rate: ctx.rateAnnual*100,
+        term_years: ctx.termYears,
+        closing_cost_pct: ctx.closingPct*100,
+        other_income: ctx.otherIncome,
+        vacancy_pct: ctx.vacancyPct*100,
+        taxes_monthly: ctx.taxes,
+        insurance_monthly: ctx.insurance,
+        hoa_monthly: ctx.hoa,
+        utilities_monthly: ctx.utilities,
+        mgmt_pct: ctx.mgmtPct*100,
+        maint_pct: ctx.maintPct*100,
+        capex_pct: ctx.capexPct*100,
         roi: 0,
         cap_rate: Number(k.capRate.toFixed(2)),
         cash_flow: Number(k.monthlyCashFlow.toFixed(2)),
-        dscr: Number((k.dscr === Infinity ? 9999 : k.dscr).toFixed(3)),
+        dscr: Number((k.dscr===Infinity? 9999 : k.dscr).toFixed(3)),
         coc: Number(k.coc.toFixed(2))
       };
 
@@ -543,15 +747,28 @@
 
     // ---------- Save / Load ----------
     async function saveDeal() {
-      if (!lastCalc) return alert("Analyze a deal first.");
-      const { data: userData } = await sb.auth.getUser();
+      if (currentPlan === "free") {
+        openUpgradeModal("save");
+        return;
+      }
+      if (!lastCalc) {
+        alert("Analyze a deal first.");
+        return;
+      }
+      const { data:userData } = await sb.auth.getUser();
       const user_id = userData?.user?.id;
-      if (!user_id) return alert("Not signed in");
-
+      if (!user_id) {
+        alert("Not signed in");
+        return;
+      }
       const payload = { user_id, ...lastCalc };
       const { error } = await sb.from("deals").insert(payload);
-      if (error) { console.error(error); return alert("Save failed: " + (error.message || "Unknown error")); }
-      alert("Saved ✓");
+      if (error) {
+        console.error(error);
+        alert("Save failed: " + (error.message || "Unknown error"));
+        return;
+      }
+      alert("Deal saved ✅");
       await loadRecent();
     }
 
@@ -559,12 +776,19 @@
       const { data, error } = await sb
         .from("deals")
         .select("id, created_at, price, rent, cap_rate, dscr, coc, cash_flow")
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending:false })
         .limit(10);
 
       const body = document.getElementById("dealsBody");
-      if (error) { console.error(error); body.innerHTML = `<tr><td colspan="8" class="muted">Failed to load: ${error.message}</td></tr>`; return; }
-      if (!data || data.length === 0) { body.innerHTML = `<tr><td colspan="8" class="muted">No saved analyses yet.</td></tr>`; return; }
+      if (error) {
+        console.error(error);
+        body.innerHTML = `<tr><td colspan="8" class="muted">Failed to load: ${error.message}</td></tr>`;
+        return;
+      }
+      if (!data || data.length === 0) {
+        body.innerHTML = `<tr><td colspan="8" class="muted">No saved analyses yet.</td></tr>`;
+        return;
+      }
 
       body.innerHTML = data.map(r => `
         <tr>
@@ -583,7 +807,11 @@
     async function delDeal(id) {
       if (!confirm("Delete this analysis?")) return;
       const { error } = await sb.from("deals").delete().eq("id", id);
-      if (error) { console.error(error); return alert("Delete failed: " + (error.message || "Unknown error")); }
+      if (error) {
+        console.error(error);
+        alert("Delete failed: " + (error.message || "Unknown error"));
+        return;
+      }
       await loadRecent();
     }
   </script>
