@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing • REtotalAI Deal Analyzer</title>
+  <link rel="stylesheet" href="/styles/main.css" />
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f7f7f7;
+      color: #111;
+    }
+    header {
+      background: #ffffffcc;
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header a {
+      text-decoration: none;
+      color: inherit;
+      font-weight: 600;
+      font-size: 18px;
+    }
+    nav {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    nav a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      font-size: 15px;
+    }
+    nav a:hover {
+      color: #000;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 64px 24px 96px;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      margin-bottom: 18px;
+      letter-spacing: -0.02em;
+    }
+    .hero p {
+      color: #444;
+      margin: 0 auto;
+      max-width: 640px;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    .plans {
+      display: grid;
+      gap: 28px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    .plan-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 32px 28px;
+      box-shadow: 0 24px 60px -40px rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .plan-card.popular::before {
+      content: "Most popular";
+      position: absolute;
+      top: 16px;
+      right: -54px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #fff;
+      padding: 6px 60px;
+      font-size: 13px;
+      font-weight: 600;
+      transform: rotate(45deg);
+      box-shadow: 0 16px 24px -18px rgba(37, 99, 235, 0.8);
+    }
+    .plan-name {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .plan-price {
+      font-size: 38px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .plan-price span {
+      font-size: 16px;
+      font-weight: 500;
+      color: #555;
+    }
+    .plan-description {
+      color: #444;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 10px;
+      font-size: 15px;
+      color: #222;
+    }
+    .feature-list li::before {
+      content: "✔";
+      color: #2563eb;
+      margin-right: 10px;
+    }
+    .plan-cta {
+      margin-top: auto;
+      background: #111;
+      color: #fff;
+      text-decoration: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .plan-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px -15px rgba(15, 23, 42, 0.6);
+    }
+    .addons {
+      margin-top: 90px;
+    }
+    .addons h2 {
+      text-align: center;
+      font-size: clamp(2rem, 4vw, 2.5rem);
+      margin-bottom: 18px;
+    }
+    .addon-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    .addon-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 24px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      box-shadow: 0 16px 48px -42px rgba(15, 23, 42, 0.9);
+    }
+    .addon-card h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    .addon-card p {
+      margin: 0;
+      color: #444;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    footer {
+      margin-top: 120px;
+      text-align: center;
+      color: #555;
+      font-size: 14px;
+      padding-bottom: 40px;
+    }
+    @media (max-width: 640px) {
+      header {
+        flex-direction: column;
+        gap: 12px;
+      }
+      nav {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/index.html">REtotalAI</a>
+    <nav>
+      <a href="/app.html">App</a>
+      <a href="/tools.html">Tools</a>
+      <a href="/pricing.html" aria-current="page" style="color:#000;font-weight:600;">Pricing</a>
+      <a href="/login.html">Log in</a>
+    </nav>
+  </header>
+  <main>
+    <section class="hero">
+      <h1>Pricing that scales with your portfolio</h1>
+      <p>Pick the plan that matches your investing style. Every tier includes instant underwriting, AI-powered suggestions, and secure storage for your deals.</p>
+    </section>
+
+    <section class="plans">
+      <article class="plan-card">
+        <div>
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">$0 <span>/ month</span></div>
+          <p class="plan-description">Get familiar with the REtotalAI Deal Analyzer and run up to three active scenarios.</p>
+        </div>
+        <ul class="feature-list">
+          <li>3 saved properties</li>
+          <li>1-click rental estimates</li>
+          <li>Basic deal exports (PDF)</li>
+          <li>Email support</li>
+        </ul>
+        <a class="plan-cta" href="/signup.html">Start for free</a>
+      </article>
+
+      <article class="plan-card popular">
+        <div>
+          <div class="plan-name">Professional</div>
+          <div class="plan-price">$39 <span>/ month</span></div>
+          <p class="plan-description">Unlock unlimited deal models, in-depth sensitivity analysis, and smart reminders for follow-ups.</p>
+        </div>
+        <ul class="feature-list">
+          <li>Unlimited saved properties</li>
+          <li>Full rental &amp; expense comps</li>
+          <li>Scenario version history</li>
+          <li>Priority chat support</li>
+        </ul>
+        <a class="plan-cta" href="/signup.html">Upgrade now</a>
+      </article>
+
+      <article class="plan-card">
+        <div>
+          <div class="plan-name">Portfolio</div>
+          <div class="plan-price">$119 <span>/ month</span></div>
+          <p class="plan-description">Coordinate acquisitions across teams with shared workspaces, custom exports, and CRM integrations.</p>
+        </div>
+        <ul class="feature-list">
+          <li>Team workspaces (up to 10 seats)</li>
+          <li>Automated deal workflows</li>
+          <li>Custom underwriting templates</li>
+          <li>Dedicated onboarding specialist</li>
+        </ul>
+        <a class="plan-cta" href="/contact.html">Talk to sales</a>
+      </article>
+    </section>
+
+    <section class="addons">
+      <h2>Need more firepower?</h2>
+      <div class="addon-grid">
+        <div class="addon-card">
+          <h3>Market Intelligence Pack</h3>
+          <p>Access vacancy trends, rent growth forecasts, and demographic overlays for 300+ MSAs. +$29/mo.</p>
+        </div>
+        <div class="addon-card">
+          <h3>Advisor Collaboration</h3>
+          <p>Invite lenders, brokers, or partners to view shared dashboards and comment on assumptions. +$19/mo per seat.</p>
+        </div>
+        <div class="addon-card">
+          <h3>White-Label Exports</h3>
+          <p>Generate presentation-ready reports with your logo, color palette, and branded disclaimers. +$49/mo.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © <span id="year"></span> REtotalAI. All rights reserved.
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
