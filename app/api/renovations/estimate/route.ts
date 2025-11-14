@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import {
   defaults,
   roomAreaSqft,
@@ -9,8 +8,7 @@ import {
   Scope,
   Room,
 } from '@/lib/costing'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
 
 type RequestBody = {
   propertyId?: string
