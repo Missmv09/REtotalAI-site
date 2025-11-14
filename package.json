@@ -11,6 +11,7 @@
     "test": "vitest run -c vitest.config.ts",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
+    "postinstall": "prisma generate",
     "health": "curl -i $RENDER_API_URL/health",
     "preflight": "curl -i -X OPTIONS $RENDER_API_URL/api/trial/start -H \"Origin: $FRONTEND_ORIGIN\" -H \"Access-Control-Request-Method: POST\""
   },
