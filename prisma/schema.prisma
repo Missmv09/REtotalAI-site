@@ -115,3 +115,35 @@ model SharedLink {
   createdAt   DateTime @default(now())
 }
 
+
+model CatalogItem {
+  id        String   @id @default(cuid())
+  vendor    String   // 'Home Depot'
+  sku       String   // e.g. 100567890
+  name      String
+  unit      String   // 'sqft' | 'gallon' | 'each' | 'linear_ft'
+  unitPrice Decimal  @db.Decimal(10, 2)
+  category  String   // 'flooring-lvp' | 'paint-interior' | etc.
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([vendor, sku])
+}
+
+model RenovationEstimate {
+  id             String   @id @default(cuid())
+  propertyId     String
+  name           String
+  inputs         Json     // raw user inputs (sqft, rooms, scopes)
+  lineItems      Json     // computed items
+  subtotal       Decimal  @db.Decimal(12, 2)
+  contingencyPct Decimal  @db.Decimal(5, 2)
+  contingency    Decimal  @db.Decimal(12, 2)
+  taxPct         Decimal  @db.Decimal(5, 2)
+  tax            Decimal  @db.Decimal(12, 2)
+  laborTotal     Decimal  @db.Decimal(12, 2)
+  grandTotal     Decimal  @db.Decimal(12, 2)
+  createdAt      DateTime @default(now())
+}
+
