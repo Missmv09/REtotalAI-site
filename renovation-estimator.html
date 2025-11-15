@@ -718,13 +718,16 @@
         );
         const conditionLevel =
           document.getElementById("conditionLevel").value || "medium";
-        const kitchensRaw = document.getElementById("kitchens").value;
-        const bathroomsRaw = document.getElementById("bathrooms").value;
+        const kitchensRaw = document
+          .getElementById("kitchens")
+          .value.trim();
+        const bathroomsRaw = document
+          .getElementById("bathrooms")
+          .value.trim();
 
-        // Default to 1 only if the field is completely empty.
-        // If user types 0, respect the 0.
-        const kitchens = kitchensRaw === "" ? 1 : toNumber(kitchensRaw);
-        const bathrooms = bathroomsRaw === "" ? 1 : toNumber(bathroomsRaw);
+        // Blank fields mean "not included"; allow users to leave them empty.
+        const kitchens = kitchensRaw === "" ? 0 : toNumber(kitchensRaw);
+        const bathrooms = bathroomsRaw === "" ? 0 : toNumber(bathroomsRaw);
         const numWindows = toNumber(
           document.getElementById("numWindows").value
         );
