@@ -106,7 +106,12 @@
       <div><label>Interest Rate (%, annual)</label><input id="rate" type="number" step="0.01" placeholder="6.75" value="6.75"></div>
       <div><label>Term (years)</label><input id="term" type="number" placeholder="30" value="30"></div>
       <div><label>Closing Costs (%)</label><input id="closingPct" type="number" step="0.1" placeholder="3" value="3"></div>
+      <!-- NEW: Rehab budget field -->
+      <div><label>Rehab Budget ($)</label><input id="rehabBudget" type="number" placeholder="e.g. 25000"></div>
     </div>
+    <p class="muted" id="rehabImportedNote" style="display:none; margin-top:8px;">
+      Rehab budget imported from Renovation Estimator (you can still edit it).
+    </p>
   </div>
 
   <!-- Income -->
@@ -206,7 +211,7 @@
       </div>
     </div>
 
-    <p class="muted" style="margin-top:8px">Notes: NOI excludes debt service; Cap Rate = NOI/Price. DSCR = NOI / Annual Debt Service. CoC uses cash invested (down + closing).</p>
+    <p class="muted" style="margin-top:8px">Notes: NOI excludes debt service; Cap Rate = NOI/Price. DSCR = NOI / Annual Debt Service. CoC uses cash invested (down + closing + rehab).</p>
   </div>
 
   <section style="margin-top:28px">
@@ -269,6 +274,7 @@
       }
 
       applyPlanGating();
+      importRehabFromEstimator();
       await loadRecent();
     })();
 
@@ -311,6 +317,28 @@
       } else {
         if (scenarioLock) scenarioLock.style.display = "none";
         if (tweakLock) tweakLock.style.display = "none";
+      }
+    }
+
+    // Import rehab estimate from Renovation Estimator via localStorage
+    function importRehabFromEstimator() {
+      try {
+        const raw = localStorage.getItem("retotalai_reno_estimate");
+        if (!raw) return;
+        const val = Number(raw);
+        if (!isNaN(val) && isFinite(val) && val > 0) {
+          const rehabInput = document.getElementById("rehabBudget");
+          if (rehabInput) {
+            rehabInput.value = val;
+          }
+          const note = document.getElementById("rehabImportedNote");
+          if (note) {
+            note.style.display = "block";
+          }
+        }
+        localStorage.removeItem("retotalai_reno_estimate");
+      } catch (e) {
+        console.warn("Unable to read reno estimate from localStorage", e);
       }
     }
 
@@ -357,6 +385,7 @@
         rateAnnual: pct(document.getElementById("rate").value),
         termYears: n(document.getElementById("term").value),
         closingPct: pct(document.getElementById("closingPct").value),
+        rehabBudget: n(document.getElementById("rehabBudget").value),
 
         rent: n(document.getElementById("rent").value),
         otherIncome: n(document.getElementById("otherIncome").value),
@@ -378,6 +407,7 @@
       if ("rateAnnual" in obj) document.getElementById("rate").value = (obj.rateAnnual*100).toFixed(3);
       if ("termYears" in obj) document.getElementById("term").value = obj.termYears;
       if ("closingPct" in obj) document.getElementById("closingPct").value = (obj.closingPct*100).toFixed(2);
+      if ("rehabBudget" in obj) document.getElementById("rehabBudget").value = obj.rehabBudget ?? 0;
 
       if ("rent" in obj) document.getElementById("rent").value = obj.rent;
       if ("otherIncome" in obj) document.getElementById("otherIncome").value = obj.otherIncome ?? 0;
@@ -397,6 +427,7 @@
       const rate = ctx.rateAnnual/12;
       const downPayment = ctx.price * ctx.downPct;
       const closingCosts = ctx.price * ctx.closingPct;
+      const rehabBudget = ctx.rehabBudget || 0;
       const loanAmount = Math.max(ctx.price - downPayment, 0);
       const months = ctx.termYears * 12;
       const monthlyDebt = -pmt(rate, months, loanAmount);
@@ -415,12 +446,12 @@
       const dscr = annualDebt > 0 ? (noiAnnual / annualDebt) : Infinity;
       const monthlyCashFlow = (grossRentMo - vacancyLossMo - opexMo - monthlyDebt);
       const annualCF = monthlyCashFlow * 12;
-      const cashInvested = downPayment + closingCosts;
+      const cashInvested = downPayment + closingCosts + rehabBudget;
       const coc = cashInvested > 0 ? (annualCF / cashInvested) * 100 : 0;
 
       return {
         capRate, dscr, coc, monthlyCashFlow, monthlyDebt, annualDebt,
-        noiAnnual, cashInvested, downPayment, closingCosts,
+        noiAnnual, cashInvested, downPayment, closingCosts, rehabBudget,
         opexMo, grossRentMo, vacancyLossMo
       };
     }
@@ -459,6 +490,7 @@
         closing_cost_pct: ctx.closingPct*100, other_income: ctx.otherIncome, vacancy_pct: ctx.vacancyPct*100,
         taxes_monthly: ctx.taxes, insurance_monthly: ctx.insurance, hoa_monthly: ctx.hoa, utilities_monthly: ctx.utilities,
         mgmt_pct: ctx.mgmtPct*100, maint_pct: ctx.maintPct*100, capex_pct: ctx.capexPct*100,
+        rehab_budget: ctx.rehabBudget,
         roi: 0, cap_rate: Number(k.capRate.toFixed(2)), cash_flow: Number(k.monthlyCashFlow.toFixed(2)),
         dscr: Number((k.dscr===Infinity? 9999 : k.dscr).toFixed(3)), coc: Number(k.coc.toFixed(2))
       };
@@ -727,6 +759,7 @@
         mgmt_pct: ctx.mgmtPct*100,
         maint_pct: ctx.maintPct*100,
         capex_pct: ctx.capexPct*100,
+        rehab_budget: ctx.rehabBudget,
         roi: 0,
         cap_rate: Number(k.capRate.toFixed(2)),
         cash_flow: Number(k.monthlyCashFlow.toFixed(2)),
