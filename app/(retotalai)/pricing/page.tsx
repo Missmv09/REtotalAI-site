@@ -11,6 +11,10 @@ type Plan = {
   status?: 'LIVE' | 'NEW' | 'BETA'
 }
 
+const SHARED_PRICE = '$49/month'
+const SHARED_FOOTNOTE =
+  '3 free uses/month\nStarting at $49/month\nUnlimited analyses, save reports, export PDF'
+
 const PLANS: Plan[] = [
   {
     name: 'Deal Analyzer',
@@ -22,9 +26,8 @@ const PLANS: Plan[] = [
       'Advanced ROI calculations',
       'Market comparison engine',
     ],
-    priceTag: '$49/month',
-    footnote:
-      '3 free uses/month\nStarting at $49/month\nUnlimited analyses, save reports, export PDF',
+    priceTag: SHARED_PRICE,
+    footnote: SHARED_FOOTNOTE,
     href: '/deal-analyzer',
     status: 'LIVE',
   },
@@ -38,9 +41,8 @@ const PLANS: Plan[] = [
       'Seasonal adjustments',
       'Competition tracking',
     ],
-    priceTag: '$49/month',
-    footnote:
-      '3 free uses/month\nStarting at $49/month\nUnlimited analyses, save reports, export PDF',
+    priceTag: SHARED_PRICE,
+    footnote: SHARED_FOOTNOTE,
     href: '/price-optimizer',
     status: 'LIVE',
   },
@@ -50,9 +52,8 @@ const PLANS: Plan[] = [
     description:
       'Intelligent automation for listings, emails, and client communications.',
     bullets: ['Listing generator', 'Email automation', 'Follow up scheduler'],
-    priceTag: '$49/month',
-    footnote:
-      '3 free uses/month\nStarting at $49/month\nUnlimited analyses, save reports, export PDF',
+    priceTag: SHARED_PRICE,
+    footnote: SHARED_FOOTNOTE,
     href: '/realtor-assistant',
     status: 'NEW',
   },
@@ -62,9 +63,8 @@ const PLANS: Plan[] = [
     description:
       'Advanced behavioral analysis beyond traditional credit checks.',
     bullets: ['Pattern recognition', 'Risk assessment', 'Predictive scoring'],
-    priceTag: '$49/month',
-    footnote:
-      '3 free uses/month\nStarting at $49/month\nUnlimited analyses, save reports, export PDF',
+    priceTag: SHARED_PRICE,
+    footnote: SHARED_FOOTNOTE,
     href: '/tenant-screening',
     status: 'LIVE',
   },
@@ -74,9 +74,8 @@ const PLANS: Plan[] = [
     description:
       'Instant analysis of building potential and regulatory compliance.',
     bullets: ['Zoning interpretation', 'Code compliance', 'Permit checklists'],
-    priceTag: '$49/month',
-    footnote:
-      '3 free uses/month\nStarting at $49/month\nUnlimited analyses, save reports, export PDF',
+    priceTag: SHARED_PRICE,
+    footnote: SHARED_FOOTNOTE,
     href: '/zoning-permits',
     status: 'BETA',
   },
@@ -86,13 +85,11 @@ const PLANS: Plan[] = [
     description:
       'Intelligent property matching based on lifestyle and preferences.',
     bullets: ['Preference learning', 'Hidden gem finder', 'Commute analysis'],
-    priceTag: '$49/month',
-    footnote:
-      '3 free uses/month\nStarting at $49/month\nUnlimited analyses, save reports, export PDF',
+    priceTag: SHARED_PRICE,
+    footnote: SHARED_FOOTNOTE,
     href: '/home-matchmaker',
     status: 'LIVE',
   },
-  // 🔥 NEW: Renovation Estimator plan
   {
     name: 'Renovation Estimator',
     audience: 'FOR INVESTORS & FLIPPERS',
@@ -103,9 +100,8 @@ const PLANS: Plan[] = [
       'Scope-by-scope cost breakdown',
       'Materials + labor + contingency',
     ],
-    priceTag: '$49/month',
-    footnote:
-      '3 free uses/month\nStarting at $49/month\nUnlimited estimates, save reports, export PDF',
+    priceTag: SHARED_PRICE,
+    footnote: SHARED_FOOTNOTE,
     href: '/renovations',
     status: 'NEW',
   },
