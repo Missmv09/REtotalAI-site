@@ -2,364 +2,414 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Pricing • REtotalAI Deal Analyzer</title>
+  <title>Pricing • REtotal AI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content="Simple, transparent pricing for REtotal AI. Choose the plan that fits your investment or real estate workflow."
+  />
   <style>
     :root {
-      --bg:#fafafa;
-      --card:#ffffff;
-      --border:#e5e7eb;
-      --accent:#111827;
-      --muted:#6b7280;
-      --accent-soft:#f3f4ff;
-      --accent-border:#e0e7ff;
-      --radius:18px;
+      --nav-bg: #ffffff;
+      --nav-border: #f3e8dc;
+      --cream: #faf5ef;
+      --cream-deep: #f4e9da;
+      --hero-text: #ffffff;
+      --hero-grad-start: #174272;
+      --hero-grad-end: #3d6b7c;
+      --accent: #f4b423;
+      --accent-dark: #bf8810;
+      --accent-soft: #fff7dc;
+      --blue-deep: #1e3a8a;
+      --muted: #6b7280;
+      --text-main: #111827;
     }
-    * { box-sizing:border-box; }
-    body {
-      margin:0;
-      font-family:sans-serif;
-      background:var(--bg);
-      color:#111827;
-    }
-    .shell {
-      max-width:1000px;
-      margin:32px auto 40px;
-      padding:0 16px 40px;
-    }
-    header {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      margin-bottom:24px;
-    }
-    header h1 {
-      font-size:24px;
-      margin:0 0 4px;
-    }
-    header p {
-      margin:0;
-      font-size:14px;
-      color:var(--muted);
-    }
-    .tagline-pill {
-      padding:6px 10px;
-      border-radius:999px;
-      background:#eef2ff;
-      color:#4f46e5;
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:0.08em;
-    }
-    .grid {
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-      gap:18px;
-      margin-top:12px;
-    }
-    .card {
-      background:var(--card);
-      border-radius:var(--radius);
-      border:1px solid var(--border);
-      padding:18px 18px 16px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      box-shadow:0 10px 30px rgba(15,23,42,0.04);
-    }
-    .card-header {
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:6px;
-    }
-    .plan-name {
-      font-size:16px;
-      font-weight:600;
-      margin:0 0 4px;
-    }
-    .plan-tag {
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:0.08em;
-      color:var(--muted);
-    }
-    .badge {
-      font-size:11px;
-      padding:4px 8px;
-      border-radius:999px;
-      background:#ecfdf5;
-      color:#166534;
-      border:1px solid #bbf7d0;
-      white-space:nowrap;
-    }
-    .badge-gold {
-      background:#fef3c7;
-      border-color:#fde68a;
-      color:#92400e;
-      box-shadow:0 0 0 1px rgba(250,204,21,0.35);
-    }
-    .card-annual {
-      border-color:#facc15;
-      box-shadow:
-        0 18px 45px rgba(15,23,42,0.12),
-        0 0 0 1px rgba(250,204,21,0.25);
-    }
-    .price-row {
-      margin-top:10px;
-      display:flex;
-      align-items:baseline;
-      gap:6px;
-    }
-    .price-main {
-      font-size:24px;
-      font-weight:700;
-    }
-    .price-term {
-      font-size:13px;
-      color:var(--muted);
-    }
-    .feature-list {
-      margin:12px 0 0;
-      padding:0;
-      list-style:none;
-      font-size:14px;
-      color:#111827;
-    }
-    .feature-list li {
-      display:flex;
-      align-items:flex-start;
-      gap:8px;
-      margin-bottom:6px;
-    }
-    .feature-dot {
-      width:7px;
-      height:7px;
-      border-radius:999px;
-      background:#4ade80;
-      margin-top:6px;
-      flex-shrink:0;
-    }
-    .feature-muted {
-      color:var(--muted);
-      text-decoration:line-through;
-    }
-    .chip-row {
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px;
-      margin-top:8px;
-    }
-    .chip {
-      font-size:11px;
-      padding:4px 8px;
-      border-radius:999px;
-      background:var(--accent-soft);
-      color:#3730a3;
-      border:1px solid var(--accent-border);
-    }
-    .cta-row {
-      margin-top:16px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .btn-primary,
-    .btn-outline {
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      padding:10px 14px;
-      border-radius:999px;
-      font-size:14px;
-      border:none;
-      cursor:pointer;
-      text-decoration:none;
-      text-align:center;
-    }
-    .btn-primary {
-      background:var(--accent);
-      color:#ffffff;
-    }
-    .btn-outline {
-      background:#ffffff;
-      border:1px solid var(--border);
-      color:#111827;
-    }
-    .btn-primary span.arrow {
-      font-size:13px;
-    }
-    /* VIP Annual button */
-    .btn-annual {
-      background:#111827;
-      color:#facc15 !important;
-      border:1px solid #facc15;
-      box-shadow:
-        0 0 0 1px rgba(250,204,21,0.45),
-        0 14px 32px rgba(15,23,42,0.45);
-    }
-    .btn-annual:hover {
-      filter:brightness(1.08);
-      box-shadow:
-        0 0 0 1px rgba(250,204,21,0.6),
-        0 18px 38px rgba(15,23,42,0.55);
-      color:#fde68a !important;
-    }
-    .muted {
-      font-size:12px;
-      color:var(--muted);
-    }
-    footer {
-      margin-top:26px;
-      font-size:12px;
-      color:var(--muted);
-      display:flex;
-      justify-content:space-between;
-      flex-wrap:wrap;
-      gap:6px;
-      align-items:center;
-    }
-    a.simple-link {
-      color:#4f46e5;
-      text-decoration:none;
-      font-size:12px;
-    }
-    a.simple-link:hover { text-decoration:underline; }
 
-    @media (max-width:640px) {
-      header {
-        flex-direction:column;
-        align-items:flex-start;
-      }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: var(--text-main);
+    }
+
+    /* NAV */
+    header {
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--nav-border);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    .nav {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: radial-gradient(circle at 20% 0, #facc15, #f97316 60%, #1e3a8a);
+    }
+
+    .highlight {
+      color: var(--accent-dark);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: inherit;
+      font-weight: 500;
+    }
+    .nav-links a.active { color: var(--text-main); }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #1f2937;
+      box-shadow: 0 8px 18px rgba(244, 180, 35, 0.35);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+      color: #fff7dc;
+    }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(120deg, var(--hero-grad-start), var(--hero-grad-end));
+      color: var(--hero-text);
+      padding: 70px 20px 80px;
+      text-align: center;
+      border-bottom: 4px solid var(--accent);
+    }
+
+    .hero-title {
+      font-size: clamp(30px, 4vw, 42px);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+      font-size: 16px;
+      max-width: 640px;
+      margin: 0 auto;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+
+    /* PRICING GRID */
+    .pricing-section {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 50px 20px;
+    }
+
+    .section-header { text-align: center; margin-bottom: 30px; }
+
+    .section-header h2 {
+      font-size: 24px;
+      margin-bottom: 6px;
+    }
+
+    .section-header p {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 22px;
+      margin-top: 20px;
+    }
+
+    .price-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .price-card.highlight {
+      border-color: var(--accent);
+      box-shadow: 0 14px 28px rgba(244, 180, 35, 0.25);
+    }
+
+    .price-badge {
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      padding: 4px 10px;
+      background: var(--accent-soft);
+      border-radius: 999px;
+      color: #92400e;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .price-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+
+    .price-amount {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--blue-deep);
+      margin-bottom: 6px;
+    }
+
+    .price-amount span {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .price-list {
+      padding-left: 18px;
+      color: #4b5563;
+      font-size: 14px;
+      margin: 10px 0 16px;
+    }
+
+    .price-list li { margin-bottom: 10px; }
+
+    .btn-price {
+      margin-top: auto;
+      padding: 10px 0;
+      text-align: center;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      background: #111827;
+      color: #ffffff;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+
+    .btn-price:hover { transform: translateY(-2px); }
+
+    .btn-price.secondary {
+      background: #ffffff;
+      border: 1px solid #111827;
+      color: #111827;
+    }
+
+    .btn-price.secondary:hover { background: #f3f4f6; }
+
+    .note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .faq-section {
+      background: var(--cream);
+      border-top: 1px solid var(--cream-deep);
+      border-bottom: 1px solid var(--cream-deep);
+      padding: 40px 20px 50px;
+    }
+
+    .faq-shell {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .faq-shell h3 {
+      font-size: 22px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .faq-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .faq-item {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 18px 20px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    .faq-item h4 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .faq-item p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    footer {
+      background: #fdf7ee;
+      border-top: 1px solid #ede9dd;
+      padding: 18px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    @media (max-width: 720px) {
+      .nav { flex-wrap: wrap; gap: 14px; justify-content: center; }
+      .nav-links { flex-wrap: wrap; justify-content: center; }
+      .btn { order: 3; }
     }
   </style>
 </head>
+
 <body>
-  <div class="shell">
-    <header>
-      <div>
-        <h1>Choose your Deal Analyzer plan</h1>
-        <p>Start free. Upgrade only when you’re ready to save deals and build your portfolio history.</p>
-      </div>
-      <div class="tagline-pill">Built for real estate investors</div>
-    </header>
 
-    <div class="grid">
-      <!-- Free plan -->
-      <div class="card">
-        <div>
-          <div class="card-header">
-            <div>
-              <p class="plan-name">Free</p>
-              <p class="plan-tag">For kicking the tires on a deal</p>
-            </div>
-          </div>
+<header>
+  <div class="nav">
+    <div class="brand">
+      <div class="brand-icon"></div>
+      REtotal <span class="highlight">AI</span>
+    </div>
+    <nav class="nav-links">
+      <a href="/index.html">Home</a>
+      <a href="/index.html#tools">Tools</a>
+      <a class="active" href="/pricing.html">Pricing</a>
+      <a href="/index.html#about">About</a>
+    </nav>
+    <a href="#start" class="btn btn-primary">Start Free Trial</a>
+  </div>
+</header>
 
-          <div class="price-row">
-            <div class="price-main">$0</div>
-            <div class="price-term">forever</div>
-          </div>
+<section class="hero">
+  <h1 class="hero-title">Simple, transparent pricing</h1>
+  <p class="hero-subtitle">
+    Start free, upgrade when you’re ready. Designed for investors, flippers, agents & busy real estate teams.
+  </p>
+</section>
 
-          <ul class="feature-list">
-            <li><span class="feature-dot"></span><span>Full deal analysis: DSCR, CoC, Cap Rate, cash flow</span></li>
-            <li><span class="feature-dot"></span><span>Mortgage and DSCR verdict guidance</span></li>
-            <li><span class="feature-dot"></span><span>Baseline numbers you can quickly tweak</span></li>
-            <li><span class="feature-dot"></span><span class="feature-muted">Save deal history & portfolio view</span></li>
-            <li><span class="feature-dot"></span><span class="feature-muted">Scenario A/B comparison</span></li>
-            <li><span class="feature-dot"></span><span class="feature-muted">Pro tweak suggestions for DSCR & CoC</span></li>
-            <li><span class="feature-dot"></span><span class="feature-muted">PDF export for lenders & partners</span></li>
-          </ul>
-        </div>
+<div class="pricing-section" id="start">
+  <div class="section-header">
+    <h2>Choose your plan</h2>
+    <p>No contracts · Upgrade anytime · New tools included automatically</p>
+  </div>
 
-        <div class="cta-row">
-          <a href="/deal-analyzer.html" class="btn-outline">Use free Deal Analyzer</a>
-          <p class="muted">No card required. Upgrade from inside the app when you’re ready.</p>
-        </div>
-      </div>
+  <div class="pricing-grid">
 
-      <!-- Pro Monthly -->
-      <div class="card">
-        <div>
-          <div class="card-header">
-            <div>
-              <p class="plan-name">Pro – Monthly</p>
-              <p class="plan-tag">For active or growing investors</p>
-            </div>
-            <span class="badge">Most popular</span>
-          </div>
+    <!-- STARTER -->
+    <div class="price-card">
+      <div class="price-title">Starter</div>
+      <div class="price-amount">$0 <span>/ month</span></div>
 
-          <div class="price-row">
-            <div class="price-main">$9</div>
-            <div class="price-term">per month</div>
-          </div>
+      <ul class="price-list">
+        <li>Full deal analysis: DSCR, CoC, Cap Rate & cash flow</li>
+        <li>Mortgage and DSCR verdict guidance</li>
+        <li>Use calculators with baseline numbers ready to tweak</li>
+        <li>Access to latest beta tools as they launch</li>
+      </ul>
 
-          <ul class="feature-list">
-            <li><span class="feature-dot"></span><span>Everything in Free</span></li>
-            <li><span class="feature-dot"></span><span>Unlimited saved deals & portfolio history</span></li>
-            <li><span class="feature-dot"></span><span>Scenario A/B comparison with side-by-side KPIs</span></li>
-            <li><span class="feature-dot"></span><span>Pro tweak suggestions to hit DSCR ≥ 1.25 & CoC ≥ 8%</span></li>
-            <li><span class="feature-dot"></span><span>Save Scenario B as its own deal record</span></li>
-            <li><span class="feature-dot"></span><span>Priority improvements as new features roll out</span></li>
-          </ul>
-
-          <div class="chip-row">
-            <span class="chip">Great for 1–5 deals/mo</span>
-            <span class="chip">Cancel anytime</span>
-          </div>
-        </div>
-
-        <div class="cta-row">
-          <a href="https://buy.stripe.com/14AbJ0a8RfEP0xZgqg9Ve02" class="btn-primary">
-            <span>Upgrade to Pro – Monthly</span>
-            <span class="arrow">→</span>
-          </a>
-          <p class="muted">You’ll be redirected to secure Stripe checkout. Once payment completes, your plan will upgrade automatically.</p>
-        </div>
-      </div>
-
-      <!-- Pro Annual -->
-      <div class="card card-annual">
-        <div>
-          <div class="card-header">
-            <div>
-              <p class="plan-name">Pro – Annual</p>
-              <p class="plan-tag">For serious portfolio builders</p>
-            </div>
-            <span class="badge badge-gold">Best value</span>
-          </div>
-
-          <div class="price-row">
-            <div class="price-main">$79</div>
-            <div class="price-term">per year</div>
-          </div>
-
-          <ul class="feature-list">
-            <li><span class="feature-dot"></span><span>Everything in Pro – Monthly</span></li>
-            <li><span class="feature-dot"></span><span>2+ months free compared to monthly pricing</span></li>
-            <li><span class="feature-dot"></span><span>Best for investors analyzing deals year-round</span></li>
-          </ul>
-
-          <div class="chip-row">
-            <span class="chip">Ideal for repeat buyers</span>
-            <span class="chip">Lock in lower price</span>
-          </div>
-        </div>
-
-        <div class="cta-row">
-          <a href="https://buy.stripe.com/fZu3cu80JcsDfsT4Hy9Ve01" class="btn-primary btn-annual">
-            Upgrade to Pro – Annual
-          </a>
-          <p class="muted">Same Pro features, billed once per year through Stripe.</p>
-        </div>
-      </div>
+      <a class="btn-price secondary" href="/deal-analyzer.html">Use Deal Analyzer free</a>
+      <p class="note">No credit card required. Upgrade in-app whenever you’re ready.</p>
     </div>
 
-    <footer>
-      <span>All prices in USD. You can cancel your subscription anytime through Stripe.</span>
-      <a href="/deal-analyzer.html" class="simple-link">Back to Deal Analyzer →</a>
-    </footer>
+    <!-- PRO MONTHLY -->
+    <div class="price-card highlight">
+      <div class="price-badge">Most popular</div>
+      <div class="price-title">Pro – Monthly</div>
+      <div class="price-amount">$9 <span>/ month</span></div>
+
+      <ul class="price-list">
+        <li>Everything in Starter</li>
+        <li>Unlimited saved deals & portfolio history</li>
+        <li>Scenario A/B comparison with side-by-side KPIs</li>
+        <li>Pro tweak suggestions to hit DSCR ≥ 1.25 &amp; CoC ≥ 8%</li>
+        <li>Save scenario outcomes to revisit and share</li>
+        <li>Priority support & feature feedback channel</li>
+      </ul>
+
+      <a class="btn-price" href="https://buy.stripe.com/14AbJ0a8RfEP0xZgqg9Ve02">Upgrade to Pro – Monthly →</a>
+      <p class="note">Secure Stripe checkout. Cancel anytime.</p>
+    </div>
+
+    <!-- PRO ANNUAL -->
+    <div class="price-card">
+      <div class="price-badge">Best value</div>
+      <div class="price-title">Pro – Annual</div>
+      <div class="price-amount">$79 <span>/ year</span></div>
+
+      <ul class="price-list">
+        <li>Everything in Pro – Monthly</li>
+        <li>2+ months free compared to monthly billing</li>
+        <li>Perfect for investors running deals year-round</li>
+        <li>Lock in portfolio insights & product roadmap access</li>
+      </ul>
+
+      <a class="btn-price" href="https://buy.stripe.com/fZu3cu80JcsDfsT4Hy9Ve01">Upgrade to Pro – Annual</a>
+      <p class="note">Billed once per year through Stripe. Cancel anytime.</p>
+    </div>
   </div>
+</div>
+
+<section class="faq-section">
+  <div class="faq-shell">
+    <h3>Questions about pricing?</h3>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h4>Can I stay on the free plan?</h4>
+        <p>Yes. The Starter plan is free forever and gives you access to the full Deal Analyzer experience without saving history.</p>
+      </div>
+      <div class="faq-item">
+        <h4>How do I cancel?</h4>
+        <p>Subscriptions are managed through Stripe. You can cancel with a single click from your receipt or customer portal.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Do you offer team pricing?</h4>
+        <p>We support teams that need shared saved deals and permissions. Reach out at hello@retotal.ai for custom quotes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  © <script>document.write(new Date().getFullYear());</script> REtotal AI. All rights reserved.
+</footer>
 </body>
 </html>
