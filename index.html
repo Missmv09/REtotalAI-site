@@ -21,6 +21,9 @@
       --accent-dark: #bf8810;
       --accent-soft: #fff7dc;
       --blue-deep: #1e3a8a;
+      --brand-blue: #1f3b82;
+      --brand-blue-dark: #152a63;
+      --brand-blue-soft: #e5ebf7;
       --muted: #6b7280;
       --card-bg: #ffffff;
       --card-border: #e2e8f0;
@@ -119,28 +122,42 @@
       border: 1px solid transparent;
       background: transparent;
       transition: 0.15s ease;
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0);
     }
 
     .btn-ghost {
-      border-color: #e5e7eb;
-      color: #374151;
+      border-color: #cbd5e1;
+      color: #1f2937;
       background: #ffffff;
     }
 
     .btn-ghost:hover {
-      background: #f9fafb;
+      background: #f8fafc;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
     }
 
     .btn-primary {
-      background: var(--accent);
-      color: #1f2937;
-      border-color: var(--accent);
-      box-shadow: 0 8px 18px rgba(244, 180, 35, 0.3);
+      background: var(--brand-blue);
+      color: #f8fafc;
+      border-color: var(--brand-blue);
+      box-shadow: 0 10px 22px rgba(31, 59, 130, 0.24);
     }
 
     .btn-primary:hover {
-      background: var(--accent-dark);
-      border-color: var(--accent-dark);
+      background: var(--brand-blue-dark);
+      border-color: var(--brand-blue-dark);
+      box-shadow: 0 14px 28px rgba(21, 42, 99, 0.26);
+    }
+
+    .hero .btn-ghost {
+      border-color: rgba(255, 255, 255, 0.6);
+      color: #f8fafc;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .hero .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.14);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
     }
 
     /* HERO */
@@ -266,6 +283,18 @@
       font-size: 14px;
       color: var(--muted);
       line-height: 1.6;
+    }
+
+    .cards-description {
+      max-width: 720px;
+      margin: 12px auto 0;
+      font-size: 13px;
+      color: #374151;
+      background: var(--brand-blue-soft);
+      border: 1px solid #d7def0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      line-height: 1.5;
     }
 
     /* TOOL CARDS */
@@ -559,7 +588,7 @@
       </p>
       <div class="hero-actions">
         <a href="#pricing" class="btn btn-primary">Start Free</a>
-        <a href="#tools" class="btn btn-ghost" style="border-color:#94a3b8;color:#e5e7eb;">Explore Tools</a>
+        <a href="#tools" class="btn btn-ghost">Explore Tools</a>
       </div>
       <div class="hero-footnote">
         <span>Starter is free</span> · 3 deal runs/month · No credit card required
@@ -596,6 +625,11 @@
       <p class="section-subtitle">
         Start with the three tools serious investors and agents use every week. The rest of the suite
         is being built in the open with early users like you.
+      </p>
+      <p class="cards-description">
+        Each card shows who the tool is built for, what it delivers today, and how to try or unlock it.
+        Check the badge at the top right to see what’s live versus coming soon, then click into the CTA
+        for a hands-on walkthrough.
       </p>
     </div>
 
