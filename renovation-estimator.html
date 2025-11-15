@@ -718,12 +718,13 @@
         );
         const conditionLevel =
           document.getElementById("conditionLevel").value || "medium";
-        const kitchens = toNumber(
-          document.getElementById("kitchens").value || "1"
-        );
-        const bathrooms = toNumber(
-          document.getElementById("bathrooms").value || "1"
-        );
+        const kitchensRaw = document.getElementById("kitchens").value;
+        const bathroomsRaw = document.getElementById("bathrooms").value;
+
+        // Default to 1 only if the field is completely empty.
+        // If user types 0, respect the 0.
+        const kitchens = kitchensRaw === "" ? 1 : toNumber(kitchensRaw);
+        const bathrooms = bathroomsRaw === "" ? 1 : toNumber(bathroomsRaw);
         const numWindows = toNumber(
           document.getElementById("numWindows").value
         );
