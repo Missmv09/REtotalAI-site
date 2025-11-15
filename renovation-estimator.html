@@ -645,6 +645,17 @@
             </div>
           </div>
 
+          <!-- NEW: Send to Deal Analyzer -->
+          <div class="button-row" style="margin-top: 14px;">
+            <button type="button" id="sendToDealAnalyzer" class="btn-primary">
+              Use in Deal Analyzer
+            </button>
+          </div>
+          <p id="sendConfirm" class="helper-text" style="display: none;">
+            Renovation estimate saved. Opening Deal Analyzer…
+          </p>
+          <!-- END NEW -->
+
           <p class="helper-text">
             Next step: plug this renovation number into your
             <strong>Deal Analyzer</strong> or <strong>Fix &amp; Flip</strong>
@@ -691,6 +702,11 @@
       const contingencyChip = document.getElementById("contingencyChip");
       const lineItemsEl = document.getElementById("lineItems");
       const resetButton = document.getElementById("resetButton");
+      const sendToDealAnalyzerBtn = document.getElementById("sendToDealAnalyzer");
+      const sendConfirm = document.getElementById("sendConfirm");
+
+      // store last calculated total so we can send it to Deal Analyzer
+      let lastTotalWithContingency = 0;
 
       form.addEventListener("submit", function (event) {
         event.preventDefault();
@@ -843,6 +859,9 @@
         const contingencyAmount = (baseCost * contingencyPct) / 100;
         const totalWithContingency = baseCost + contingencyAmount;
 
+        // remember latest total for sending over to Deal Analyzer
+        lastTotalWithContingency = totalWithContingency;
+
         const lowRange = baseCost * 0.9;
         const highRange = baseCost * 1.1;
 
@@ -893,8 +912,36 @@
         lineItemsEl.appendChild(totalRow);
       });
 
+      // NEW: Send to Deal Analyzer handler
+      sendToDealAnalyzerBtn.addEventListener("click", function () {
+        errorMsg.style.display = "none";
+        errorMsg.textContent = "";
+
+        if (!lastTotalWithContingency || lastTotalWithContingency <= 0) {
+          errorMsg.textContent =
+            "Run a renovation estimate first, then send it to the Deal Analyzer.";
+          errorMsg.style.display = "block";
+          return;
+        }
+
+        try {
+          const rounded = Math.round(lastTotalWithContingency);
+          localStorage.setItem("retotalai_reno_estimate", String(rounded));
+        } catch (e) {
+          console.warn("Unable to store reno estimate in localStorage", e);
+        }
+
+        if (sendConfirm) {
+          sendConfirm.style.display = "block";
+        }
+
+        window.location.href = "/deal-analyzer.html";
+      });
+      // END NEW
+
       resetButton.addEventListener("click", function () {
         form.reset();
+        lastTotalWithContingency = 0;
         errorMsg.style.display = "none";
         errorMsg.textContent = "";
         totalBudgetEl.textContent = "$0";
@@ -904,6 +951,9 @@
         contingencyChip.textContent = "10% contingency applied";
         lineItemsEl.innerHTML =
           '<div class="line-item-strong">No estimate yet — fill in the form and click “Run Renovation Estimate”.</div>';
+        if (sendConfirm) {
+          sendConfirm.style.display = "none";
+        }
       });
     })();
   </script>
