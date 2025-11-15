@@ -261,22 +261,33 @@
     let currentPlan = "free";
 
     (async () => {
-      const ok = await requireAuth();
-      if (!ok) return;
-
       try {
-        const { data: userData } = await sb.auth.getUser();
-        const user = userData?.user;
-        currentPlan = (user?.user_metadata?.plan) || "free"; // "free" | "starter" | "pro"
+        // Try to read the current user from Supabase, but DO NOT force login
+        if (typeof sb !== "undefined") {
+          const { data: userData } = await sb.auth.getUser();
+          const user = userData?.user;
+          currentPlan = (user?.user_metadata?.plan) || "free"; // "free" | "starter" | "pro"
+        } else {
+          currentPlan = "free";
+        }
       } catch (e) {
         console.error("Failed to load user plan", e);
         currentPlan = "free";
       }
 
       applyPlanGating();
-      importRehabFromEstimator();
-      await loadRecent();
+
+      // Try to load recent deals, but if not logged in just show the empty state
+      try {
+        if (typeof sb !== "undefined") {
+          await loadRecent();
+        }
+      } catch (e) {
+        console.error("loadRecent failed", e);
+      }
     })();
+
+    importRehabFromEstimator();
 
     // ---------- helpers ----------
     function n(v){ return Number(v || 0); }
