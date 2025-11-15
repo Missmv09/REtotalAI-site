@@ -106,12 +106,15 @@
       <div><label>Interest Rate (%, annual)</label><input id="rate" type="number" step="0.01" placeholder="6.75" value="6.75"></div>
       <div><label>Term (years)</label><input id="term" type="number" placeholder="30" value="30"></div>
       <div><label>Closing Costs (%)</label><input id="closingPct" type="number" step="0.1" placeholder="3" value="3"></div>
-      <!-- NEW: Rehab budget field -->
-      <div><label>Rehab Budget ($)</label><input id="rehabBudget" type="number" placeholder="e.g. 25000"></div>
+      <!-- Renovation budget field -->
+      <div>
+        <label>Renovation Budget ($)</label>
+        <input id="renoBudget" type="number" placeholder="e.g. 25000">
+        <p id="renoNote" class="muted" style="margin-top:4px; display:none;">
+          Imported from Renovation Estimator as the all-in (high) estimate including contingency. Adjust if you have updated bids or a different scope.
+        </p>
+      </div>
     </div>
-    <p class="muted" id="rehabImportedNote" style="display:none; margin-top:8px;">
-      Rehab budget imported from Renovation Estimator (you can still edit it).
-    </p>
   </div>
 
   <!-- Income -->
@@ -287,8 +290,6 @@
       }
     })();
 
-    importRehabFromEstimator();
-
     // ---------- helpers ----------
     function n(v){ return Number(v || 0); }
     function pct(v){ return Number(v || 0)/100; }
@@ -331,27 +332,29 @@
       }
     }
 
-    // Import rehab estimate from Renovation Estimator via localStorage
-    function importRehabFromEstimator() {
+    // Auto-fill Renovation Budget from Renovation Estimator (if present)
+    (function () {
       try {
-        const raw = localStorage.getItem("retotalai_reno_estimate");
-        if (!raw) return;
-        const val = Number(raw);
-        if (!isNaN(val) && isFinite(val) && val > 0) {
-          const rehabInput = document.getElementById("rehabBudget");
-          if (rehabInput) {
-            rehabInput.value = val;
-          }
-          const note = document.getElementById("rehabImportedNote");
-          if (note) {
-            note.style.display = "block";
+        const stored = localStorage.getItem("retotalai_reno_estimate");
+        if (!stored) return;
+
+        const renoInput = document.getElementById("renoBudget");
+        const renoNote = document.getElementById("renoNote");
+        const val = Number(stored);
+
+        if (renoInput && !isNaN(val) && val > 0) {
+          renoInput.value = val;
+          if (renoNote) {
+            renoNote.style.display = "block";
           }
         }
+
+        // Clear it so it doesn't keep applying forever
         localStorage.removeItem("retotalai_reno_estimate");
       } catch (e) {
         console.warn("Unable to read reno estimate from localStorage", e);
       }
-    }
+    })();
 
     // ---------- Modal ----------
     function openUpgradeModal(reason){
@@ -396,7 +399,7 @@
         rateAnnual: pct(document.getElementById("rate").value),
         termYears: n(document.getElementById("term").value),
         closingPct: pct(document.getElementById("closingPct").value),
-        rehabBudget: n(document.getElementById("rehabBudget").value),
+        rehabBudget: n(document.getElementById("renoBudget").value),
 
         rent: n(document.getElementById("rent").value),
         otherIncome: n(document.getElementById("otherIncome").value),
@@ -418,7 +421,7 @@
       if ("rateAnnual" in obj) document.getElementById("rate").value = (obj.rateAnnual*100).toFixed(3);
       if ("termYears" in obj) document.getElementById("term").value = obj.termYears;
       if ("closingPct" in obj) document.getElementById("closingPct").value = (obj.closingPct*100).toFixed(2);
-      if ("rehabBudget" in obj) document.getElementById("rehabBudget").value = obj.rehabBudget ?? 0;
+      if ("rehabBudget" in obj) document.getElementById("renoBudget").value = obj.rehabBudget ?? 0;
 
       if ("rent" in obj) document.getElementById("rent").value = obj.rent;
       if ("otherIncome" in obj) document.getElementById("otherIncome").value = obj.otherIncome ?? 0;
