@@ -264,30 +264,42 @@
     let currentPlan = "free";
 
     (async () => {
+      let ok = false;
       try {
-        // Try to read the current user from Supabase, but DO NOT force login
-        if (typeof sb !== "undefined") {
-          const { data: userData } = await sb.auth.getUser();
-          const user = userData?.user;
-          currentPlan = (user?.user_metadata?.plan) || "free"; // "free" | "starter" | "pro"
-        } else {
-          currentPlan = "free";
+        ok = await requireAuth();
+      } catch (e) {
+        console.error("Auth check failed", e);
+      }
+
+      // If not logged in, keep everything usable but show a friendly message
+      if (!ok) {
+        currentPlan = "free";
+        applyPlanGating();
+        const body = document.getElementById("dealsBody");
+        if (body) {
+          body.innerHTML = `
+            <tr>
+              <td colspan="8" class="muted">
+                Log in to save deals and see your recent analyses. You can still run numbers above.
+              </td>
+            </tr>
+          `;
         }
+        return;
+      }
+
+      // Logged-in path: load plan + recent deals
+      try {
+        const { data: userData } = await sb.auth.getUser();
+        const user = userData?.user;
+        currentPlan = (user?.user_metadata?.plan) || "free"; // "free" | "starter" | "pro"
       } catch (e) {
         console.error("Failed to load user plan", e);
         currentPlan = "free";
       }
 
       applyPlanGating();
-
-      // Try to load recent deals, but if not logged in just show the empty state
-      try {
-        if (typeof sb !== "undefined") {
-          await loadRecent();
-        }
-      } catch (e) {
-        console.error("loadRecent failed", e);
-      }
+      await loadRecent();
     })();
 
     // ---------- helpers ----------
