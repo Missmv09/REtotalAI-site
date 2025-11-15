@@ -428,6 +428,20 @@
               </select>
             </div>
 
+            <!-- NEW: Market / Location -->
+            <div class="field">
+              <label for="locationLevel">
+                Market / Location
+                <span class="hint">Cost-of-living factor</span>
+              </label>
+              <select id="locationLevel" name="locationLevel">
+                <option value="baseline" selected>Baseline (most markets)</option>
+                <option value="high">High-cost metro (SF, LA, NYC)</option>
+                <option value="low">Lower-cost market (Midwest / South)</option>
+              </select>
+            </div>
+            <!-- END NEW -->
+
             <div class="field">
               <label for="kitchens">
                 Number of Kitchens
@@ -589,6 +603,11 @@
             <div class="chip-warn" id="contingencyChip">
               10% contingency applied
             </div>
+            <!-- NEW: Location chip -->
+            <div class="chip" id="locationChip">
+              Baseline market (×1.00)
+            </div>
+            <!-- END NEW -->
           </div>
 
           <div class="line-item-list" id="lineItems">
@@ -653,6 +672,7 @@
       const rangeBudgetEl = document.getElementById("rangeBudget");
       const costPerSqftChip = document.getElementById("costPerSqftChip");
       const contingencyChip = document.getElementById("contingencyChip");
+      const locationChip = document.getElementById("locationChip");
       const lineItemsEl = document.getElementById("lineItems");
       const resetButton = document.getElementById("resetButton");
       const sendToDealAnalyzerBtn = document.getElementById("sendToDealAnalyzer");
@@ -669,6 +689,8 @@
         const squareFeet = toNumber(document.getElementById("squareFeet").value);
         const conditionLevel =
           document.getElementById("conditionLevel").value || "medium";
+        const locationLevel =
+          document.getElementById("locationLevel").value || "baseline";
 
         // IMPORTANT: no default of 1 here — blank means 0, and we won't add line items
         const kitchens = toNumber(document.getElementById("kitchens").value);
@@ -694,12 +716,33 @@
           return;
         }
 
-        // Adjust cost multipliers slightly based on condition
+        // Adjust cost multipliers based on condition
         let conditionMultiplier = 1;
         if (conditionLevel === "light") {
           conditionMultiplier = 0.9;
         } else if (conditionLevel === "heavy") {
           conditionMultiplier = 1.2;
+        }
+
+        // NEW: Location multiplier
+        let locationMultiplier = 1;
+        if (locationLevel === "high") {
+          locationMultiplier = 1.15;
+        } else if (locationLevel === "low") {
+          locationMultiplier = 0.9;
+        }
+
+        const costMultiplier = conditionMultiplier * locationMultiplier;
+
+        // update location chip text
+        if (locationChip) {
+          if (locationLevel === "high") {
+            locationChip.textContent = "High-cost market (×1.15)";
+          } else if (locationLevel === "low") {
+            locationChip.textContent = "Lower-cost market (×0.90)";
+          } else {
+            locationChip.textContent = "Baseline market (×1.00)";
+          }
         }
 
         const lineItems = [];
@@ -708,7 +751,7 @@
         // Kitchens (only if user entered > 0)
         if (kitchens > 0) {
           const kitchenCost =
-            kitchens * COSTS.kitchenPerUnit * conditionMultiplier;
+            kitchens * COSTS.kitchenPerUnit * costMultiplier;
           baseCost += kitchenCost;
           lineItems.push({
             label: `Kitchens (${kitchens})`,
@@ -719,7 +762,7 @@
         // Bathrooms (only if user entered > 0)
         if (bathrooms > 0) {
           const bathCost =
-            bathrooms * COSTS.bathroomPerUnit * conditionMultiplier;
+            bathrooms * COSTS.bathroomPerUnit * costMultiplier;
           baseCost += bathCost;
           lineItems.push({
             label: `Bathrooms (${bathrooms})`,
@@ -730,7 +773,7 @@
         // Paint
         if (scopePaint) {
           const paintCost =
-            squareFeet * COSTS.paintPerSqft * conditionMultiplier;
+            squareFeet * COSTS.paintPerSqft * costMultiplier;
           baseCost += paintCost;
           lineItems.push({
             label: `Interior paint (${squareFeet.toFixed(0)} sq ft)`,
@@ -741,7 +784,7 @@
         // Flooring
         if (scopeFlooring) {
           const flooringCost =
-            squareFeet * COSTS.flooringPerSqft * conditionMultiplier;
+            squareFeet * COSTS.flooringPerSqft * costMultiplier;
           baseCost += flooringCost;
           lineItems.push({
             label: `New flooring (${squareFeet.toFixed(0)} sq ft)`,
@@ -753,7 +796,7 @@
         if (scopeRoof) {
           // assume roof area ~ 1.1x square footage
           const roofSqft = squareFeet * 1.1;
-          const roofCost = roofSqft * COSTS.roofPerSqft * conditionMultiplier;
+          const roofCost = roofSqft * COSTS.roofPerSqft * costMultiplier;
           baseCost += roofCost;
           lineItems.push({
             label: `Roof replacement (~${roofSqft.toFixed(0)} sq ft)`,
@@ -764,7 +807,7 @@
         // Windows
         if (scopeWindows && numWindows > 0) {
           const windowsCost =
-            numWindows * COSTS.windowPerUnit * conditionMultiplier;
+            numWindows * COSTS.windowPerUnit * costMultiplier;
           baseCost += windowsCost;
           lineItems.push({
             label: `Windows (${numWindows} units)`,
@@ -775,7 +818,7 @@
         // Landscaping
         if (scopeLandscaping) {
           const landscapingCost =
-            COSTS.landscapingFlat * conditionMultiplier;
+            COSTS.landscapingFlat * costMultiplier;
           baseCost += landscapingCost;
           lineItems.push({
             label: "Landscaping / curb appeal",
@@ -785,7 +828,7 @@
 
         // Misc / systems
         if (scopeMisc) {
-          const miscCost = COSTS.miscSystemsFlat * conditionMultiplier;
+          const miscCost = COSTS.miscSystemsFlat * costMultiplier;
           baseCost += miscCost;
           lineItems.push({
             label: "Misc systems (HVAC, electrical, plumbing buffer)",
@@ -901,6 +944,9 @@
         rangeBudgetEl.textContent = "$0 – $0";
         costPerSqftChip.textContent = "$0 / sq ft";
         contingencyChip.textContent = "10% contingency applied";
+        if (locationChip) {
+          locationChip.textContent = "Baseline market (×1.00)";
+        }
         lineItemsEl.innerHTML =
           '<div class="line-item-strong">No estimate yet — fill in the form and click “Run Renovation Estimate”.</div>';
         if (sendConfirm) {
