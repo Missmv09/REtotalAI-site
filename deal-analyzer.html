@@ -806,13 +806,25 @@
     }
 
     async function loadRecent() {
+      const body = document.getElementById("dealsBody");
+
+      const { data:userData, error:userError } = await sb.auth.getUser();
+      const userId = userData?.user?.id;
+      if (userError || !userId) {
+        if (userError) {
+          console.error(userError);
+        }
+        body.innerHTML = `<tr><td colspan="8" class="muted">Failed to load: unable to identify user.</td></tr>`;
+        return;
+      }
+
       const { data, error } = await sb
         .from("deals")
         .select("id, created_at, price, rent, cap_rate, dscr, coc, cash_flow")
+        .eq("user_id", userId)
         .order("created_at", { ascending:false })
         .limit(10);
 
-      const body = document.getElementById("dealsBody");
       if (error) {
         console.error(error);
         body.innerHTML = `<tr><td colspan="8" class="muted">Failed to load: ${error.message}</td></tr>`;
