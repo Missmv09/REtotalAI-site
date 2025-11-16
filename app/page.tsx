@@ -325,6 +325,28 @@ export default function REtotalAiLandingPricing() {
         </div>
       </section>
 
+      {/* Why REtotal AI */}
+      <section className="border-y border-amber-100 bg-amber-50">
+        <div className="mx-auto max-w-6xl px-6 py-14 space-y-6">
+          <h2 className="text-2xl font-semibold text-gray-900">Why REtotal AI?</h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              { title: "Speed", description: "Run a clean analysis in minutes." },
+              { title: "Clarity", description: "No clutter. No overwhelm. No spreadsheets." },
+              { title: "Accuracy", description: "Smart defaults + modern UI = better decisions." },
+            ].map((reason) => (
+              <div
+                key={reason.title}
+                className="rounded-2xl border border-amber-100 bg-white/80 p-5 shadow-sm backdrop-blur"
+              >
+                <h3 className="text-lg font-semibold text-gray-900">{reason.title}</h3>
+                <p className="mt-1 text-sm text-gray-600">{reason.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="mx-auto max-w-7xl px-6 py-16">
         <div className="flex items-center justify-between flex-wrap gap-4">
