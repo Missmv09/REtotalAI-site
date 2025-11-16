@@ -269,6 +269,16 @@
       margin-top: 18px;
     }
 
+    .stacked-note {
+      max-width: 720px;
+      margin: 12px auto 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-softer);
+    }
+
     .plan-card {
       background: var(--bg-card);
       border-radius: 18px;
@@ -347,6 +357,78 @@
 
     .plan-cta {
       margin-top: auto;
+    }
+
+    /* INCLUDED FEATURES */
+
+    .inclusive-section {
+      margin-top: 34px;
+      padding: 26px 20px 6px;
+      background: linear-gradient(180deg, #fffaf0, #fff7dc 60%, rgba(255, 247, 220, 0.6));
+      border-radius: 20px;
+      border: 1px solid var(--border-strong);
+      box-shadow: 0 10px 24px rgba(180, 137, 27, 0.12);
+    }
+
+    .inclusive-header {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .inclusive-header h3 {
+      margin: 0 0 4px;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+
+    .inclusive-header p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-soft);
+    }
+
+    .inclusive-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .inclusive-item {
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid var(--border-subtle);
+      padding: 12px 12px 11px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .inclusive-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 20% 0, #facc15, #f97316 55%, #fcd34d);
+      display: grid;
+      place-items: center;
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 6px 14px rgba(244, 180, 35, 0.2);
+    }
+
+    .inclusive-item h4 {
+      margin: 0 0 4px;
+      font-size: 13px;
+      color: #111827;
+    }
+
+    .inclusive-item p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-soft);
+      line-height: 1.45;
     }
 
     .btn-plan {
@@ -483,9 +565,9 @@
           Start free, then upgrade only when you’re ready to underwrite every lead, model rehabs,
           and share clean outputs with clients or partners.
         </p>
-        <p class="hero-note">
-          <span>Starter is free.</span> Growth and Professional unlock unlimited use of all live tools, plus new tools as they launch.
-        </p>
+          <p class="hero-note">
+            <span>Starter is free.</span> Growth and Professional unlock unlimited use of all live tools, plus new tools as they launch.
+          </p>
       </div>
     </section>
 
@@ -502,6 +584,11 @@
 
         <div class="billing-note">
           <span>Tip:</span> Most solo investors and agents start on Growth. Teams and high-volume users land on Professional.
+        </div>
+
+        <div class="stacked-note">
+          <div>All paid plans include every current tool plus new releases the moment they launch.</div>
+          <div>Annual billing available at checkout if you prefer to pay once and save more.</div>
         </div>
 
         <div class="pricing-grid">
@@ -621,6 +708,47 @@
         <p class="fine-print">
           All prices are in USD. You can cancel or change plans at any time. Annual billing and receipts are handled via Stripe.
         </p>
+
+        <section class="inclusive-section" aria-label="Included with every plan">
+          <div class="inclusive-header">
+            <h3>Every plan includes</h3>
+            <p>Access the full REtotal AI workspace with the same speed, accuracy, and polish — no matter your tier.</p>
+          </div>
+
+          <div class="inclusive-grid">
+            <article class="inclusive-item">
+              <div class="inclusive-icon">⚡</div>
+              <div>
+                <h4>Fast, reliable outputs</h4>
+                <p>Underwrite, estimate rehabs, and generate listings with a tuned stack built specifically for real estate.</p>
+              </div>
+            </article>
+
+            <article class="inclusive-item">
+              <div class="inclusive-icon">📤</div>
+              <div>
+                <h4>Shareable reports</h4>
+                <p>Email-ready summaries make it simple to send results to partners, clients, or team members without copy/paste.</p>
+              </div>
+            </article>
+
+            <article class="inclusive-item">
+              <div class="inclusive-icon">🧭</div>
+              <div>
+                <h4>Clear guidance</h4>
+                <p>Prompts, defaults, and tooltips are tuned for investors and agents so you spend less time guessing and more time closing.</p>
+              </div>
+            </article>
+
+            <article class="inclusive-item">
+              <div class="inclusive-icon">🚀</div>
+              <div>
+                <h4>New tools as they ship</h4>
+                <p>Stay current with new releases — from deeper renovation options to portfolio-level views — without extra add-on fees.</p>
+              </div>
+            </article>
+          </div>
+        </section>
       </section>
 
       <!-- NOTES / FAQ-LITE -->
