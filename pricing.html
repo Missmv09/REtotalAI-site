@@ -6,410 +6,626 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta
     name="description"
-    content="Simple, transparent pricing for REtotal AI. Choose the plan that fits your investment or real estate workflow."
+    content="Simple, transparent pricing for REtotal AI. Start free, then upgrade as your deal flow grows."
   />
   <style>
     :root {
-      --nav-bg: #ffffff;
-      --nav-border: #f3e8dc;
-      --cream: #faf5ef;
-      --cream-deep: #f4e9da;
-      --hero-text: #ffffff;
-      --hero-grad-start: #174272;
-      --hero-grad-end: #3d6b7c;
+      --bg-page: #f8fafc;
+      --bg-hero: #020617;
+      --bg-card: #ffffff;
+      --bg-chip: #fef9e6;
+
+      --border-subtle: #e5e7eb;
+      --border-strong: #e2e8f0;
+
+      --text-main: #0f172a;
+      --text-soft: #6b7280;
+      --text-softer: #9ca3af;
+
       --accent: #f4b423;
       --accent-dark: #bf8810;
       --accent-soft: #fff7dc;
-      --blue-deep: #1e3a8a;
-      --muted: #6b7280;
-      --text-main: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: #ffffff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-page);
       color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     /* NAV */
+
     header {
-      background: var(--nav-bg);
-      border-bottom: 1px solid var(--nav-border);
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: blur(16px);
       position: sticky;
       top: 0;
-      z-index: 30;
+      z-index: 20;
     }
 
     .nav {
       max-width: 1120px;
       margin: 0 auto;
-      padding: 16px 20px;
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 16px;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-weight: 700;
-      font-size: 18px;
     }
 
     .brand-icon {
       width: 28px;
       height: 28px;
-      border-radius: 8px;
-      background: radial-gradient(circle at 20% 0, #facc15, #f97316 60%, #1e3a8a);
+      border-radius: 10px;
+      background: radial-gradient(circle at 20% 0, #facc15, #f97316 48%, #1f3b82 90%);
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.75), 0 8px 18px rgba(15, 23, 42, 0.6);
     }
 
-    .highlight {
-      color: var(--accent-dark);
+    .brand-text-main {
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      font-size: 16px;
+      color: #111827;
+    }
+
+    .brand-text-sub {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-softer);
     }
 
     .nav-links {
       display: flex;
-      gap: 20px;
-      color: var(--muted);
+      align-items: center;
+      gap: 18px;
       font-size: 14px;
+      color: var(--text-soft);
     }
-    .nav-links a {
-      text-decoration: none;
-      color: inherit;
+
+    .nav-links a.active {
+      color: var(--text-main);
       font-weight: 500;
     }
-    .nav-links a.active { color: var(--text-main); }
+
+    .nav-cta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
 
     .btn {
-      padding: 8px 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       border-radius: 999px;
+      font-size: 13px;
+      padding: 7px 14px;
       border: 1px solid transparent;
-      font-size: 14px;
       cursor: pointer;
-      text-decoration: none;
-      font-weight: 600;
+      transition: 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-ghost {
+      border-color: var(--border-subtle);
+      background: #ffffff;
+      color: var(--text-soft);
+    }
+
+    .btn-ghost:hover {
+      background: #f9fafb;
       color: var(--text-main);
     }
 
     .btn-primary {
-      background: var(--accent);
+      background: linear-gradient(120deg, var(--accent), var(--accent-dark));
       border-color: var(--accent);
-      color: #1f2937;
-      box-shadow: 0 8px 18px rgba(244, 180, 35, 0.35);
+      color: #111827;
+      box-shadow: 0 10px 24px rgba(244, 180, 35, 0.32);
     }
 
     .btn-primary:hover {
       background: var(--accent-dark);
       border-color: var(--accent-dark);
-      color: #fff7dc;
+    }
+
+    @media (max-width: 900px) {
+      .nav-links {
+        display: none;
+      }
     }
 
     /* HERO */
+
     .hero {
-      background: linear-gradient(120deg, var(--hero-grad-start), var(--hero-grad-end));
-      color: var(--hero-text);
-      padding: 70px 20px 80px;
-      text-align: center;
-      border-bottom: 4px solid var(--accent);
+      background:
+        radial-gradient(circle at top left, rgba(248, 250, 252, 0.06), transparent 55%),
+        var(--bg-hero);
+      color: #e5e7eb;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.85);
+    }
+
+    .hero-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 44px 20px 48px;
+      text-align: left;
+    }
+
+    .hero-eyebrow {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: #9ca3af;
+      margin-bottom: 8px;
     }
 
     .hero-title {
-      font-size: clamp(30px, 4vw, 42px);
+      font-size: clamp(30px, 4vw, 38px);
       font-weight: 700;
-      margin-bottom: 12px;
+      margin: 0 0 8px;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-title span {
+      background: linear-gradient(120deg, #facc15, #f97316);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
 
     .hero-subtitle {
-      font-size: 16px;
-      max-width: 640px;
-      margin: 0 auto;
-      opacity: 0.9;
+      font-size: 15px;
+      max-width: 560px;
+      color: #9ca3af;
       line-height: 1.6;
+      margin-bottom: 18px;
     }
 
-    /* PRICING GRID */
+    .hero-note {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .hero-note span {
+      color: #fef3c7;
+      font-weight: 500;
+    }
+
+    /* PRICING */
+
+    main {
+      flex: 1;
+    }
+
     .pricing-section {
       max-width: 1120px;
       margin: 0 auto;
-      padding: 50px 20px;
+      padding: 36px 20px 40px;
     }
 
-    .section-header { text-align: center; margin-bottom: 30px; }
+    .section-header {
+      text-align: center;
+      margin-bottom: 22px;
+    }
 
     .section-header h2 {
-      font-size: 24px;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
       margin-bottom: 6px;
+      color: var(--text-main);
     }
 
     .section-header p {
-      font-size: 14px;
-      color: var(--muted);
+      font-size: 13px;
+      color: var(--text-soft);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .billing-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-softer);
+      margin-bottom: 12px;
+    }
+
+    .billing-note span {
+      font-weight: 500;
+      color: var(--accent-dark);
     }
 
     .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 22px;
-      margin-top: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 18px;
     }
 
-    .price-card {
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
+    .plan-card {
+      background: var(--bg-card);
       border-radius: 18px;
-      padding: 22px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border-strong);
+      padding: 18px 18px 16px;
       display: flex;
       flex-direction: column;
       position: relative;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
     }
 
-    .price-card.highlight {
+    .plan-card.highlight {
       border-color: var(--accent);
-      box-shadow: 0 14px 28px rgba(244, 180, 35, 0.25);
+      box-shadow: 0 12px 26px rgba(244, 180, 35, 0.22);
     }
 
-    .price-badge {
+    .plan-badge {
       position: absolute;
       top: -12px;
-      left: 20px;
-      padding: 4px 10px;
-      background: var(--accent-soft);
+      left: 18px;
+      padding: 3px 10px;
       border-radius: 999px;
+      background: var(--accent-soft);
       color: #92400e;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
-    .price-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #111827;
+    .plan-name {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-softer);
       margin-bottom: 4px;
     }
 
-    .price-amount {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--blue-deep);
-      margin-bottom: 6px;
-    }
-
-    .price-amount span {
-      font-size: 14px;
-      color: var(--muted);
-    }
-
-    .price-list {
-      padding-left: 18px;
-      color: #4b5563;
-      font-size: 14px;
-      margin: 10px 0 16px;
-    }
-
-    .price-list li { margin-bottom: 10px; }
-
-    .btn-price {
-      margin-top: auto;
-      padding: 10px 0;
-      text-align: center;
-      border-radius: 999px;
-      font-size: 14px;
+    .plan-title {
+      font-size: 18px;
       font-weight: 600;
-      background: #111827;
-      color: #ffffff;
-      text-decoration: none;
-      display: inline-block;
-      transition: transform 0.2s ease;
+      color: var(--text-main);
+      margin-bottom: 4px;
     }
 
-    .btn-price:hover { transform: translateY(-2px); }
+    .plan-price {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
 
-    .btn-price.secondary {
-      background: #ffffff;
+    .plan-price span {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-soft);
+      margin-left: 3px;
+    }
+
+    .plan-desc {
+      font-size: 13px;
+      color: var(--text-soft);
+      margin-bottom: 8px;
+    }
+
+    .plan-list {
+      font-size: 13px;
+      color: var(--text-soft);
+      padding-left: 18px;
+      margin: 8px 0 14px;
+    }
+
+    .plan-list li {
+      margin-bottom: 4px;
+    }
+
+    .plan-cta {
+      margin-top: auto;
+    }
+
+    .btn-plan {
+      width: 100%;
+      padding: 9px 0;
+      border-radius: 999px;
       border: 1px solid #111827;
+      background: #111827;
+      color: #f9fafb;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      display: inline-block;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .btn-plan.secondary {
+      background: #ffffff;
       color: #111827;
     }
 
-    .btn-price.secondary:hover { background: #f3f4f6; }
-
-    .note {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 10px;
+    .btn-plan.secondary:hover {
+      background: #f9fafb;
     }
 
-    .faq-section {
-      background: var(--cream);
-      border-top: 1px solid var(--cream-deep);
-      border-bottom: 1px solid var(--cream-deep);
-      padding: 40px 20px 50px;
+    .btn-plan:hover {
+      background: #020617;
     }
 
-    .faq-shell {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .faq-shell h3 {
-      font-size: 22px;
-      margin-bottom: 20px;
+    .fine-print {
+      font-size: 11px;
+      color: var(--text-softer);
       text-align: center;
+      margin-top: 16px;
     }
 
-    .faq-grid {
+    /* FAQ / NOTES */
+
+    .notes-section {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 20px 38px;
+    }
+
+    .notes-grid {
       display: grid;
-      gap: 18px;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 20px;
+      font-size: 13px;
+      color: var(--text-soft);
     }
 
-    .faq-item {
+    .notes-card {
       background: #ffffff;
       border-radius: 14px;
-      padding: 18px 20px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--border-subtle);
+      padding: 14px 16px 12px;
     }
 
-    .faq-item h4 {
-      margin: 0 0 8px;
-      font-size: 16px;
-    }
-
-    .faq-item p {
-      margin: 0;
+    .notes-card h3 {
+      margin: 0 0 6px;
       font-size: 14px;
-      line-height: 1.6;
-      color: var(--muted);
+      font-weight: 600;
+      color: var(--text-main);
     }
+
+    @media (max-width: 900px) {
+      .notes-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    /* FOOTER */
 
     footer {
       background: #fdf7ee;
       border-top: 1px solid #ede9dd;
-      padding: 18px;
-      text-align: center;
+      padding: 16px 20px 18px;
+      font-size: 11px;
       color: #6b7280;
-      font-size: 12px;
     }
 
-    @media (max-width: 720px) {
-      .nav { flex-wrap: wrap; gap: 14px; justify-content: center; }
-      .nav-links { flex-wrap: wrap; justify-content: center; }
-      .btn { order: 3; }
+    .footer-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+    }
+
+    .footer-inner span.highlight {
+      color: var(--accent-dark);
+      font-weight: 600;
     }
   </style>
 </head>
-
 <body>
-
-<header>
-  <div class="nav">
-    <div class="brand">
-      <div class="brand-icon"></div>
-      REtotal <span class="highlight">AI</span>
-    </div>
-    <nav class="nav-links">
-      <a href="/index.html">Home</a>
-      <a href="/index.html#tools">Tools</a>
-      <a class="active" href="/pricing.html">Pricing</a>
-      <a href="/index.html#about">About</a>
-    </nav>
-    <a href="#start" class="btn btn-primary">Start Free Trial</a>
-  </div>
-</header>
-
-<section class="hero">
-  <h1 class="hero-title">Simple, transparent pricing</h1>
-  <p class="hero-subtitle">
-    Start free, upgrade when you’re ready. Designed for investors, flippers, agents & busy real estate teams.
-  </p>
-</section>
-
-<div class="pricing-section" id="start">
-  <div class="section-header">
-    <h2>Choose your plan</h2>
-    <p>No contracts · Upgrade anytime · New tools included automatically</p>
-  </div>
-
-  <div class="pricing-grid">
-
-    <!-- STARTER -->
-    <div class="price-card">
-      <div class="price-title">Starter</div>
-      <div class="price-amount">$0 <span>/ month</span></div>
-
-      <ul class="price-list">
-        <li>Full deal analysis: DSCR, CoC, Cap Rate & cash flow</li>
-        <li>Mortgage and DSCR verdict guidance</li>
-        <li>Use calculators with baseline numbers ready to tweak</li>
-        <li>Access to latest beta tools as they launch</li>
-      </ul>
-
-      <a class="btn-price secondary" href="/deal-analyzer.html">Use Deal Analyzer free</a>
-      <p class="note">No credit card required. Upgrade in-app whenever you’re ready.</p>
-    </div>
-
-    <!-- PRO MONTHLY -->
-    <div class="price-card highlight">
-      <div class="price-badge">Most popular</div>
-      <div class="price-title">Pro – Monthly</div>
-      <div class="price-amount">$9 <span>/ month</span></div>
-
-      <ul class="price-list">
-        <li>Everything in Starter</li>
-        <li>Unlimited saved deals & portfolio history</li>
-        <li>Scenario A/B comparison with side-by-side KPIs</li>
-        <li>Pro tweak suggestions to hit DSCR ≥ 1.25 &amp; CoC ≥ 8%</li>
-        <li>Save scenario outcomes to revisit and share</li>
-        <li>Priority support & feature feedback channel</li>
-      </ul>
-
-      <a class="btn-price" href="https://buy.stripe.com/14AbJ0a8RfEP0xZgqg9Ve02">Upgrade to Pro – Monthly →</a>
-      <p class="note">Secure Stripe checkout. Cancel anytime.</p>
-    </div>
-
-    <!-- PRO ANNUAL -->
-    <div class="price-card">
-      <div class="price-badge">Best value</div>
-      <div class="price-title">Pro – Annual</div>
-      <div class="price-amount">$79 <span>/ year</span></div>
-
-      <ul class="price-list">
-        <li>Everything in Pro – Monthly</li>
-        <li>2+ months free compared to monthly billing</li>
-        <li>Perfect for investors running deals year-round</li>
-        <li>Lock in portfolio insights & product roadmap access</li>
-      </ul>
-
-      <a class="btn-price" href="https://buy.stripe.com/fZu3cu80JcsDfsT4Hy9Ve01">Upgrade to Pro – Annual</a>
-      <p class="note">Billed once per year through Stripe. Cancel anytime.</p>
-    </div>
-  </div>
-</div>
-
-<section class="faq-section">
-  <div class="faq-shell">
-    <h3>Questions about pricing?</h3>
-    <div class="faq-grid">
-      <div class="faq-item">
-        <h4>Can I stay on the free plan?</h4>
-        <p>Yes. The Starter plan is free forever and gives you access to the full Deal Analyzer experience without saving history.</p>
+  <div class="page">
+    <!-- NAV -->
+    <header>
+      <div class="nav">
+        <a href="/index.html" class="brand">
+          <div class="brand-icon"></div>
+          <div>
+            <div class="brand-text-main">REtotal AI</div>
+            <div class="brand-text-sub">Real Estate • Deal Intelligence</div>
+          </div>
+        </a>
+        <nav class="nav-links">
+          <a href="/index.html#tools">Tools</a>
+          <a href="/index.html#demo">Demo</a>
+          <a href="/pricing.html" class="active">Pricing</a>
+          <a href="/index.html#about">About</a>
+        </nav>
+        <div class="nav-cta">
+          <a href="/login" class="btn btn-ghost">Log In</a>
+          <a href="/signup" class="btn btn-primary">Start Free</a>
+        </div>
       </div>
-      <div class="faq-item">
-        <h4>How do I cancel?</h4>
-        <p>Subscriptions are managed through Stripe. You can cancel with a single click from your receipt or customer portal.</p>
-      </div>
-      <div class="faq-item">
-        <h4>Do you offer team pricing?</h4>
-        <p>We support teams that need shared saved deals and permissions. Reach out at hello@retotal.ai for custom quotes.</p>
-      </div>
-    </div>
-  </div>
-</section>
+    </header>
 
-<footer>
-  © <script>document.write(new Date().getFullYear());</script> REtotal AI. All rights reserved.
-</footer>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-eyebrow">Pricing</div>
+        <h1 class="hero-title">
+          Plans that grow with your
+          <span>deal flow.</span>
+        </h1>
+        <p class="hero-subtitle">
+          Start free, then upgrade only when you’re ready to underwrite every lead, model rehabs,
+          and share clean outputs with clients or partners.
+        </p>
+        <p class="hero-note">
+          <span>Starter is free.</span> Growth and Professional unlock unlimited use of all live tools, plus new tools as they launch.
+        </p>
+      </div>
+    </section>
+
+    <!-- PLANS -->
+    <main>
+      <section class="pricing-section" id="plans">
+        <div class="section-header">
+          <h2>Simple, transparent pricing</h2>
+          <p>
+            No contracts, no hidden fees. Upgrade or downgrade anytime. Annual billing is available
+            at checkout if you prefer to pay once and save.
+          </p>
+        </div>
+
+        <div class="billing-note">
+          <span>Tip:</span> Most solo investors and agents start on Growth. Teams and high-volume users land on Professional.
+        </div>
+
+        <div class="pricing-grid">
+          <!-- STARTER -->
+          <article class="plan-card">
+            <div class="plan-name">Starter</div>
+            <div class="plan-title">Kick the tires</div>
+            <div class="plan-price">$0 <span>/ month</span></div>
+            <p class="plan-desc">
+              Try REtotal AI on a few real deals before you commit to running your whole pipeline here.
+            </p>
+            <ul class="plan-list">
+              <li>3 Deal Analyzer runs per month</li>
+              <li>3 Listing Generator runs per month</li>
+              <li>Basic Rental Pricing access</li>
+              <li>Email summaries you can save</li>
+              <li>Access to roadmap updates & releases</li>
+            </ul>
+            <div class="plan-cta">
+              <a href="/signup" class="btn-plan secondary">Start for free</a>
+            </div>
+          </article>
+
+          <!-- GROWTH -->
+          <article class="plan-card highlight">
+            <div class="plan-badge">Most popular</div>
+            <div class="plan-name">Growth</div>
+            <div class="plan-title">For active deal hunters</div>
+            <div class="plan-price">$149 <span>/ month</span></div>
+            <p class="plan-desc">
+              Ideal for investors and agents reviewing multiple deals every week and wanting unlimited runs.
+            </p>
+            <ul class="plan-list">
+              <li>Unlimited Deal Analyzer runs</li>
+              <li>Unlimited Listing Generator & Rental Pricing</li>
+              <li>Renovation Estimator access (core features)</li>
+              <li>Saved deals and scenarios</li>
+              <li>Email support</li>
+              <li>Early access to new tools as they launch</li>
+            </ul>
+            <div class="plan-cta">
+              <a href="YOUR_GROWTH_STRIPE_LINK_HERE" class="btn-plan">Upgrade to Growth</a>
+            </div>
+          </article>
+
+          <!-- PROFESSIONAL -->
+          <article class="plan-card">
+            <div class="plan-name">Professional</div>
+            <div class="plan-title">For power users & teams</div>
+            <div class="plan-price">$299 <span>/ month</span></div>
+            <p class="plan-desc">
+              For flippers, portfolio owners, and teams who live in their numbers and need everything unlocked.
+            </p>
+            <ul class="plan-list">
+              <li>Everything in Growth</li>
+              <li>Advanced Renovation Estimator options</li>
+              <li>All current & future REtotal AI tools</li>
+              <li>Priority support response</li>
+              <li>Light team use included (shared login to start)</li>
+              <li>Early access to team & white-label features</li>
+            </ul>
+            <div class="plan-cta">
+              <a href="YOUR_PROFESSIONAL_STRIPE_LINK_HERE" class="btn-plan secondary">
+                Upgrade to Professional
+              </a>
+            </div>
+          </article>
+
+          <!-- ENTERPRISE -->
+          <article class="plan-card">
+            <div class="plan-name">Enterprise</div>
+            <div class="plan-title">For brokerages & platforms</div>
+            <div class="plan-price">Custom <span>/ month</span></div>
+            <p class="plan-desc">
+              For teams who want REtotal AI integrated into their existing stack or offered to all agents.
+            </p>
+            <ul class="plan-list">
+              <li>Everything in Professional</li>
+              <li>Dedicated onboarding & training</li>
+              <li>Integration & API discussions</li>
+              <li>Brokerage or platform-wide deployment</li>
+              <li>Co-branded or white-label options</li>
+            </ul>
+            <div class="plan-cta">
+              <a href="mailto:hello@retotalai.com" class="btn-plan secondary">Talk to us</a>
+            </div>
+          </article>
+        </div>
+
+        <p class="fine-print">
+          All prices are in USD. You can cancel or change plans at any time. Annual billing and receipts are handled via Stripe.
+        </p>
+      </section>
+
+      <!-- NOTES / FAQ-LITE -->
+      <section class="notes-section">
+        <div class="notes-grid">
+          <article class="notes-card">
+            <h3>What’s the difference between Growth and Professional?</h3>
+            <p>
+              Growth is perfect if you’re a solo investor or agent who wants to underwrite every lead
+              and use the core toolset on a regular basis. Professional is for operators and teams who
+              want everything unlocked — including deeper Renovation Estimator options, all new tools,
+              and faster support when deals are moving quickly.
+            </p>
+          </article>
+
+          <article class="notes-card">
+            <h3>Can I start on Starter and upgrade later?</h3>
+            <p>
+              Yes. Most users start on Starter, run a few deals, and then upgrade to Growth once they
+              see how REtotal AI fits into their workflow. You won’t lose your account or history when you upgrade.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <span>© <span class="highlight">REtotal AI</span> — Deal intelligence for investors, flippers & agents.</span>
+        <span>Starter is free. Growth & Professional unlock unlimited use of live tools and all new tools as they launch.</span>
+      </div>
+    </footer>
+  </div>
 </body>
 </html>
