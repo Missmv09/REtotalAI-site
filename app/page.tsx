@@ -185,6 +185,7 @@ export default function REtotalAiLandingPricing() {
             <span className="font-semibold text-lg">REtotalAi</span>
           </div>
           <nav className="hidden md:flex items-center gap-8 text-sm text-gray-600">
+            <a href="#tools" className="hover:text-gray-900">Tools</a>
             <a href="#features" className="hover:text-gray-900">Features</a>
             <a href="#pricing" className="hover:text-gray-900">Pricing</a>
             <a href="#how" className="hover:text-gray-900">How it works</a>
@@ -246,6 +247,60 @@ export default function REtotalAiLandingPricing() {
                 Update one input. Instantly see rent, ROI, DSCR, and cash flow adjust — live.
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Core tools */}
+      <section id="tools" className="border-b border-slate-100 bg-white">
+        <div className="mx-auto max-w-5xl px-6 py-14 space-y-8">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Your Core Tools</h2>
+            <p className="text-sm text-gray-600 max-w-2xl">
+              These two tools drive every decision: Analyze deals clearly, estimate renovations accurately.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {[
+              {
+                badge: "Included in Starter",
+                badgeClass: "bg-amber-50 text-amber-800",
+                title: "Deal Analyzer",
+                description:
+                  "Underwrite any property in minutes — cash flow, cash-on-cash, DSCR, and 3 scenarios side by side.",
+                href: "/deal-analyzer.html",
+                cta: "Open Deal Analyzer",
+              },
+              {
+                badge: "Growth & Pro",
+                badgeClass: "bg-slate-100 text-slate-700",
+                title: "Renovation Estimator",
+                description:
+                  "Accurate light/medium/heavy rehab ranges with material + labor assumptions — built to feed Deal Analyzer.",
+                href: "/renovation-estimator.html",
+                cta: "Open Renovation Estimator",
+              },
+            ].map((tool) => (
+              <div
+                key={tool.title}
+                className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+              >
+                <span className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-[11px] font-semibold ${tool.badgeClass}`}>
+                  {tool.badge}
+                </span>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold text-gray-900">{tool.title}</h3>
+                  <p className="text-sm leading-relaxed text-gray-600">{tool.description}</p>
+                </div>
+                <a
+                  href={tool.href}
+                  className="inline-flex w-fit items-center rounded-full bg-gray-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-black"
+                >
+                  {tool.cta}
+                </a>
+              </div>
+            ))}
           </div>
         </div>
       </section>
