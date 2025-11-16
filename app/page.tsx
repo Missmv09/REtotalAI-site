@@ -199,38 +199,53 @@ export default function REtotalAiLandingPricing() {
       </header>
 
       {/* Hero */}
-      <section className="mx-auto max-w-7xl px-6 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium text-gray-600">
-            <span className="h-2 w-2 rounded-full bg-green-500"/> New: First deal free
-          </div>
-          <h1 className="mt-4 text-4xl md:text-6xl font-extrabold leading-tight">Analyze Your First Deal <span className="text-indigo-600">Free</span></h1>
-          <p className="mt-4 text-lg text-gray-600">Professional-grade AI Deal Analyzer with full platform access for 7 days. Get instant ROI, cash-on-cash, IRR, rehab budgets, and lender-ready reports.</p>
-          <div className="mt-6 flex flex-col sm:flex-row gap-3">
-            <button onClick={() => (trial.active ? setWizardOpen(true) : handleStartTrial("hero"))} data-cta="start-trial-hero" className="px-6 py-3 rounded-2xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-600/20">Start Free Trial — Analyze a Deal</button>
-            <a href="#pricing" className="px-6 py-3 rounded-2xl border hover:bg-gray-50">See Pricing</a>
-          </div>
-          <p className="mt-3 text-sm text-gray-500">Includes full access to all 8 AI tools. No credit card required to start.</p>
-          <div className="mt-6 flex items-center gap-6 text-xs text-gray-500">
-            <div className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-gray-400"/> Pro-grade accuracy</div>
-            <div className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-gray-400"/> Lender-ready PDF reports</div>
-            <div className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-gray-400"/> Integrates with comps & rehab</div>
-          </div>
-        </div>
-        <div className="relative">
-          <div className="absolute -inset-4 rounded-3xl bg-indigo-600/10 blur-2xl"/>
-          <div className="relative rounded-3xl border bg-white p-6 shadow-xl">
-            <div className="flex items-center justify-between"><h3 className="font-semibold">Deal Analyzer Preview</h3><span className="text-xs text-gray-500">AI Powered</span></div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              {["Purchase Price","ARV","Rehab Budget","Rent","Cap Rate","Cash-on-Cash"].map((label, i) => (
-                <div key={i} className="space-y-1">
-                  <div className="text-xs text-gray-500">{label}</div>
-                  <div className="h-10 rounded-xl border px-3 flex items-center text-sm bg-gray-50">Auto-estimated</div>
-                </div>
-              ))}
+      <section className="relative isolate overflow-hidden bg-slate-950 text-slate-100">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,#1f2937,transparent_30%),radial-gradient(circle_at_80%_0,#0ea5e9,transparent_25%)] opacity-40" />
+        <div className="relative mx-auto max-w-6xl px-6 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="inline-flex items-center rounded-full border border-slate-700 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-200/90">
+              Deal tools built for investors — not spreadsheets
             </div>
-            <div className="mt-4 h-28 rounded-xl border bg-gradient-to-br from-indigo-50 to-white flex items-center justify-center text-sm text-gray-600">Chart & projections preview</div>
-            <button onClick={() => (trial.active ? setWizardOpen(true) : handleStartTrial("hero-preview"))} data-cta="start-trial-preview" className="mt-5 w-full rounded-xl bg-gray-900 text-white py-3 hover:bg-black">Analyze My First Deal Free</button>
+            <h1 className="mt-4 text-4xl md:text-5xl font-black leading-tight text-slate-50">
+              Analyze deals & estimate rehabs {" "}
+              <span className="bg-gradient-to-r from-amber-300 to-orange-500 bg-clip-text text-transparent">with clarity.</span>
+            </h1>
+            <p className="mt-4 max-w-xl text-base md:text-lg text-slate-300 leading-relaxed">
+              A modern AI workspace for investors and agents to underwrite deals, estimate renovations, and create listings — in minutes, not hours.
+            </p>
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => (trial.active ? setWizardOpen(true) : handleStartTrial("hero"))}
+                data-cta="start-trial-hero"
+                className="px-5 py-3 rounded-full bg-indigo-500 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-400"
+              >
+                Start Free
+              </button>
+              <a
+                href="#features"
+                className="px-5 py-3 rounded-full border border-slate-700 text-sm font-semibold text-slate-100 transition hover:bg-slate-900/70"
+              >
+                Explore Tools
+              </a>
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="absolute -inset-3 rounded-3xl border border-slate-700/60 bg-gradient-to-br from-slate-900/80 to-slate-950/90 shadow-[0_20px_80px_-50px_#0ea5e9]" />
+            <div className="relative rounded-2xl border border-slate-700 bg-slate-900/80 p-5 shadow-xl backdrop-blur">
+              <div className="text-sm font-semibold text-slate-100">Deal Snapshot</div>
+              <div className="mt-2 space-y-1 text-xs text-slate-400 leading-relaxed">
+                <div>Cash Flow: $___</div>
+                <div>Cash-on-Cash: ___%</div>
+                <div>Rehab Budget: Light / Medium / Heavy</div>
+              </div>
+
+              <div className="my-4 border-t border-dashed border-slate-700" />
+
+              <div className="text-[11px] text-slate-300 leading-6">
+                Update one input. Instantly see rent, ROI, DSCR, and cash flow adjust — live.
+              </div>
+            </div>
           </div>
         </div>
       </section>
