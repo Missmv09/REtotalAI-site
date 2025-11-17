@@ -66,4 +66,19 @@
   window.requireAuth = requireAuth;
   window.currentUserEmail = currentUserEmail;
   window.signOut = signOut;
+
+  // Auto-enforce auth on load for any non-public page
+  (async () => {
+    const path = window.location.pathname;
+    const isPublic = PUBLIC_PAGES.includes(path);
+
+    if (isPublic) return;
+
+    const { data } = await window.sb.auth.getUser();
+    const user = data?.user || null;
+
+    if (!user) {
+      window.location.href = '/login.html';
+    }
+  })();
 })();
