@@ -294,7 +294,7 @@
           <th></th>
         </tr>
       </thead>
-      <tbody id="dealsBody"><tr id="recent-loading-row"><td colspan="8" class="muted">Loading…</td></tr></tbody>
+      <tbody id="dealsBody"><tr id="recent-loading-row"><td colspan="8" class="muted">Loading...</td></tr></tbody>
     </table>
   </section>
 
@@ -896,6 +896,14 @@
       const loadingRow = document.getElementById('recent-loading-row');
       const loadingCell = loadingRow?.querySelector('td');
       const body = document.getElementById("dealsBody");
+
+      // If Supabase isn't available, show a graceful message and stop
+      if (!window.sb?.auth) {
+        if (loadingRow) {
+          loadingRow.textContent = 'Log in to save and view your deals (optional).';
+        }
+        return;
+      }
 
       // Check if user is logged in
       const { data, error } = await sb.auth.getUser();
