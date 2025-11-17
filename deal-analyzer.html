@@ -232,7 +232,7 @@
           <th></th>
         </tr>
       </thead>
-      <tbody id="dealsBody"><tr><td colspan="8" class="muted">Loading…</td></tr></tbody>
+      <tbody id="dealsBody"><tr id="recent-loading-row"><td colspan="8" class="muted">Loading…</td></tr></tbody>
     </table>
   </section>
 
@@ -264,21 +264,22 @@
     let currentPlan = "free";
 
     (async () => {
-      let ok = false;
+      let user = null;
       try {
-        ok = await requireAuth();
+        const { data: userData } = await sb.auth.getUser();
+        user = userData?.user || null;
       } catch (e) {
         console.error("Auth check failed", e);
       }
 
       // If not logged in, keep everything usable but show a friendly message
-      if (!ok) {
+      if (!user) {
         currentPlan = "free";
         applyPlanGating();
         const body = document.getElementById("dealsBody");
         if (body) {
           body.innerHTML = `
-            <tr>
+            <tr id="recent-loading-row">
               <td colspan="8" class="muted">
                 Log in to save deals and see your recent analyses. You can still run numbers above.
               </td>
@@ -290,8 +291,6 @@
 
       // Logged-in path: load plan + recent deals
       try {
-        const { data: userData } = await sb.auth.getUser();
-        const user = userData?.user;
         currentPlan = (user?.user_metadata?.plan) || "free"; // "free" | "starter" | "pro"
       } catch (e) {
         console.error("Failed to load user plan", e);
@@ -299,7 +298,7 @@
       }
 
       applyPlanGating();
-      await loadRecent();
+      await loadRecentAnalyses();
     })();
 
     // ---------- helpers ----------
@@ -801,7 +800,7 @@
       }
 
       alert("Scenario B saved as a separate deal ✅");
-      await loadRecent();
+      await loadRecentAnalyses();
     }
 
     // ---------- Save / Load ----------
@@ -828,28 +827,53 @@
         return;
       }
       alert("Deal saved ✅");
-      await loadRecent();
+      await loadRecentAnalyses();
     }
 
-    async function loadRecent() {
-      const { data, error } = await sb
-        .from("deals")
-        .select("id, created_at, price, rent, cap_rate, dscr, coc, cash_flow")
-        .order("created_at", { ascending:false })
-        .limit(10);
-
+    async function loadRecentAnalyses() {
+      const loadingRow = document.getElementById('recent-loading-row');
+      const loadingCell = loadingRow?.querySelector('td');
       const body = document.getElementById("dealsBody");
+
+      // Check if user is logged in
+      const { data, error } = await sb.auth.getUser();
       if (error) {
         console.error(error);
-        body.innerHTML = `<tr><td colspan="8" class="muted">Failed to load: ${error.message}</td></tr>`;
+      }
+      const user = data?.user || null;
+
+      // If not logged in, just show a friendly message and stop
+      if (!user) {
+        if (loadingCell) {
+          loadingCell.textContent = 'Log in to save and view your deals (optional).';
+        } else if (body) {
+          body.innerHTML = `<tr><td colspan="8" class="muted">Log in to save and view your deals (optional).</td></tr>`;
+        }
         return;
       }
-      if (!data || data.length === 0) {
+
+      // If logged in, fetch their saved deals
+      const { data: deals, error: dealsError } = await sb
+        .from('deals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (dealsError) {
+        console.error(dealsError);
+        if (loadingCell) loadingCell.textContent = 'Could not load deals.';
+        return;
+      }
+
+      if (!body) return;
+
+      if (!deals || deals.length === 0) {
         body.innerHTML = `<tr><td colspan="8" class="muted">No saved analyses yet.</td></tr>`;
         return;
       }
 
-      body.innerHTML = data.map(r => `
+      body.innerHTML = deals.map(r => `
         <tr>
           <td>${new Date(r.created_at).toLocaleString()}</td>
           <td class="right">$${fmt(r.price)}</td>
@@ -871,7 +895,7 @@
         alert("Delete failed: " + (error.message || "Unknown error"));
         return;
       }
-      await loadRecent();
+      await loadRecentAnalyses();
     }
   </script>
 </body>
