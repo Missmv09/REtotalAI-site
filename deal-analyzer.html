@@ -142,9 +142,71 @@
   </div>
 
   <div class="grid" style="margin:12px 0">
-    <button onclick="analyze()">Analyze Deal</button>
+    <button id="analyze-btn" onclick="analyze()">Analyze Deal</button>
     <button id="saveBtn" class="secondary" onclick="saveDeal()" disabled title="Analyze first">Save Deal</button>
     <button class="ghost" onclick="snapshotBaseline()">Save as Baseline for Comparison</button>
+  </div>
+
+  <!-- Deal Analyzer: free limit reached upsell (hidden by default) -->
+  <div
+    id="deal-upsell-banner"
+    style="
+    display:none;
+    margin: 18px 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #facc15;
+    background: #fffbeb;
+    font-size: 13px;
+    color: #78350f;
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+  "
+  >
+    <div>
+      <strong>You’ve hit your free Deal Analyzer limit.</strong>
+      <span style="margin-left: 4px;">
+        Upgrade to <strong>Growth</strong> for unlimited deal runs and access to Renovation Estimator.
+      </span>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <a
+        href="https://buy.stripe.com/00wdR894NfEPcgH5LC9Ve03"
+        target="_blank"
+        rel="noopener noreferrer"
+        style="
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1px solid #111827;
+        background: #111827;
+        color: #f9fafb;
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: none;
+      "
+      >
+        Upgrade to Growth (Monthly)
+      </a>
+      <a
+        href="https://buy.stripe.com/00w4gy2GpakvfsTei89Ve04"
+        target="_blank"
+        rel="noopener noreferrer"
+        style="
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid #e5e7eb;
+        background: #ffffff;
+        color: #78350f;
+        font-size: 11px;
+        text-decoration: none;
+      "
+      >
+        Save with yearly billing
+      </a>
+    </div>
   </div>
 
   <div id="results" class="result">
@@ -873,6 +935,72 @@
       }
       await loadRecent();
     }
+  </script>
+
+  <script>
+    (function () {
+      const LIMIT = 3; // free runs per browser
+      const STORAGE_KEY = 'retotal_deal_runs';
+
+      const analyzeBtn = document.getElementById('analyze-btn');
+      const upsell = document.getElementById('deal-upsell-banner');
+
+      if (!analyzeBtn) return;
+
+      function getRunCount() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const n = parseInt(raw, 10);
+        return Number.isNaN(n) ? 0 : n;
+      }
+
+      function setRunCount(n) {
+        localStorage.setItem(STORAGE_KEY, String(n));
+      }
+
+      function showUpsell() {
+        if (!upsell) return;
+        upsell.style.display = 'flex';
+      }
+
+      function hideUpsell() {
+        if (!upsell) return;
+        upsell.style.display = 'none';
+      }
+
+      // initial state: if they already used up their runs, block the button immediately
+      const initialRuns = getRunCount();
+      if (initialRuns >= LIMIT) {
+        analyzeBtn.disabled = true;
+        analyzeBtn.style.opacity = '0.6';
+        analyzeBtn.style.cursor = 'not-allowed';
+        showUpsell();
+      }
+
+      analyzeBtn.addEventListener('click', function (e) {
+        let runs = getRunCount();
+
+        if (runs >= LIMIT) {
+          // block further use, show upsell
+          e.preventDefault();
+          analyzeBtn.disabled = true;
+          analyzeBtn.style.opacity = '0.6';
+          analyzeBtn.style.cursor = 'not-allowed';
+          showUpsell();
+          return;
+        }
+
+        // allow this run and increment
+        runs += 1;
+        setRunCount(runs);
+
+        // optional: soft warning when they hit 2/3
+        if (runs === LIMIT) {
+          showUpsell();
+        } else {
+          hideUpsell();
+        }
+      });
+    })();
   </script>
 </body>
 </html>
