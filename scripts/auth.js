@@ -17,7 +17,23 @@
     });
   }
 
+  const PUBLIC_PAGES = [
+    '/',
+    '/index.html',
+    '/deal-analyzer.html',
+    '/stripe-test.html',
+    '/pricing.html'
+  ];
+
+  function isPublicPath() {
+    return PUBLIC_PAGES.includes(window.location.pathname);
+  }
+
   async function requireAuth() {
+    if (isPublicPath()) {
+      return true;
+    }
+
     if (!window.sb) {
       return false;
     }
