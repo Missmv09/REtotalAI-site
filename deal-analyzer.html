@@ -204,6 +204,107 @@
         text-align: center;
       }
     }
+
+    /* ROW: Logged-out message */
+    .ra-loggedout-row td {
+      padding: 14px 18px;
+      background: #fafafa;
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+    }
+
+    /* FLEX container */
+    .ra-loggedout-flex {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    /* LOCK ICON */
+    .ra-lock-icon {
+      font-size: 1.25rem;
+      margin-right: 6px;
+    }
+
+    /* TEXT BLOCK */
+    .ra-textblock {
+      flex: 1;
+      text-align: left;
+    }
+
+    .ra-textblock strong {
+      font-weight: 600;
+    }
+
+    .ra-subtext {
+      margin-top: 3px;
+      font-size: 0.88rem;
+      color: #777;
+    }
+
+    /* LOGIN BUTTON */
+    .ra-login-btn {
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .ra-login-btn:hover {
+      background: #f5b931;
+      color: #000;
+    }
+
+    /* Tooltip bubble */
+    .ra-tooltip {
+      position: relative;
+      display: inline-flex;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid #ccc;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      cursor: default;
+    }
+
+    .ra-tooltip-content {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      position: absolute;
+      width: 240px;
+      background: #111;
+      color: #fff;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      bottom: 130%;
+      right: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 10;
+    }
+
+    .ra-tooltip:hover .ra-tooltip-content {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .ra-tooltip-content::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      right: 10px;
+      border-width: 6px;
+      border-style: solid;
+      border-color: #111 transparent transparent transparent;
+    }
   </style>
 </head>
 <body>
@@ -402,20 +503,24 @@
 
   <section style="margin-top:28px">
     <h3>Your Recent Analyses</h3>
-    <table id="dealsTable">
+    <table class="recent-deals-table">
       <thead>
         <tr>
           <th>Date</th>
-          <th class="right">Price</th>
-          <th class="right">Rent</th>
-          <th class="right">DSCR</th>
-          <th class="right">CoC %</th>
-          <th class="right">Cap %</th>
-          <th class="right">CF/mo</th>
-          <th></th>
+          <th>Price</th>
+          <th>Rent</th>
+          <th>DSCR</th>
+          <th>CoC %</th>
+          <th>Cap %</th>
+          <th>CF/mo</th>
         </tr>
       </thead>
-      <tbody id="dealsBody"><tr id="recent-loading-row"><td colspan="8" class="muted">Loading...</td></tr></tbody>
+
+      <tbody id="deal-history-body">
+        <tr id="deal-history-loading">
+          <td colspan="7">Loading...</td>
+        </tr>
+      </tbody>
     </table>
   </section>
 
@@ -445,29 +550,6 @@
     let lastCalc = null;
     let baseline = null;
     let currentPlan = "free";
-    const loginRedirect = '/login.html?next=/deal-analyzer.html';
-    const loggedOutDealsRow = `
-      <tr class="recent-login-message-row">
-        <td colspan="8">
-          <div class="recent-login-message">
-            <div class="recent-login-text">
-              <div style="display:flex; align-items:center; gap:6px;">
-                <span class="recent-login-lock" aria-hidden="true">🔒</span>
-                <strong>Save your deals and resume later</strong>
-              </div>
-              <div class="recent-login-subtext">Log in to save deal runs, compare scenarios, and reopen them anytime.</div>
-            </div>
-            <div style="display:flex; align-items:center; gap:12px;">
-              <div class="recent-login-tooltip" aria-label="Why log in to save deals">
-                ?
-                <div class="recent-login-tooltip-text">Saving lets you keep analyses, revisit A/B tweaks, and sync your history across devices.</div>
-              </div>
-              <button class="recent-login-button" type="button" onclick="window.location.href='${loginRedirect}'">Log in to save deals</button>
-            </div>
-          </div>
-        </td>
-      </tr>
-    `;
 
     (async () => {
       let user = null;
@@ -482,10 +564,7 @@
       if (!user) {
         currentPlan = "free";
         applyPlanGating();
-        const body = document.getElementById("dealsBody");
-        if (body) {
-          body.innerHTML = loggedOutDealsRow;
-        }
+        await loadRecentAnalyses();
         return;
       }
 
@@ -1031,31 +1110,72 @@
     }
 
     async function loadRecentAnalyses() {
-      const body = document.getElementById("dealsBody");
+      const tbody = document.getElementById('deal-history-body');
+      const loadingRow = document.getElementById('deal-history-loading');
 
-      if (!body) return;
-
-      // If Supabase isn't available, show a graceful message and stop
-      if (!window.sb?.auth) {
-        body.innerHTML = loggedOutDealsRow;
+      if (!tbody) {
+        console.warn('[deal-analyzer] #deal-history-body not found; skipping history load.');
         return;
       }
 
-      // Check if user is logged in
-      const { data, error } = await sb.auth.getUser();
-      if (error) {
-        console.error(error);
+      if (!window.supabaseClient) {
+        console.warn('[deal-analyzer] supabaseClient not available; skipping history load.');
+        if (loadingRow) {
+          loadingRow.innerHTML = '<td colspan="7">Unable to load history.</td>';
+        }
+        return;
       }
-      const user = data?.user || null;
 
-      // If not logged in, just show a friendly message and stop
+      const supabaseClient = window.supabaseClient;
+
+      // Get current user
+      const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+      const user = userData?.user || null;
+
+      if (userError) {
+        console.error('[deal-analyzer] Error getting user:', userError);
+        if (loadingRow) {
+          loadingRow.innerHTML = '<td colspan="7">Unable to load history.</td>';
+        }
+        return;
+      }
+
+      // LOGGED OUT --> show premium-style message row, no redirect
       if (!user) {
-        body.innerHTML = loggedOutDealsRow;
+        tbody.innerHTML = `
+      <tr class="ra-loggedout-row">
+        <td colspan="7">
+          <div class="ra-loggedout-flex">
+
+            <span class="ra-lock-icon">🔒</span>
+
+            <div class="ra-textblock">
+              <strong>Save your deals & track performance over time.</strong>
+              <div class="ra-subtext">
+                Log in to unlock your personal deal history, comparisons, and cash-flow tracking.
+              </div>
+            </div>
+
+            <button class="ra-login-btn" type="button" onclick="window.location.href='/login.html'">
+              Log In
+            </button>
+
+            <div class="ra-tooltip">
+              ?
+              <div class="ra-tooltip-content">
+                When you're logged in, every analysis can be saved to your private history so you can compare scenarios, revisit numbers, and export everything later.
+              </div>
+            </div>
+
+          </div>
+        </td>
+      </tr>
+    `;
         return;
       }
 
-      // If logged in, fetch their saved deals
-      const { data: deals, error: dealsError } = await sb
+      // LOGGED IN --> load recent deals from Supabase
+      const { data: deals, error: dealsError } = await supabaseClient
         .from('deals')
         .select('*')
         .eq('user_id', user.id)
@@ -1063,28 +1183,46 @@
         .limit(10);
 
       if (dealsError) {
-        console.error(dealsError);
-        body.innerHTML = `<tr><td colspan="8" class="muted">Could not load deals.</td></tr>`;
+        console.error('[deal-analyzer] Error loading deals:', dealsError);
+        tbody.innerHTML = `
+      <tr>
+        <td colspan="7">Unable to load history.</td>
+      </tr>
+    `;
         return;
       }
+
+      // Clear loading row
+      tbody.innerHTML = '';
 
       if (!deals || deals.length === 0) {
-        body.innerHTML = `<tr><td colspan="8" class="muted">No saved analyses yet.</td></tr>`;
+        tbody.innerHTML = `
+      <tr>
+        <td colspan="7">No saved deals yet.</td>
+      </tr>
+    `;
         return;
       }
 
-      body.innerHTML = deals.map(r => `
-        <tr>
-          <td>${new Date(r.created_at).toLocaleString()}</td>
-          <td class="right">$${fmt(r.price)}</td>
-          <td class="right">$${fmt(r.rent)}</td>
-          <td class="right">${r.dscr === 9999 ? "∞" : fmt(r.dscr)}</td>
-          <td class="right">${fmt(r.coc)}%</td>
-          <td class="right">${fmt(r.cap_rate)}%</td>
-          <td class="right">$${fmt(r.cash_flow)}</td>
-          <td class="right"><button class="danger" onclick="delDeal('${r.id}')">Delete</button></td>
-        </tr>
-      `).join("");
+      deals.forEach((d) => {
+        const tr = document.createElement('tr');
+
+        const createdAt = d.created_at ? new Date(d.created_at).toLocaleDateString() : '';
+
+        tr.innerHTML = `
+      <td>${createdAt}</td>
+      <td>${d.purchase_price ?? ''}</td>
+      <td>${d.monthly_rent ?? ''}</td>
+      <td>${d.dscr ?? ''}</td>
+      <td>${d.coc ?? ''}</td>
+      <td>${d.cap_rate ?? ''}</td>
+      <td>${d.cash_flow_month ?? ''}</td>
+    `;
+
+        tbody.appendChild(tr);
+      });
+
+      console.log('[deal-analyzer] Loaded', deals.length, 'deals into history.');
     }
 
     async function delDeal(id) {
