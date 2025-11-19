@@ -83,6 +83,127 @@
       width:12px; height:12px; border-radius:3px; border:1px solid #b45309;
       display:inline-flex; align-items:center; justify-content:center; font-size:9px;
     }
+
+    /* Logged-out "save your deals" row on Deal Analyzer */
+    .recent-login-message-row td {
+      padding: 14px 18px;
+      border-top: 1px solid #f0f0f0;
+      border-bottom: 1px solid #f0f0f0;
+      background: #fafafa;
+    }
+
+    .recent-login-message {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .recent-login-lock {
+      font-size: 1.2rem;
+      margin-right: 4px;
+    }
+
+    .recent-login-text {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      text-align: left;
+    }
+
+    .recent-login-text strong {
+      font-weight: 600;
+    }
+
+    .recent-login-subtext {
+      font-size: 0.88rem;
+      color: #777;
+      margin-top: 2px;
+    }
+
+    /* Brand-aligned login button (black with gold hover) */
+    .recent-login-button {
+      background: #000;
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 18px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+    }
+
+    .recent-login-button:hover {
+      background: #f5b931; /* REtotalAi gold accent */
+      color: #000;
+      transform: translateY(-1px);
+    }
+
+    /* Tooltip for benefits of saving deals */
+    .recent-login-tooltip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid #ddd;
+      font-size: 0.75rem;
+      cursor: default;
+      color: #555;
+      flex-shrink: 0;
+    }
+
+    .recent-login-tooltip-text {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      bottom: 125%;
+      right: 0;
+      background: #111;
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      width: 240px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+      transition: opacity 0.15s ease;
+      z-index: 10;
+    }
+
+    .recent-login-tooltip:hover .recent-login-tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .recent-login-tooltip-text::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      right: 10px;
+      border-width: 6px;
+      border-style: solid;
+      border-color: #111 transparent transparent transparent;
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 600px) {
+      .recent-login-message {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .recent-login-button {
+        width: 100%;
+        text-align: center;
+      }
+    }
   </style>
 </head>
 <body>
@@ -324,6 +445,29 @@
     let lastCalc = null;
     let baseline = null;
     let currentPlan = "free";
+    const loginRedirect = '/login.html?next=/deal-analyzer.html';
+    const loggedOutDealsRow = `
+      <tr class="recent-login-message-row">
+        <td colspan="8">
+          <div class="recent-login-message">
+            <div class="recent-login-text">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span class="recent-login-lock" aria-hidden="true">🔒</span>
+                <strong>Save your deals and resume later</strong>
+              </div>
+              <div class="recent-login-subtext">Log in to save deal runs, compare scenarios, and reopen them anytime.</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="recent-login-tooltip" aria-label="Why log in to save deals">
+                ?
+                <div class="recent-login-tooltip-text">Saving lets you keep analyses, revisit A/B tweaks, and sync your history across devices.</div>
+              </div>
+              <button class="recent-login-button" type="button" onclick="window.location.href='${loginRedirect}'">Log in to save deals</button>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
 
     (async () => {
       let user = null;
@@ -334,20 +478,41 @@
         console.error("Auth check failed", e);
       }
 
-      // If not logged in, keep everything usable but show a friendly message
+      const tbody = document.getElementById("dealsBody");
+
       if (!user) {
-        currentPlan = "free";
-        applyPlanGating();
-        const body = document.getElementById("dealsBody");
-        if (body) {
-          body.innerHTML = `
-            <tr id="recent-loading-row">
-              <td colspan="8" class="muted">
-                Log in to save deals and see your recent analyses. You can still run numbers above.
-              </td>
-            </tr>
-          `;
-        }
+        console.log('[deal-analyzer.js] Anonymous user on Deal Analyzer, showing login prompt row.');
+
+        tbody.innerHTML = `
+          <tr class="recent-login-message-row">
+            <td colspan="7">
+              <div class="recent-login-message">
+                <span class="recent-login-lock" aria-hidden="true">🔒</span>
+
+                <div class="recent-login-text">
+                  <strong>Save your deals & track performance over time.</strong>
+                  <span class="recent-login-subtext">
+                    Log in to unlock your personal deal history, side-by-side scenarios, and cash-flow comparisons.
+                  </span>
+                </div>
+
+                <button
+                  class="recent-login-button"
+                  type="button"
+                  onclick="window.location.href='/login.html'">
+                  Log In
+                </button>
+
+                <span class="recent-login-tooltip" aria-hidden="true">
+                  ?
+                  <span class="recent-login-tooltip-text">
+                    When you’re logged in, every analysis you run can be saved to your private history so you can compare scenarios, revisit past deals, and export numbers later.
+                  </span>
+                </span>
+              </div>
+            </td>
+          </tr>
+        `;
         return;
       }
 
@@ -893,15 +1058,13 @@
     }
 
     async function loadRecentAnalyses() {
-      const loadingRow = document.getElementById('recent-loading-row');
-      const loadingCell = loadingRow?.querySelector('td');
       const body = document.getElementById("dealsBody");
+
+      if (!body) return;
 
       // If Supabase isn't available, show a graceful message and stop
       if (!window.sb?.auth) {
-        if (loadingRow) {
-          loadingRow.textContent = 'Log in to save and view your deals (optional).';
-        }
+        body.innerHTML = loggedOutDealsRow;
         return;
       }
 
@@ -914,11 +1077,7 @@
 
       // If not logged in, just show a friendly message and stop
       if (!user) {
-        if (loadingCell) {
-          loadingCell.textContent = 'Log in to save and view your deals (optional).';
-        } else if (body) {
-          body.innerHTML = `<tr><td colspan="8" class="muted">Log in to save and view your deals (optional).</td></tr>`;
-        }
+        body.innerHTML = loggedOutDealsRow;
         return;
       }
 
@@ -932,11 +1091,9 @@
 
       if (dealsError) {
         console.error(dealsError);
-        if (loadingCell) loadingCell.textContent = 'Could not load deals.';
+        body.innerHTML = `<tr><td colspan="8" class="muted">Could not load deals.</td></tr>`;
         return;
       }
-
-      if (!body) return;
 
       if (!deals || deals.length === 0) {
         body.innerHTML = `<tr><td colspan="8" class="muted">No saved analyses yet.</td></tr>`;
