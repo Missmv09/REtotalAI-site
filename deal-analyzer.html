@@ -539,14 +539,21 @@
       <p class="muted">Unlock everything for just $9/mo or $79/yr. No long-term contracts.</p>
       <div class="upgrade-actions">
         <button class="btn-text" type="button" onclick="closeUpgradeModal()">Maybe later</button>
-        <button class="btn-primary" type="button">
-          <a href="/pricing.html" id="upgradeCtaLink">View pricing & upgrade</a>
-        </button>
+        <button class="btn-primary" id="scenario-upgrade-btn" type="button">View pricing &amp; upgrade</button>
       </div>
     </div>
   </div>
 
   <script>
+    const SCENARIO_COMPARE_UPGRADE_URL = "https://buy.stripe.com/14AbJ0a8RfEP0xZgqg9Ve02";
+
+    const scenarioUpgradeBtn = document.getElementById("scenario-upgrade-btn");
+    if (scenarioUpgradeBtn) {
+      scenarioUpgradeBtn.onclick = () => {
+        window.location.href = SCENARIO_COMPARE_UPGRADE_URL;
+      };
+    }
+
     let lastCalc = null;
     let baseline = null;
     let currentPlan = "free";
