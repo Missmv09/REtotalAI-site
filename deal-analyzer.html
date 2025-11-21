@@ -5,6 +5,9 @@
   <title>Deal Analyzer • REtotalAI</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/scripts/auth.js"></script>
+  <script>
+    const IS_PRODUCTION = window.location.hostname === 'retotalai.com';
+  </script>
   <style>
     body { font-family:sans-serif; max-width:1100px; margin:40px auto; line-height:1.5; }
     h2 { margin:0 0 4px }
@@ -1274,19 +1277,32 @@
         upsell.style.display = 'none';
       }
 
-      // initial state: if they already used up their runs, block the button immediately
-      const initialRuns = getRunCount();
-      if (initialRuns >= LIMIT) {
-        analyzeBtn.disabled = true;
-        analyzeBtn.style.opacity = '0.6';
-        analyzeBtn.style.cursor = 'not-allowed';
-        showUpsell();
+      async function checkDealAnalyzerLimit() {
+        // In dev or staging, do not enforce limits so we can test freely
+        if (!IS_PRODUCTION) {
+          return { allowed: true, remaining: Infinity };
+        }
+
+        const runs = getRunCount();
+        const allowed = runs < LIMIT;
+        const remaining = Math.max(0, LIMIT - runs);
+        return { allowed, remaining };
       }
 
-      analyzeBtn.addEventListener('click', function (e) {
-        let runs = getRunCount();
+      // initial state: if they already used up their runs, block the button immediately
+      checkDealAnalyzerLimit().then(({ allowed }) => {
+        if (!allowed) {
+          analyzeBtn.disabled = true;
+          analyzeBtn.style.opacity = '0.6';
+          analyzeBtn.style.cursor = 'not-allowed';
+          showUpsell();
+        }
+      });
 
-        if (runs >= LIMIT) {
+      analyzeBtn.addEventListener('click', async function (e) {
+        const { allowed } = await checkDealAnalyzerLimit();
+
+        if (!allowed) {
           // block further use, show upsell
           e.preventDefault();
           analyzeBtn.disabled = true;
@@ -1296,13 +1312,18 @@
           return;
         }
 
-        // allow this run and increment
-        runs += 1;
-        setRunCount(runs);
+        // allow this run and increment (production only)
+        if (IS_PRODUCTION) {
+          let runs = getRunCount();
+          runs += 1;
+          setRunCount(runs);
 
-        // optional: soft warning when they hit 2/3
-        if (runs === LIMIT) {
-          showUpsell();
+          // optional: soft warning when they hit 2/3
+          if (runs === LIMIT) {
+            showUpsell();
+          } else {
+            hideUpsell();
+          }
         } else {
           hideUpsell();
         }
