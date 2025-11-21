@@ -7,6 +7,8 @@
   <script src="/scripts/auth.js"></script>
   <script>
     const IS_PRODUCTION = window.location.hostname === 'retotalai.com';
+    const DEAL_ANALYZER_MONTHLY_URL = 'https://buy.stripe.com/14AbJ0a8RfEP0xZgqg9Ve02';
+    const DEAL_ANALYZER_ANNUAL_URL  = 'https://buy.stripe.com/fZu3cu80JcsDfsT4Hy9Ve01';
   </script>
   <style>
     body { font-family:sans-serif; max-width:1100px; margin:40px auto; line-height:1.5; }
@@ -540,23 +542,32 @@
         <span class="chip">DSCR & CoC guidance</span>
       </div>
       <p class="muted">Unlock everything for just $9/mo or $79/yr. No long-term contracts.</p>
-      <div class="upgrade-actions">
-        <button class="btn-text" type="button" onclick="closeUpgradeModal()">Maybe later</button>
-        <button class="btn-primary" id="scenario-upgrade-btn" type="button">View pricing &amp; upgrade</button>
+      <div class="upgrade-actions upgrade-modal-actions">
+        <button
+          id="da-upgrade-monthly-btn"
+          type="button"
+          class="btn-primary primary-upgrade-btn">
+          Upgrade – Monthly Deal Analyzer
+        </button>
+
+        <button
+          id="da-upgrade-annual-btn"
+          type="button"
+          class="btn-text secondary-upgrade-btn">
+          Go annual – best value
+        </button>
+
+        <button
+          id="da-upgrade-later-btn"
+          type="button"
+          class="btn-text tertiary-upgrade-btn">
+          Maybe later
+        </button>
       </div>
     </div>
   </div>
 
   <script>
-    const SCENARIO_COMPARE_UPGRADE_URL = "https://buy.stripe.com/14AbJ0a8RfEP0xZgqg9Ve02";
-
-    const scenarioUpgradeBtn = document.getElementById("scenario-upgrade-btn");
-    if (scenarioUpgradeBtn) {
-      scenarioUpgradeBtn.onclick = () => {
-        window.location.href = SCENARIO_COMPARE_UPGRADE_URL;
-      };
-    }
-
     let lastCalc = null;
     let baseline = null;
     let currentPlan = "free";
@@ -678,6 +689,7 @@
       }
 
       modal.style.display = "flex";
+      wireDealAnalyzerUpgradeButtons();
     }
 
     function closeUpgradeModal(){
@@ -688,6 +700,40 @@
     function backdropClick(e){
       if (e.target && e.target.id === "upgradeModal") {
         closeUpgradeModal();
+      }
+    }
+
+    function wireDealAnalyzerUpgradeButtons() {
+      const monthlyBtn = document.getElementById('da-upgrade-monthly-btn');
+      const annualBtn  = document.getElementById('da-upgrade-annual-btn');
+      const laterBtn   = document.getElementById('da-upgrade-later-btn');
+
+      if (monthlyBtn) {
+        monthlyBtn.onclick = () => {
+          window.location.href = DEAL_ANALYZER_MONTHLY_URL;
+        };
+      }
+
+      if (annualBtn) {
+        annualBtn.onclick = () => {
+          window.location.href = DEAL_ANALYZER_ANNUAL_URL;
+        };
+      }
+
+      if (laterBtn) {
+        laterBtn.onclick = () => {
+          // Close the modal without navigating.
+          // Use the existing modal close function if one exists.
+          if (typeof closeScenarioUpgradeModal === 'function') {
+            closeScenarioUpgradeModal();
+          } else if (typeof closeUpgradeModal === 'function') {
+            closeUpgradeModal();
+          } else {
+            // fallback: remove modal element if needed
+            const modalEl = laterBtn.closest('.upgrade-modal, .modal');
+            if (modalEl) modalEl.remove();
+          }
+        };
       }
     }
 
