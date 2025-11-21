@@ -532,29 +532,29 @@
   <!-- Upgrade modal -->
   <div class="upgrade-backdrop" id="upgradeModal" onclick="backdropClick(event)">
     <div class="upgrade-modal">
-      <h3 id="upgradeTitle">Unlock pro investor tools</h3>
+      <h3 id="upgradeTitle">Unlock full Deal Analyzer power</h3>
       <p id="upgradeMessage">
-        Saving deals, scenario comparison, and tweak suggestions are part of the REtotalAI Pro plan.
+        Upgrade to Deal Analyzer Monthly or Annual to save unlimited deals, run Scenario A/B comparisons, and get DSCR & CoC guidance on every property.
       </p>
       <div class="chip-row">
         <span class="chip">Unlimited saved deals</span>
         <span class="chip">Scenario A/B compare</span>
         <span class="chip">DSCR & CoC guidance</span>
       </div>
-      <p class="muted">Unlock everything for just $9/mo or $79/yr. No long-term contracts.</p>
+      <p class="muted">Monthly is perfect if you’re testing a few deals. Annual gives you the same power at a better rate if you’re analyzing deals all year.</p>
       <div class="upgrade-actions upgrade-modal-actions">
         <button
           id="da-upgrade-monthly-btn"
           type="button"
           class="btn-primary primary-upgrade-btn">
-          Upgrade – Monthly Deal Analyzer
+          Upgrade – Deal Analyzer Monthly ($9/mo)
         </button>
 
         <button
           id="da-upgrade-annual-btn"
           type="button"
           class="btn-text secondary-upgrade-btn">
-          Go annual – best value
+          Go Annual – Deal Analyzer ($79/yr)
         </button>
 
         <button
@@ -678,8 +678,8 @@
         title.textContent = "Unlock saved deal history";
         msg.textContent = "Saving deals and building a portfolio history is part of the REtotalAI premium toolkit.";
       } else if (reason === "baseline" || reason === "scenario") {
-        title.textContent = "Unlock Scenario B comparison";
-        msg.textContent = "Scenario comparison and Baseline vs. Scenario B analysis are available on paid plans.";
+        title.textContent = "Unlock full Deal Analyzer power";
+        msg.textContent = "Upgrade to Deal Analyzer Monthly or Annual to save unlimited deals, run Scenario A/B comparisons, and get DSCR & CoC guidance on every property.";
       } else if (reason === "tweaks") {
         title.textContent = "Unlock pro tweak suggestions";
         msg.textContent = "Dynamic DSCR, CoC, and cash flow tweak suggestions are part of the REtotalAI premium toolkit.";
