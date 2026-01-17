@@ -689,6 +689,67 @@
         }
 
         /* Responsive */
+        /* Mobile Menu Styles */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            z-index: 1001;
+        }
+
+        .mobile-menu-btn span {
+            display: block;
+            width: 24px;
+            height: 3px;
+            background: var(--text-dark);
+            margin: 5px 0;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .mobile-menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(12px);
+            z-index: 999;
+            padding: 100px 24px 40px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .mobile-menu.active {
+            display: flex;
+        }
+
+        .mobile-menu .btn {
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            font-size: 18px;
+            padding: 16px 32px;
+        }
+
         @media (max-width: 768px) {
             .hero {
                 padding: 140px 24px 80px;
@@ -742,8 +803,12 @@
                 padding: 16px 24px;
             }
 
-            .nav-cta .btn-secondary {
+            .nav-cta {
                 display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
             }
         }
 
@@ -766,8 +831,31 @@
                 <a href="/login" class="btn btn-secondary">Sign In</a>
                 <a href="/signup" class="btn btn-primary">Start Free Trial</a>
             </div>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </nav>
     </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/login" class="btn btn-secondary">Sign In</a>
+        <a href="/signup" class="btn btn-primary">Start Free Trial</a>
+        <a href="#tools" class="btn btn-secondary" onclick="toggleMobileMenu()">Explore Tools</a>
+        <a href="#pricing" class="btn btn-secondary" onclick="toggleMobileMenu()">Pricing</a>
+    </div>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const btn = document.querySelector('.mobile-menu-btn');
+            menu.classList.toggle('active');
+            btn.classList.toggle('active');
+            document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+        }
+    </script>
 
     <section class="hero">
         <div class="hero-content">
