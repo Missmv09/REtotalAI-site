@@ -491,39 +491,69 @@
             background: white;
         }
 
-        .pricing-card {
-            max-width: 600px;
-            margin: 60px auto 0;
-            background: white;
-            padding: 60px;
-            border-radius: 32px;
-            border: 2px solid var(--primary);
-            box-shadow: 0 24px 64px rgba(99, 102, 241, 0.15);
-            position: relative;
-            overflow: hidden;
+        /* 3-TIER PRICING GRID */
+        .pricing-grid-three {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+            margin-top: 60px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .pricing-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: var(--gradient-primary);
+        .pricing-card-tier {
+            background: white;
+            padding: 48px 36px;
+            border-radius: 24px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pricing-card-tier.featured {
+            border-color: #6366f1;
+            box-shadow: 0 12px 48px rgba(99, 102, 241, 0.15);
+            transform: scale(1.05);
+        }
+
+        .pricing-card-tier:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .pricing-card-tier.featured:hover {
+            transform: scale(1.05) translateY(-4px);
+        }
+
+        .tier-name {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .tier-tagline {
+            color: #64748b;
+            margin-bottom: 24px;
+            font-size: 15px;
         }
 
         .pricing-badge {
-            display: inline-block;
-            padding: 8px 20px;
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
             background: var(--gradient-success);
             color: white;
+            padding: 6px 20px;
             border-radius: 50px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .price {
@@ -580,6 +610,10 @@
             color: var(--primary);
             font-weight: 700;
             text-decoration: none;
+        }
+
+        .annual-option a:hover {
+            text-decoration: underline;
         }
 
         /* CTA Section */
@@ -684,8 +718,20 @@
                 padding: 80px 24px;
             }
 
-            .tool-card, .pricing-card, .roadmap {
+            .tool-card, .roadmap {
                 padding: 32px 24px;
+            }
+
+            .pricing-card-tier {
+                padding: 32px 24px;
+            }
+
+            .pricing-grid-three {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-card-tier.featured {
+                transform: scale(1);
             }
 
             .price {
@@ -698,6 +744,16 @@
 
             .nav-cta .btn-secondary {
                 display: none;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .pricing-grid-three {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-card-tier.featured {
+                transform: scale(1);
             }
         }
     </style>
@@ -832,43 +888,111 @@
         </div>
     </section>
 
-    <section class="pricing">
+    <!-- FINAL PRICING SECTION WITH REAL STRIPE LINKS -->
+    <section class="pricing" id="pricing">
         <div class="container">
             <div class="section-header">
                 <span class="section-label">Simple Pricing</span>
-                <h2>One platform, one price</h2>
-                <p>All current and future tools included—no hidden fees or add-ons</p>
+                <h2>Choose your plan</h2>
+                <p>Start free, upgrade when you're ready to scale</p>
             </div>
 
-            <div class="pricing-card">
-                <span class="pricing-badge">Best Value</span>
-                <h3 style="font-family: 'Clash Display', sans-serif; font-size: 32px; font-weight: 700; margin-bottom: 8px;">REtotal AI Platform</h3>
-                <p style="color: #64748b; margin-bottom: 0;">Complete toolkit for real estate professionals</p>
+            <div class="pricing-grid-three">
+                <!-- STARTER PLAN -->
+                <div class="pricing-card-tier">
+                    <h3 class="tier-name">Starter</h3>
+                    <p class="tier-tagline">Try before you buy</p>
 
-                <div class="price">$29<span>/mo</span></div>
+                    <div class="price">$0<span>/mo</span></div>
 
-                <ul class="pricing-features">
-                    <li>Deal Analyzer (unlimited analyses)</li>
-                    <li>Listing Generator (unlimited listings)</li>
-                    <li>All future tools as they launch</li>
-                    <li>Save unlimited deals & properties</li>
-                    <li>Scenario comparison & optimization</li>
-                    <li>AI-powered insights & verdicts</li>
-                    <li>Priority email support</li>
-                    <li>Cancel anytime</li>
-                </ul>
+                    <ul class="pricing-features">
+                        <li>3 deal analyses per month</li>
+                        <li>1 listing generation per month</li>
+                        <li>Basic metrics (DSCR, CoC, Cap Rate)</li>
+                        <li>View results (no saving)</li>
+                        <li>Perfect for testing the platform</li>
+                    </ul>
 
-                <a href="/signup" class="btn btn-primary">Start Free Trial</a>
+                    <a href="/signup" class="btn btn-secondary" style="width: 100%; text-align: center;">Start Free</a>
 
-                <div class="annual-option">
-                    💰 <strong>Save with annual billing:</strong> $290/year (2 months free)<br>
-                    <a href="/signup">Switch to annual →</a>
+                    <p style="text-align: center; margin-top: 16px; color: #64748b; font-size: 14px;">
+                        No credit card required
+                    </p>
                 </div>
 
-                <p style="text-align: center; margin-top: 32px; color: #64748b; font-size: 15px;">
-                    Start with <strong>3 free analyses</strong> • No credit card required
-                </p>
+                <!-- PRO PLAN - FEATURED -->
+                <div class="pricing-card-tier featured">
+                    <span class="pricing-badge">Most Popular</span>
+                    <h3 class="tier-name">Pro</h3>
+                    <p class="tier-tagline">For active investors</p>
+
+                    <div class="price">$19<span>/mo</span></div>
+
+                    <ul class="pricing-features">
+                        <li><strong>Unlimited</strong> Deal Analyzer</li>
+                        <li><strong>Unlimited</strong> Listing Generator</li>
+                        <li>Save unlimited deals</li>
+                        <li>Scenario A/B comparison</li>
+                        <li>Deal history & tracking</li>
+                        <li>AI-powered insights & verdicts</li>
+                        <li>Export PDF reports</li>
+                        <li>Priority email support</li>
+                    </ul>
+
+                    <a href="https://buy.stripe.com/cNiaEW94N1NZcgH4Hy9Ve09" class="btn btn-primary" style="width: 100%; text-align: center;">
+                        Start Pro Trial
+                    </a>
+
+                    <div class="annual-option" style="margin-top: 16px; padding: 16px; background: rgba(99, 102, 241, 0.05); border-radius: 12px;">
+                        <a href="https://buy.stripe.com/7sYcN42Gpakv80r3Du9Ve0a" style="color: #6366f1; font-size: 14px; text-decoration: none; font-weight: 600;">
+                            💰 Save $38 with annual billing ($190/year)
+                        </a>
+                    </div>
+                </div>
+
+                <!-- GROWTH PLAN -->
+                <div class="pricing-card-tier">
+                    <span class="pricing-badge" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">Best Value</span>
+                    <h3 class="tier-name">Growth</h3>
+                    <p class="tier-tagline">For power users & teams</p>
+
+                    <div class="price">$49<span>/mo</span></div>
+
+                    <ul class="pricing-features">
+                        <li><strong>Everything in Pro, plus:</strong></li>
+                        <li>✨ Rental Pricing Optimizer</li>
+                        <li>✨ Rehab Cost Estimator</li>
+                        <li>✨ Portfolio Dashboard</li>
+                        <li>✨ Closing Cost Calculator</li>
+                        <li>✨ BRRRR Calculator</li>
+                        <li>✨ All future tools (6+ coming)</li>
+                        <li>Priority support & early access</li>
+                        <li>API access (coming soon)</li>
+                    </ul>
+
+                    <a href="https://buy.stripe.com/5kQ9ASdl378j94v5LC9Ve07" class="btn btn-primary" style="width: 100%; text-align: center; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        Start Growth Trial
+                    </a>
+
+                    <div class="annual-option" style="margin-top: 16px; padding: 16px; background: rgba(16, 185, 129, 0.05); border-radius: 12px;">
+                        <a href="https://buy.stripe.com/eVqdR8dl3gITgwXa1S9Ve08" style="color: #10b981; font-size: 14px; text-decoration: none; font-weight: 600;">
+                            💰 Save $98 with annual billing ($490/year)
+                        </a>
+                    </div>
+                </div>
             </div>
+
+            <p style="text-align: center; margin-top: 48px; color: #64748b; font-size: 16px;">
+                <strong>All plans include:</strong> Stripe-secured payments • Cancel anytime • 14-day money-back guarantee
+            </p>
+
+            <p style="text-align: center; margin-top: 24px; color: #64748b; font-size: 15px;">
+                🎉 <strong>Launch Special:</strong> First 100 customers get founding member pricing locked in forever!
+            </p>
+
+            <p style="text-align: center; margin-top: 16px; color: #64748b; font-size: 15px;">
+                Need enterprise or team pricing? <a href="mailto:hello@retotalai.com" style="color: #6366f1; font-weight: 600; text-decoration: none;">Contact us</a>
+            </p>
         </div>
     </section>
 
