@@ -1,877 +1,894 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>REtotal AI • AI Deal Tools for Real Estate Investors & Agents</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta
-    name="description"
-    content="REtotal AI gives investors, flippers, and agents AI-powered tools to analyze deals, generate listings, and optimize rents — with new tools launching monthly."
-  />
-  <style>
-    :root {
-      --nav-bg: #ffffff;
-      --nav-border: #f3e8dc;
-      --cream: #faf5ef;
-      --cream-deep: #f4e9da;
-      --hero-text: #ffffff;
-      --hero-grad-start: #174272;
-      --hero-grad-end: #3d6b7c;
-      --accent: #f4b423;
-      --accent-dark: #bf8810;
-      --accent-soft: #fff7dc;
-      --blue-deep: #1e3a8a;
-      --brand-blue: #1f3b82;
-      --brand-blue-dark: #152a63;
-      --brand-blue-soft: #e5ebf7;
-      --muted: #6b7280;
-      --card-bg: #ffffff;
-      --card-border: #e2e8f0;
-      --text-main: #111827;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: #ffffff;
-      color: var(--text-main);
-      -webkit-font-smoothing: antialiased;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    /* NAV */
-
-    header {
-      background: var(--nav-bg);
-      border-bottom: 1px solid var(--nav-border);
-      position: sticky;
-      top: 0;
-      z-index: 20;
-    }
-
-    .nav {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 18px;
-      color: #1f2937;
-    }
-
-    .brand-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      background: radial-gradient(circle at 20% 0, #facc15, #f97316 60%, #1e3a8a 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-size: 18px;
-    }
-
-    .brand span.highlight {
-      color: var(--accent-dark);
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      font-size: 14px;
-      color: #4b5563;
-    }
-
-    .nav-links a.active {
-      color: #111827;
-      font-weight: 500;
-    }
-
-    .nav-cta {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 16px;
-      border-radius: 999px;
-      font-size: 14px;
-      cursor: pointer;
-      border: 1px solid transparent;
-      background: transparent;
-      transition: 0.15s ease;
-      box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-    }
-
-    .btn-ghost {
-      border-color: #cbd5e1;
-      color: #1f2937;
-      background: #ffffff;
-    }
-
-    .btn-ghost:hover {
-      background: #f8fafc;
-      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
-    }
-
-    .btn-primary {
-      background: var(--brand-blue);
-      color: #f8fafc;
-      border-color: var(--brand-blue);
-      box-shadow: 0 10px 22px rgba(31, 59, 130, 0.24);
-    }
-
-    .btn-primary:hover {
-      background: var(--brand-blue-dark);
-      border-color: var(--brand-blue-dark);
-      box-shadow: 0 14px 28px rgba(21, 42, 99, 0.26);
-    }
-
-    .hero .btn-ghost {
-      border-color: rgba(255, 255, 255, 0.6);
-      color: #f8fafc;
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .hero .btn-ghost:hover {
-      background: rgba(255, 255, 255, 0.14);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
-    }
-
-    /* HERO */
-
-    .hero {
-      background: linear-gradient(120deg, var(--hero-grad-start), var(--hero-grad-end));
-      color: var(--hero-text);
-      padding: 56px 20px 64px;
-      border-bottom: 4px solid var(--accent);
-    }
-
-    .hero-inner {
-      max-width: 1120px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .hero-eyebrow {
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      margin-bottom: 12px;
-      opacity: 0.9;
-    }
-
-    .hero-title {
-      font-size: clamp(28px, 4vw, 40px);
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .hero-subtitle {
-      font-size: 16px;
-      max-width: 640px;
-      margin: 0 auto 24px;
-      line-height: 1.6;
-      opacity: 0.9;
-    }
-
-    .hero-actions {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-    }
-
-    .hero-footnote {
-      font-size: 12px;
-      opacity: 0.85;
-    }
-
-    .hero-footnote span {
-      font-weight: 500;
-      color: var(--accent-soft);
-    }
-
-    /* STATS STRIP */
-
-    .stats {
-      background: #fbf4e9;
-      padding: 26px 20px 24px;
-      border-bottom: 1px solid #f2e2cd;
-    }
-
-    .stats-inner {
-      max-width: 1120px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 18px;
-      text-align: center;
-      font-size: 14px;
-    }
-
-    .stat-label {
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: #9ca3af;
-      margin-top: 2px;
-    }
-
-    .stat-value {
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--blue-deep);
-    }
-
-    @media (max-width: 768px) {
-      .stats-inner {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    /* SECTIONS */
-
-    .section {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 40px 20px 40px;
-    }
-
-    .section--cream {
-      background: var(--cream);
-    }
-
-    .section-heading {
-      text-align: center;
-      margin-bottom: 26px;
-    }
-
-    .section-title {
-      font-size: 22px;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: #111827;
-    }
-
-    .section-subtitle {
-      max-width: 600px;
-      margin: 0 auto;
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .cards-description {
-      max-width: 720px;
-      margin: 12px auto 0;
-      font-size: 13px;
-      color: #374151;
-      background: var(--brand-blue-soft);
-      border: 1px solid #d7def0;
-      border-radius: 12px;
-      padding: 12px 14px;
-      line-height: 1.5;
-    }
-
-    /* TOOL CARDS */
-
-    .tools-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-    }
-
-    .tool-card {
-      background: var(--card-bg);
-      border-radius: 18px;
-      border: 1px solid var(--card-border);
-      padding: 18px 18px 16px;
-      position: relative;
-      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
-    }
-
-    .tool-pill {
-      position: absolute;
-      right: 16px;
-      top: 14px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 600;
-      background: var(--accent-soft);
-      color: #92400e;
-    }
-
-    .tool-header {
-      margin-bottom: 10px;
-    }
-
-    .tool-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #111827;
-    }
-
-    .tool-role {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: #9ca3af;
-      margin-top: 4px;
-    }
-
-    .tool-body {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 10px;
-      line-height: 1.6;
-    }
-
-    .tool-list {
-      font-size: 13px;
-      color: #4b5563;
-      padding-left: 18px;
-      margin: 0 0 12px;
-    }
-
-    .tool-list li {
-      margin-bottom: 4px;
-    }
-
-    .tool-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 11px;
-      color: #6b7280;
-      margin-top: 4px;
-      gap: 8px;
-    }
-
-    .tool-status {
-      padding: 3px 8px;
-      border-radius: 999px;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      border: 1px solid #16a34a;
-      background: #ecfdf3;
-      color: #15803d;
-    }
-
-    .tool-status--soon {
-      border-color: #eab308;
-      background: #fefce8;
-      color: #854d0e;
-    }
-
-    .btn-tool {
-      padding: 7px 14px;
-      border-radius: 999px;
-      border: 1px solid #111827;
-      background: #111827;
-      color: #f9fafb;
-      font-size: 12px;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-tool:hover {
-      background: #020617;
-    }
-
-    /* PRICING */
-
-    .pricing-wrap {
-      background: linear-gradient(to bottom, #fbf5ec, #f6ebdd);
-      border-top: 1px solid #f3e2ca;
-    }
-
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 22px;
-    }
-
-    .price-card {
-      background: #ffffff;
-      border-radius: 18px;
-      border: 1px solid #e5e7eb;
-      padding: 20px 20px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
-    }
-
-    .price-card.highlight {
-      border-color: var(--accent);
-      box-shadow: 0 10px 26px rgba(244, 180, 35, 0.25);
-      position: relative;
-    }
-
-    .price-badge {
-      position: absolute;
-      top: -12px;
-      left: 20px;
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: #92400e;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .price-name {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: #9ca3af;
-    }
-
-    .price-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #111827;
-    }
-
-    .price-amount {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--blue-deep);
-    }
-
-    .price-amount span {
-      font-size: 14px;
-      font-weight: 400;
-      color: #6b7280;
-      margin-left: 4px;
-    }
-
-    .price-desc {
-      font-size: 13px;
-      color: #6b7280;
-      margin-top: 4px;
-    }
-
-    .price-list {
-      font-size: 13px;
-      color: #4b5563;
-      padding-left: 18px;
-      margin: 8px 0 12px;
-    }
-
-    .price-list li {
-      margin-bottom: 4px;
-    }
-
-    .price-cta {
-      margin-top: auto;
-    }
-
-    .btn-price {
-      width: 100%;
-      padding: 8px 0;
-      border-radius: 999px;
-      border: 1px solid #111827;
-      background: #111827;
-      color: #f9fafb;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      text-align: center;
-      display: inline-block;
-    }
-
-    .btn-price.secondary {
-      background: #ffffff;
-      color: #111827;
-    }
-
-    .btn-price.secondary:hover {
-      background: #f9fafb;
-    }
-
-    .btn-price:hover {
-      background: #020617;
-    }
-
-    footer {
-      border-top: 1px solid #ede9dd;
-      background: #fdf7ee;
-      padding: 18px 20px;
-      font-size: 12px;
-      color: #6b7280;
-    }
-
-    .footer-inner {
-      max-width: 1120px;
-      margin: 0 auto;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .footer-inner span.highlight {
-      color: var(--accent-dark);
-      font-weight: 600;
-    }
-
-    @media (max-width: 900px) {
-      .nav-links {
-        display: none;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REtotal AI - AI-Powered Real Estate Platform for Investors & Agents</title>
+    <meta name="description" content="Complete AI toolkit for real estate investors, agents, and landlords. Deal analysis, listing generation, rental pricing, and more—all in one platform.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Modern color palette */
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --purple: #8b5cf6;
+
+            --bg-dark: #0f172a;
+            --bg-light: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-hero: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg-light);
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+            animation: slideDown 0.6s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-cta {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 180px 40px 100px;
+            background: var(--gradient-hero);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .hero-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.8s ease 0.2s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero h1 {
+            font-family: 'Clash Display', sans-serif;
+            font-size: clamp(48px, 7vw, 84px);
+            font-weight: 700;
+            color: white;
+            line-height: 1.1;
+            margin-bottom: 28px;
+            animation: fadeIn 0.8s ease 0.4s both;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 22px;
+            color: rgba(255, 255, 255, 0.85);
+            max-width: 700px;
+            margin-bottom: 40px;
+            animation: fadeIn 0.8s ease 0.6s both;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 20px;
+            animation: fadeIn 0.8s ease 0.8s both;
+            flex-wrap: wrap;
+        }
+
+        .hero .btn-primary {
+            font-size: 18px;
+            padding: 18px 40px;
+            background: white;
+            color: var(--primary);
+        }
+
+        .hero .btn-secondary {
+            font-size: 18px;
+            padding: 18px 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-note {
+            margin-top: 24px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 15px;
+            animation: fadeIn 0.8s ease 1s both;
+        }
+
+        /* Stats Bar */
+        .stats {
+            background: white;
+            padding: 60px 40px;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 2;
+        }
+
+        .stats-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 60px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 56px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        /* Tools Section */
+        .tools {
+            padding: 120px 40px;
+            background: var(--bg-light);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-label {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 50px;
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-header h2 {
+            font-family: 'Clash Display', sans-serif;
+            font-size: clamp(36px, 5vw, 56px);
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .section-header p {
+            font-size: 20px;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Featured Tools - Large Cards */
+        .featured-tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 32px;
+            margin-bottom: 80px;
+        }
+
+        .tool-card {
+            background: white;
+            padding: 48px;
+            border-radius: 24px;
+            border: 2px solid transparent;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .tool-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 24px 60px rgba(99, 102, 241, 0.15);
+        }
+
+        .tool-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--gradient-success);
+            color: white;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+        }
+
+        .tool-badge.coming-soon {
+            background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+        }
+
+        .tool-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--gradient-primary);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 24px;
+        }
+
+        .tool-card h3 {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .tool-for {
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .tool-card p {
+            color: var(--text-light);
+            font-size: 17px;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .tool-features {
+            list-style: none;
+            margin: 24px 0;
+        }
+
+        .tool-features li {
+            padding: 10px 0;
+            padding-left: 28px;
+            position: relative;
+            color: var(--text-dark);
+        }
+
+        .tool-features li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .tool-card .btn {
+            width: 100%;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        /* Compact Roadmap */
+        .roadmap {
+            background: white;
+            padding: 48px;
+            border-radius: 24px;
+            border: 2px dashed rgba(99, 102, 241, 0.2);
+        }
+
+        .roadmap h3 {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .roadmap-subtitle {
+            color: var(--text-light);
+            margin-bottom: 32px;
+            font-size: 17px;
+        }
+
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .roadmap-item {
+            padding: 24px;
+            background: rgba(99, 102, 241, 0.03);
+            border-radius: 16px;
+            border-left: 3px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .roadmap-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+            transform: translateX(4px);
+        }
+
+        .roadmap-item h4 {
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-size: 17px;
+        }
+
+        .roadmap-item p {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* Pricing */
+        .pricing {
+            padding: 120px 40px;
+            background: white;
+        }
+
+        .pricing-card {
+            max-width: 600px;
+            margin: 60px auto 0;
+            background: white;
+            padding: 60px;
+            border-radius: 32px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 24px 64px rgba(99, 102, 241, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--gradient-primary);
+        }
+
+        .pricing-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: var(--gradient-success);
+            color: white;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 24px;
+        }
+
+        .price {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 72px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1;
+            margin: 24px 0;
+        }
+
+        .price span {
+            font-size: 24px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin: 40px 0;
+        }
+
+        .pricing-features li {
+            padding: 16px 0;
+            padding-left: 36px;
+            position: relative;
+            font-size: 17px;
+            color: var(--text-dark);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-features li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+            font-weight: 700;
+            font-size: 22px;
+        }
+
+        .annual-option {
+            margin-top: 24px;
+            padding: 24px;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .annual-option a {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 120px 40px;
+            background: var(--gradient-hero);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+        }
+
+        .cta-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-section h2 {
+            font-family: 'Clash Display', sans-serif;
+            font-size: clamp(40px, 5vw, 56px);
+            font-weight: 700;
+            color: white;
+            margin-bottom: 24px;
+        }
+
+        .cta-section p {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 40px;
+        }
+
+        .cta-section .btn {
+            background: white;
+            color: var(--primary);
+            font-size: 18px;
+            padding: 20px 48px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-dark);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 60px 40px 40px;
+        }
+
+        footer a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--primary-light);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 140px 24px 80px;
+            }
+
+            .hero h1 {
+                font-size: 42px;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+            }
+
+            .hero-cta .btn {
+                width: 100%;
+            }
+
+            .stats-grid {
+                gap: 40px;
+            }
+
+            .featured-tools {
+                grid-template-columns: 1fr;
+            }
+
+            .tools, .pricing, .cta-section {
+                padding: 80px 24px;
+            }
+
+            .tool-card, .pricing-card, .roadmap {
+                padding: 32px 24px;
+            }
+
+            .price {
+                font-size: 56px;
+            }
+
+            nav {
+                padding: 16px 24px;
+            }
+
+            .nav-cta .btn-secondary {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <div class="nav">
-      <a href="/" class="brand">
-        <div class="brand-icon"></div>
-        <span>REtotal <span class="highlight">AI</span></span>
-      </a>
-      <nav class="nav-links">
-        <a href="#tools">Tools</a>
-        <a href="#demo">Demo</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#about">About</a>
-      </nav>
-      <div class="nav-cta">
-        <a href="/login" class="btn btn-ghost">Log In</a>
-        <a href="#pricing" class="btn btn-primary">Start Free Trial</a>
-      </div>
-    </div>
-  </header>
+    <header>
+        <nav>
+            <div class="logo">REtotal AI</div>
+            <div class="nav-cta">
+                <a href="/login" class="btn btn-secondary">Sign In</a>
+                <a href="/signup" class="btn btn-primary">Start Free Trial</a>
+            </div>
+        </nav>
+    </header>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-inner">
-      <div class="hero-eyebrow">The future of real estate, powered by AI</div>
-      <h1 class="hero-title">
-        Turn every property into a clear <br />
-        “yes, no, or not yet” in minutes.
-      </h1>
-      <p class="hero-subtitle">
-        REtotal AI gives investors, flippers, and agents a clean workspace to analyze deals, generate
-        listings, and sanity-check rents — with new tools launching every month.
-      </p>
-      <div class="hero-actions">
-        <a href="#pricing" class="btn btn-primary">Start Free</a>
-        <a href="#tools" class="btn btn-ghost">Explore Tools</a>
-      </div>
-      <div class="hero-footnote">
-        <span>Starter is free</span> · 3 deal runs/month · No credit card required
-      </div>
-    </div>
-  </section>
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">✨ Complete AI Platform for Real Estate Professionals</div>
+            <h1>Your <span class="highlight">entire toolkit</span><br>in one AI-powered platform</h1>
+            <p>From deal analysis to listing generation—everything investors, agents, and landlords need to move faster and close more deals.</p>
+            <div class="hero-cta">
+                <a href="/signup" class="btn btn-primary">Start Free Trial →</a>
+                <a href="#tools" class="btn btn-secondary">Explore All Tools</a>
+            </div>
+            <p class="hero-note">✓ 3 free analyses  ✓ No credit card required  ✓ All tools included</p>
+        </div>
+    </section>
 
-  <!-- STATS -->
-  <section class="stats">
-    <div class="stats-inner">
-      <div>
-        <div class="stat-value">3</div>
-        <div class="stat-label">Live AI tools today</div>
-      </div>
-      <div>
-        <div class="stat-value">+1</div>
-        <div class="stat-label">New tool target each month</div>
-      </div>
-      <div>
-        <div class="stat-value">Minutes</div>
-        <div class="stat-label">To underwrite a basic deal</div>
-      </div>
-      <div>
-        <div class="stat-value">Zero</div>
-        <div class="stat-label">Spreadsheets required</div>
-      </div>
-    </div>
-  </section>
+    <section class="stats">
+        <div class="stats-grid">
+            <div>
+                <span class="stat-number">6+</span>
+                <span class="stat-label">AI-powered tools</span>
+            </div>
+            <div>
+                <span class="stat-number">30s</span>
+                <span class="stat-label">Average analysis time</span>
+            </div>
+            <div>
+                <span class="stat-number">$29</span>
+                <span class="stat-label">One platform, one price</span>
+            </div>
+            <div>
+                <span class="stat-number">∞</span>
+                <span class="stat-label">Unlimited usage</span>
+            </div>
+        </div>
+    </section>
 
-  <!-- TOOLS -->
-  <section id="tools" class="section section--cream">
-    <div class="section-heading">
-      <h2 class="section-title">Your core tools, ready to use</h2>
-      <p class="section-subtitle">
-        Start with the three tools serious investors and agents use every week. The rest of the suite
-        is being built in the open with early users like you.
-      </p>
-      <p class="cards-description">
-        Each card shows who the tool is built for, what it delivers today, and how to try or unlock it.
-        Check the badge at the top right to see what’s live versus coming soon, then click into the CTA
-        for a hands-on walkthrough.
-      </p>
-    </div>
+    <section id="tools" class="tools">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Your Complete Toolkit</span>
+                <h2>Everything you need,<br>nothing you don't</h2>
+                <p>Built for investors, agents, and landlords who want to work smarter</p>
+            </div>
 
-    <div class="tools-grid">
-      <!-- LIVE: Deal Analyzer -->
-      <article class="tool-card">
-        <div class="tool-pill">Included in Starter</div>
-        <header class="tool-header">
-          <h3 class="tool-title">Deal Analyzer</h3>
-          <div class="tool-role">For investors & flippers</div>
-        </header>
-        <p class="tool-body">
-          Underwrite single-family, small multis, or BRRRR-style deals in minutes. See cash flow,
-          cash-on-cash, and “what if” scenarios side by side.
-        </p>
-        <ul class="tool-list">
-          <li>Conservative / Base / Aggressive scenarios</li>
-          <li>Cash flow & cash-on-cash in one view</li>
-          <li>Save deals when you upgrade to Growth</li>
-        </ul>
-        <footer class="tool-footer">
-          <div>
-            <div>Starter: 3 runs / month</div>
-            <div>Growth & Pro: unlimited runs</div>
-          </div>
-          <a href="/deal-analyzer.html" class="btn-tool">Try Free</a>
-        </footer>
-      </article>
+            <!-- Featured Live Tools -->
+            <div class="featured-tools">
+                <div class="tool-card">
+                    <span class="tool-badge">Live Now</span>
+                    <div class="tool-icon">📊</div>
+                    <h3>Deal Analyzer</h3>
+                    <p class="tool-for">For Investors & Flippers</p>
+                    <p>Underwrite rental properties, BRRRRs, and small multis in seconds. Get instant DSCR, cash-on-cash, cap rate, and clear buy/pass verdicts.</p>
 
-      <!-- LIVE: Listing Generator -->
-      <article class="tool-card">
-        <div class="tool-pill">Included in Starter</div>
-        <header class="tool-header">
-          <h3 class="tool-title">Listing Generator</h3>
-          <div class="tool-role">For agents & teams</div>
-        </header>
-        <p class="tool-body">
-          Turn property details into MLS-ready descriptions and social captions tailored to investors
-          or end buyers — without fighting a blinking cursor.
-        </p>
-        <ul class="tool-list">
-          <li>MLS-style copy in your tone</li>
-          <li>Investor-friendly version for BRRRR & flip buyers</li>
-          <li>Social hooks for posts & emails</li>
-        </ul>
-        <footer class="tool-footer">
-          <div>
-            <div>Starter: 3 runs / month</div>
-            <div>Growth & Pro: unlimited runs</div>
-          </div>
-          <a href="/listing-generator.html" class="btn-tool">Try Free</a>
-        </footer>
-      </article>
+                    <ul class="tool-features">
+                        <li>DSCR, CoC, Cap Rate, Cash Flow calculations</li>
+                        <li>Conservative, base & aggressive scenarios</li>
+                        <li>AI-powered verdicts & optimization tips</li>
+                        <li>Save unlimited deals & compare options</li>
+                    </ul>
 
-      <!-- LIVE: Rental Pricing -->
-      <article class="tool-card">
-        <div class="tool-pill">Growth & Pro</div>
-        <header class="tool-header">
-          <h3 class="tool-title">Rental Pricing Optimizer</h3>
-          <div class="tool-role">For buy-and-hold deals</div>
-        </header>
-        <p class="tool-body">
-          Sanity-check your rent assumptions so you’re not underwriting deals with fantasy numbers —
-          or leaving hundreds on the table every month.
-        </p>
-        <ul class="tool-list">
-          <li>Rent range guidance using your inputs</li>
-          <li>Scenario testing for different strategies</li>
-          <li>Deal viability checks before you offer</li>
-        </ul>
-        <footer class="tool-footer">
-          <div>
-            <div>Unlock with Growth or Professional</div>
-            <div class="tool-status">Live</div>
-          </div>
-          <a href="#pricing" class="btn-tool">See Upgrade Options</a>
-        </footer>
-      </article>
+                    <a href="/deal-analyzer" class="btn btn-primary">Try Deal Analyzer</a>
+                </div>
 
-      <!-- COMING SOON: Rehab -->
-      <article class="tool-card">
-        <div class="tool-pill">Coming soon</div>
-        <header class="tool-header">
-          <h3 class="tool-title">Rehab / Renovation Estimator</h3>
-          <div class="tool-role">On the roadmap</div>
-        </header>
-        <p class="tool-body">
-          Quick and full-gut rehab ranges with material + labor buckets and investor-style assumptions,
-          so you’re not guessing on your all-in cost.
-        </p>
-        <ul class="tool-list">
-          <li>Light, medium, and heavy rehab templates</li>
-          <li>Material & labor breakdowns</li>
-          <li>Export-ready estimates for lenders</li>
-        </ul>
-        <footer class="tool-footer">
-          <div>
-            <span class="tool-status tool-status--soon">Building with early users</span>
-          </div>
-        </footer>
-      </article>
+                <div class="tool-card">
+                    <span class="tool-badge">Live Now</span>
+                    <div class="tool-icon">✍️</div>
+                    <h3>Listing Generator</h3>
+                    <p class="tool-for">For Agents & Teams</p>
+                    <p>Turn property details into MLS-ready descriptions and social media posts—tailored for investors or retail buyers in seconds.</p>
 
-      <!-- COMING SOON: Closing Costs -->
-      <article class="tool-card">
-        <div class="tool-pill">Coming soon</div>
-        <header class="tool-header">
-          <h3 class="tool-title">Closing Costs Calculator</h3>
-          <div class="tool-role">On the roadmap</div>
-        </header>
-        <p class="tool-body">
-          Buyer and seller side estimates including fees, taxes, commissions, and net proceeds,
-          so everyone sees the full picture.
-        </p>
-        <ul class="tool-list">
-          <li>Buyer & seller breakdowns</li>
-          <li>Net proceeds estimate for listings</li>
-          <li>Share-ready summaries for clients</li>
-        </ul>
-        <footer class="tool-footer">
-          <div>
-            <span class="tool-status tool-status--soon">Coming for Growth & Pro</span>
-          </div>
-        </footer>
-      </article>
+                    <ul class="tool-features">
+                        <li>MLS-style professional copy</li>
+                        <li>Investor-focused versions for BRRRR buyers</li>
+                        <li>Social media hooks & email templates</li>
+                        <li>Multiple variations to choose from</li>
+                    </ul>
 
-      <!-- COMING SOON: BRRRR/Portfolio -->
-      <article class="tool-card">
-        <div class="tool-pill">Coming soon</div>
-        <header class="tool-header">
-          <h3 class="tool-title">BRRRR & Portfolio Overview</h3>
-          <div class="tool-role">On the roadmap</div>
-        </header>
-        <p class="tool-body">
-          Model buy, rehab, rent, refi, repeat — and roll up cash flow & equity across your doors in
-          one simple view.
-        </p>
-        <ul class="tool-list">
-          <li>BRRRR scenario builder</li>
-          <li>Equity & cash-out projections</li>
-          <li>Portfolio-level cash flow snapshot</li>
-        </ul>
-        <footer class="tool-footer">
-          <div>
-            <span class="tool-status tool-status--soon">Planned for Professional</span>
-          </div>
-        </footer>
-      </article>
-    </div>
-  </section>
+                    <a href="/listing-generator" class="btn btn-primary">Try Listing Generator</a>
+                </div>
+            </div>
 
-  <!-- PRICING -->
-  <section id="pricing" class="pricing-wrap">
-    <div class="section" style="max-width:1120px;margin:0 auto;">
-      <div class="section-heading">
-        <h2 class="section-title">Simple, transparent pricing</h2>
-        <p class="section-subtitle">
-          Start free and upgrade only when you’re ready to analyze every lead. Growth and Professional
-          unlock unlimited runs and all new tools as they launch.
-        </p>
-      </div>
+            <!-- Roadmap Section -->
+            <div class="roadmap">
+                <h3>🚀 Coming Soon</h3>
+                <p class="roadmap-subtitle">New AI-powered tools launching every month—included in your subscription</p>
 
-      <div class="pricing-grid">
-        <!-- Starter -->
-        <article class="price-card">
-          <div class="price-name">Starter</div>
-          <div class="price-title">Kick the tires</div>
-          <div class="price-amount">
-            $0 <span>/ month</span>
-          </div>
-          <p class="price-desc">
-            Try the live tools on a few real deals without entering a credit card.
-          </p>
-          <ul class="price-list">
-            <li>3 deal runs per month</li>
-            <li>Deal Analyzer access</li>
-            <li>Listing Generator access</li>
-            <li>Email summaries you can save</li>
-          </ul>
-          <div class="price-cta">
-            <a href="/signup" class="btn-price secondary">Start Free</a>
-          </div>
-        </article>
+                <div class="roadmap-grid">
+                    <div class="roadmap-item">
+                        <h4>Rental Pricing Optimizer</h4>
+                        <p>AI-powered rent estimates based on comps, market data, and property features</p>
+                    </div>
 
-        <!-- Growth -->
-        <article class="price-card highlight">
-          <div class="price-badge">Most popular</div>
-          <div class="price-name">Growth</div>
-          <div class="price-title">For active deal hunters</div>
-          <div class="price-amount">
-            $149 <span>/ month</span>
-          </div>
-          <p class="price-desc">
-            Unlimited use of your core tools so you can underwrite every property in your pipeline.
-          </p>
-          <ul class="price-list">
-            <li>Unlimited Deal Analyzer runs</li>
-            <li>Unlimited Listing Generator & Rental Pricing</li>
-            <li>Early access to Rehab & Closing Costs tools</li>
-            <li>Saved deals and scenarios</li>
-            <li>Email support</li>
-          </ul>
-          <div class="price-cta">
-            <a href="<!-- TODO: Stripe Growth link -->" class="btn-price">Upgrade to Growth</a>
-          </div>
-        </article>
+                    <div class="roadmap-item">
+                        <h4>Rehab Cost Estimator</h4>
+                        <p>Instant renovation cost ranges with material & labor breakdowns by scope</p>
+                    </div>
 
-        <!-- Professional -->
-        <article class="price-card">
-          <div class="price-name">Professional</div>
-          <div class="price-title">For power users & teams</div>
-          <div class="price-amount">
-            $299 <span>/ month</span>
-          </div>
-          <p class="price-desc">
-            For flippers, portfolios, and agent teams who live in their calculators.
-          </p>
-          <ul class="price-list">
-            <li>Everything in Growth</li>
-            <li>All current & future REtotal AI tools</li>
-            <li>Priority roadmap influence</li>
-            <li>Priority support</li>
-            <li>Team seats & white-label (coming)</li>
-          </ul>
-          <div class="price-cta">
-            <a href="<!-- TODO: Stripe Pro link -->" class="btn-price secondary">Upgrade to Professional</a>
-          </div>
-        </article>
-      </div>
+                    <div class="roadmap-item">
+                        <h4>Closing Costs Calculator</h4>
+                        <p>Buyer and seller side estimates including all fees, taxes, and net proceeds</p>
+                    </div>
 
-      <p style="font-size:12px;color:#6b7280;margin-top:16px;text-align:center;">
-        Need brokerage-wide or white-label access? Email us at
-        <a href="mailto:hello@retotalai.com" style="color:var(--accent-dark);font-weight:500;">
-          hello@retotalai.com
-        </a>.
-      </p>
-    </div>
-  </section>
+                    <div class="roadmap-item">
+                        <h4>BRRRR Calculator</h4>
+                        <p>Model buy, rehab, rent, refinance, repeat strategies with cash-out projections</p>
+                    </div>
 
-  <footer style="background:#fdf7ee;padding:18px;font-size:12px;color:#6b7280;border-top:1px solid #ede9dd;">
-    <div style="max-width:1120px;margin:0 auto;">
-      © REtotal AI — Deal intelligence for investors, flippers & agents.
-    </div>
-  </footer>
+                    <div class="roadmap-item">
+                        <h4>Portfolio Dashboard</h4>
+                        <p>Track cash flow, equity, and performance across all your properties</p>
+                    </div>
+
+                    <div class="roadmap-item">
+                        <h4>Market Intelligence</h4>
+                        <p>AI-powered market trends, cap rate heat maps, and opportunity scoring</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Simple Pricing</span>
+                <h2>One platform, one price</h2>
+                <p>All current and future tools included—no hidden fees or add-ons</p>
+            </div>
+
+            <div class="pricing-card">
+                <span class="pricing-badge">Best Value</span>
+                <h3 style="font-family: 'Clash Display', sans-serif; font-size: 32px; font-weight: 700; margin-bottom: 8px;">REtotal AI Platform</h3>
+                <p style="color: #64748b; margin-bottom: 0;">Complete toolkit for real estate professionals</p>
+
+                <div class="price">$29<span>/mo</span></div>
+
+                <ul class="pricing-features">
+                    <li>Deal Analyzer (unlimited analyses)</li>
+                    <li>Listing Generator (unlimited listings)</li>
+                    <li>All future tools as they launch</li>
+                    <li>Save unlimited deals & properties</li>
+                    <li>Scenario comparison & optimization</li>
+                    <li>AI-powered insights & verdicts</li>
+                    <li>Priority email support</li>
+                    <li>Cancel anytime</li>
+                </ul>
+
+                <a href="/signup" class="btn btn-primary">Start Free Trial</a>
+
+                <div class="annual-option">
+                    💰 <strong>Save with annual billing:</strong> $290/year (2 months free)<br>
+                    <a href="/signup">Switch to annual →</a>
+                </div>
+
+                <p style="text-align: center; margin-top: 32px; color: #64748b; font-size: 15px;">
+                    Start with <strong>3 free analyses</strong> • No credit card required
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Stop juggling multiple tools</h2>
+            <p>One platform. All your real estate workflows. Powered by AI.</p>
+            <a href="/signup" class="btn">Start Your Free Trial →</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <p style="margin-bottom: 16px;">&copy; 2025 REtotal AI — Complete AI platform for real estate professionals</p>
+            <p>
+                <a href="mailto:hello@retotalai.com">Contact</a> ·
+                <a href="/privacy">Privacy</a> ·
+                <a href="/terms">Terms</a>
+            </p>
+        </div>
+    </footer>
 </body>
 </html>
