@@ -1,0 +1,9 @@
+# Clean URL rewrites
+/signup              /signup.html           200
+/login               /login.html            200
+/deal-analyzer       /deal-analyzer.html    200
+/listing-generator   /tools/listing-generator/index.html  200
+/app                 /app.html              200
+/dashboard           /dashboard.html        200
+/pricing             /pricing.html          200
+/tools               /tools.html            200
