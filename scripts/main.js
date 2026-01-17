@@ -205,7 +205,7 @@
                     alert('Check your email to confirm your account.');
                 } else {
                     alert('Signup successful!');
-                    window.location.href = '/app.html';
+                    window.location.href = '/dashboard.html';
                 }
                 closeAuthModal();
                 return;
@@ -235,7 +235,7 @@
     }
 
     function getSafeRedirectPath() {
-        const defaultPath = '/app.html';
+        const defaultPath = '/dashboard.html';
 
         if (!isBrowser) {
             return defaultPath;

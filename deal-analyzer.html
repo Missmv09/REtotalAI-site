@@ -1177,7 +1177,7 @@
       if (!window.supabaseClient) {
         console.warn('[deal-analyzer] supabaseClient not available; skipping history load.');
         if (loadingRow) {
-          loadingRow.innerHTML = '<td colspan="7">Unable to load history.</td>';
+          loadingRow.innerHTML = '<td colspan="7" style="text-align: center; color: #64748b; padding: 2rem;">No analyses yet. Run your first deal above!</td>';
         }
         return;
       }
@@ -1191,7 +1191,7 @@
       if (userError) {
         console.error('[deal-analyzer] Error getting user:', userError);
         if (loadingRow) {
-          loadingRow.innerHTML = '<td colspan="7">Unable to load history.</td>';
+          loadingRow.innerHTML = '<td colspan="7" style="text-align: center; color: #64748b; padding: 2rem;">No analyses yet. Run your first deal above!</td>';
         }
         return;
       }
@@ -1242,7 +1242,7 @@
         console.error('[deal-analyzer] Error loading deals:', dealsError);
         tbody.innerHTML = `
       <tr>
-        <td colspan="7">Unable to load history.</td>
+        <td colspan="7" style="text-align: center; color: #64748b; padding: 2rem;">No analyses yet. Run your first deal above!</td>
       </tr>
     `;
         return;
@@ -1254,7 +1254,7 @@
       if (!deals || deals.length === 0) {
         tbody.innerHTML = `
       <tr>
-        <td colspan="7">No saved deals yet.</td>
+        <td colspan="7" style="text-align: center; color: #64748b; padding: 2rem;">No analyses yet. Run your first deal above!</td>
       </tr>
     `;
         return;
