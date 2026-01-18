@@ -143,6 +143,22 @@
             law: 'FHA §3604(a)',
             suggestion: 'Remove exclusionary racial language completely.'
         },
+        // Catch "lots of black people", "many white families", etc.
+        {
+            pattern: /\b(lots?\s+of|many|full\s+of|mostly|all|predominantly)\s+(black|white|asian|hispanic|latino|latina|mexican|african|chinese|indian|arab)\s+(people|persons?|folks?|families|residents?|neighbors?)\b/gi,
+            category: 'race',
+            severity: 'high',
+            law: 'FHA §3604(a)',
+            suggestion: 'Remove all references to racial/ethnic demographics of the neighborhood.'
+        },
+        // Catch standalone racial terms in neighborhood context
+        {
+            pattern: /\bneighborhood[:\s]+(lots?\s+of\s+)?(black|white|asian|hispanic|latino|mexican|african)\b/gi,
+            category: 'race',
+            severity: 'high',
+            law: 'FHA §3604(a)',
+            suggestion: 'Remove racial descriptions of neighborhoods.'
+        },
         {
             pattern: /\b(diverse|diversity|ethnic|ethnically|integrated|segregated|changing)\s+(neighborhood|community|area)\b/gi,
             category: 'race',
@@ -151,11 +167,19 @@
             suggestion: 'Avoid coded racial language. Describe amenities and features instead.'
         },
         {
-            pattern: /\b(good|safe|bad|dangerous|crime[- ]?free|low[- ]?crime)\s+(neighborhood|area|community)\b/gi,
+            pattern: /\b(good|safe|bad|dangerous|crime[- ]?free|low[- ]?crime|poor|rough|sketchy|ghetto|hood)\s+(neighborhood|area|community)\b/gi,
             category: 'race',
-            severity: 'medium',
+            severity: 'high',
             law: 'FHA §3604(a)',
-            suggestion: 'Avoid subjective safety terms that may imply racial steering.'
+            suggestion: 'Remove subjective/derogatory neighborhood descriptions. These terms may imply racial steering.'
+        },
+        // Catch "very poor neighborhood", "really bad area"
+        {
+            pattern: /\b(very|really|extremely|super)\s+(poor|bad|rough|dangerous|sketchy)\s+(neighborhood|area|community)\b/gi,
+            category: 'race',
+            severity: 'high',
+            law: 'FHA §3604(a)',
+            suggestion: 'Remove derogatory neighborhood descriptions that may imply racial steering.'
         },
         {
             pattern: /\bexclusive\s+(neighborhood|community|area|enclave)\b/gi,
@@ -413,8 +437,24 @@
             law: 'State Fair Housing Laws',
             suggestion: 'Remove references to couples\' sexual orientation.'
         },
+        // Catch "no gays", "no gays allowed", "gays not allowed", "no lesbians", etc.
         {
-            pattern: /\b(no|not for)\s+(gay|lesbian|lgbtq|transgender)\s*(people|persons?|couples?)?\b/gi,
+            pattern: /\b(no|not for)\s+(gays?|lesbians?|lgbtq\+?|transgender|homosexuals?|queers?)\b/gi,
+            category: 'sexual_orientation',
+            severity: 'high',
+            law: 'State Fair Housing Laws',
+            suggestion: 'Remove LGBTQ+ exclusionary language. This is discriminatory.'
+        },
+        {
+            pattern: /\b(gays?|lesbians?|homosexuals?|queers?|transgenders?)\s+(not\s+)?(allowed|welcome|wanted|accepted|permitted)\b/gi,
+            category: 'sexual_orientation',
+            severity: 'high',
+            law: 'State Fair Housing Laws',
+            suggestion: 'Remove LGBTQ+ exclusionary language. This is discriminatory.'
+        },
+        // Catch standalone discriminatory phrases
+        {
+            pattern: /\b(no|ban|exclude|excluding)\s+(gays?|lesbians?|homosexuals?|lgbtq\+?)\b/gi,
             category: 'sexual_orientation',
             severity: 'high',
             law: 'State Fair Housing Laws',
