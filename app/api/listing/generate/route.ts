@@ -21,9 +21,17 @@ type ListingGenerateRequest = {
   uniqueSellingPoints?: string
 
   // Generation options
-  tone: 'professional' | 'luxury' | 'casual' | 'family-friendly' | 'investor-focused'
+  tone: 'professional' | 'luxury' | 'casual' | 'family-friendly' | 'investor-focused' | 'fsbo'
   targetAudience: 'general' | 'first-time-buyers' | 'investors' | 'families' | 'luxury-buyers'
   platform: 'mls' | 'zillow' | 'realtor' | 'facebook' | 'craigslist' | 'all'
+
+  // Investor-focused fields
+  currentRent?: number
+  marketRent?: number
+  capRate?: number
+
+  // Spanish translation
+  spanishEnabled?: boolean
 }
 
 type GeneratedListing = {
@@ -135,7 +143,10 @@ function generateFromTemplate(input: ListingGenerateRequest): GeneratedListing {
     uniqueSellingPoints,
     tone,
     price,
-    zipcode = ''
+    zipcode = '',
+    currentRent,
+    marketRent,
+    capRate
   } = input
 
   const priceStr = price ? `$${price.toLocaleString()}` : 'Contact for pricing'
@@ -147,11 +158,176 @@ function generateFromTemplate(input: ListingGenerateRequest): GeneratedListing {
     'luxury': ['exquisite', 'stunning', 'prestigious'],
     'casual': ['cozy', 'comfortable', 'inviting'],
     'family-friendly': ['spacious', 'welcoming', 'perfect for families'],
-    'investor-focused': ['high-yield', 'turnkey', 'income-producing']
+    'investor-focused': ['high-yield', 'turnkey', 'income-producing'],
+    'fsbo': ['charming', 'well-loved', 'move-in ready']
   }
 
   const adj = toneAdjectives[tone] || toneAdjectives['professional']
 
+  // FSBO-specific headline and content
+  if (tone === 'fsbo') {
+    const headline = `FOR SALE BY OWNER: ${beds}BR/${baths}BA ${propertyType} in ${city}`
+
+    const shortDescription = `Selling my ${adj[0]} ${beds} bedroom, ${baths} bathroom ${propertyType.toLowerCase()} with ${sqft.toLocaleString()} sq ft${yearStr}. ${featuresStr.charAt(0).toUpperCase() + featuresStr.slice(1)}. ${priceStr}. Contact owner directly - no agents please.`
+
+    const fullDescription = `FOR SALE BY OWNER
+
+I'm selling my ${adj[0]} ${propertyType.toLowerCase()} located in ${city}, ${state}. This ${adj[1]} home has been well cared for and offers ${beds} bedrooms and ${baths} bathrooms with ${sqft.toLocaleString()} square feet of comfortable living space${yearStr}.
+
+${features?.length ? `What I love about this home: ${featuresStr}.` : ''}
+
+${recentUpgrades ? `Updates I've made: ${recentUpgrades}.` : ''}
+
+${neighborhood ? `About the neighborhood: ${neighborhood}` : `Great location in ${city} with easy access to everything you need.`}
+
+${uniqueSellingPoints ? `Why you'll love it: ${uniqueSellingPoints}` : ''}
+
+I'm asking ${priceStr}. Serious buyers only - please contact me directly to schedule a showing. No agents, please.
+
+Owner financing may be available for qualified buyers.`
+
+    const socialMediaPost = `🏡 FOR SALE BY OWNER! ${beds}BR/${baths}BA in ${city}
+📐 ${sqft.toLocaleString()} sq ft | ${priceStr}
+✨ ${features?.slice(0, 3).join(' • ') || 'Move-in ready!'}
+💬 Message me directly - no agents!
+#FSBO #ForSaleByOwner #${city.replace(/\s+/g, '')} #HomeForSale`
+
+    const emailTemplate = `Subject: FOR SALE BY OWNER: ${beds}BR Home in ${city}
+
+Hi,
+
+I'm reaching out because I'm selling my home and thought you might be interested or know someone who is.
+
+📍 ${input.address || city}, ${state}
+🛏️ ${beds} Bedrooms | 🛁 ${baths} Bathrooms
+📐 ${sqft.toLocaleString()} sq ft
+💰 ${priceStr}
+
+${shortDescription}
+
+Since I'm selling directly, we can save on commission and work together on a fair deal. Let me know if you'd like to see it!
+
+Best,
+[Your Name]
+[Your Phone]`
+
+    return {
+      headline,
+      shortDescription,
+      fullDescription,
+      socialMediaPost,
+      emailTemplate,
+      seoKeywords: [
+        `fsbo ${city}`,
+        `for sale by owner ${city} ${state}`,
+        `${beds} bedroom home ${city}`,
+        `no agent home sale ${city}`,
+        `owner selling ${propertyType.toLowerCase()}`,
+        ...(features?.slice(0, 3) || [])
+      ].filter(Boolean) as string[],
+      alternativeHeadlines: [
+        `OWNER SELLING: ${beds}BR Home in ${city} - ${priceStr}`,
+        `No Agents! ${propertyType} for Sale by Owner`,
+        `Direct from Owner: ${adj[0].charAt(0).toUpperCase() + adj[0].slice(1)} ${city} Home`,
+        `FSBO: ${sqft.toLocaleString()} sq ft ${propertyType} - Save on Commission!`,
+        `Motivated Owner: ${beds}BR/${baths}BA in ${city}`
+      ]
+    }
+  }
+
+  // Investor-focused with metrics
+  if (tone === 'investor-focused') {
+    const investorMetrics: string[] = []
+    if (currentRent) investorMetrics.push(`Current Rent: $${currentRent.toLocaleString()}/mo`)
+    if (marketRent) investorMetrics.push(`Market Rent: $${marketRent.toLocaleString()}/mo`)
+    if (capRate) investorMetrics.push(`Cap Rate: ${capRate}%`)
+
+    const metricsStr = investorMetrics.length > 0 ? investorMetrics.join(' | ') : ''
+    const annualRent = currentRent ? currentRent * 12 : (marketRent ? marketRent * 12 : 0)
+
+    const headline = `📈 Investment Opportunity: ${beds}BR/${baths}BA ${propertyType} - ${capRate ? `${capRate}% Cap Rate` : priceStr}`
+
+    const shortDescription = `${adj[0].charAt(0).toUpperCase() + adj[0].slice(1)} ${beds} bedroom, ${baths} bathroom investment property with ${sqft.toLocaleString()} sq ft${yearStr}. ${metricsStr ? metricsStr + '. ' : ''}${priceStr}. Numbers available to qualified investors.`
+
+    const fullDescription = `INVESTMENT OPPORTUNITY
+
+${adj[0].charAt(0).toUpperCase() + adj[0].slice(1)} ${propertyType.toLowerCase()} in ${city}, ${state} - ideal for investors seeking ${adj[2]} properties.
+
+PROPERTY SPECS:
+• ${beds} Bedrooms | ${baths} Bathrooms
+• ${sqft.toLocaleString()} Square Feet
+${yearBuilt ? `• Built: ${yearBuilt}` : ''}
+${input.lotSize ? `• Lot Size: ${input.lotSize.toLocaleString()} sq ft` : ''}
+
+${metricsStr ? `INVESTMENT METRICS:\n${investorMetrics.map(m => `• ${m}`).join('\n')}\n${annualRent ? `• Annual Gross: $${annualRent.toLocaleString()}` : ''}` : ''}
+
+${features?.length ? `PROPERTY FEATURES:\n${features.map(f => `• ${f}`).join('\n')}` : ''}
+
+${recentUpgrades ? `RECENT IMPROVEMENTS:\n${recentUpgrades}` : ''}
+
+${neighborhood ? `LOCATION HIGHLIGHTS:\n${neighborhood}` : `Prime ${city} location with strong rental demand.`}
+
+${uniqueSellingPoints ? `VALUE-ADD POTENTIAL:\n${uniqueSellingPoints}` : ''}
+
+Asking Price: ${priceStr}
+${capRate && price ? `Price per Sq Ft: $${Math.round(price / sqft)}` : ''}
+
+Full financials and rent roll available to qualified investors. Schedule your showing today.`
+
+    const socialMediaPost = `📈 INVESTOR ALERT! ${beds}BR/${baths}BA in ${city}
+💰 ${priceStr}${capRate ? ` | ${capRate}% Cap Rate` : ''}
+${currentRent ? `📊 Current Rent: $${currentRent.toLocaleString()}/mo` : ''}
+🏠 ${sqft.toLocaleString()} sq ft ${propertyType}
+📩 Numbers available to qualified investors
+#RealEstateInvesting #${city.replace(/\s+/g, '')} #InvestmentProperty #CashFlow`
+
+    const emailTemplate = `Subject: Investment Property: ${beds}BR in ${city}${capRate ? ` - ${capRate}% Cap` : ''}
+
+Hi [Name],
+
+I have an investment opportunity that matches your criteria:
+
+📍 ${input.address || city}, ${state}
+🛏️ ${beds} Bedrooms | 🛁 ${baths} Bathrooms
+📐 ${sqft.toLocaleString()} sq ft
+💰 ${priceStr}
+
+${metricsStr ? `KEY METRICS:\n${investorMetrics.map(m => `• ${m}`).join('\n')}` : ''}
+
+${shortDescription}
+
+Rent roll and full financials available upon request. Would you like to review the numbers?
+
+Best regards,
+[Your Name]
+[Your Contact Info]`
+
+    return {
+      headline,
+      shortDescription,
+      fullDescription,
+      socialMediaPost,
+      emailTemplate,
+      seoKeywords: [
+        `investment property ${city}`,
+        `rental property ${city} ${state}`,
+        `${beds} bedroom investment ${city}`,
+        `cash flow property ${city}`,
+        `cap rate ${city} real estate`,
+        `income property for sale`,
+        ...(features?.slice(0, 2) || [])
+      ].filter(Boolean) as string[],
+      alternativeHeadlines: [
+        `${capRate ? `${capRate}% Cap Rate` : 'Cash Flow'} Investment in ${city}`,
+        `${adj[0].charAt(0).toUpperCase() + adj[0].slice(1)} Rental Property - ${priceStr}`,
+        `Investor Special: ${beds}BR ${propertyType} with ${currentRent ? `$${currentRent.toLocaleString()}/mo Income` : 'Strong Returns'}`,
+        `${city} Investment: ${sqft.toLocaleString()} sq ft Income Property`,
+        `Numbers Don't Lie: ${propertyType} Investment Opportunity`
+      ]
+    }
+  }
+
+  // Standard tones (professional, luxury, casual, family-friendly)
   const headline = `${adj[0].charAt(0).toUpperCase() + adj[0].slice(1)} ${beds}BR/${baths}BA ${propertyType} in ${city}`
 
   const shortDescription = `${adj[1].charAt(0).toUpperCase() + adj[1].slice(1)} ${beds} bedroom, ${baths} bathroom ${propertyType.toLowerCase()} featuring ${sqft.toLocaleString()} sq ft of living space${yearStr}. ${featuresStr.charAt(0).toUpperCase() + featuresStr.slice(1)}. ${priceStr}.`
@@ -298,6 +474,30 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  // Build special instructions based on tone
+  let toneInstructions = ''
+  if (tone === 'fsbo') {
+    toneInstructions = `
+SPECIAL FSBO INSTRUCTIONS:
+- Write in first person as the homeowner selling directly
+- Use casual, personal language (e.g., "I'm selling my home", "What I love about this place")
+- Mention "For Sale By Owner" or "FSBO" prominently
+- Include phrases like "No agents please", "Contact owner directly"
+- Emphasize potential savings on commission
+- Keep the tone friendly and approachable, not salesy`
+  } else if (tone === 'investor-focused') {
+    toneInstructions = `
+SPECIAL INVESTOR INSTRUCTIONS:
+${body.currentRent ? `- Current Rent: $${body.currentRent.toLocaleString()}/month` : ''}
+${body.marketRent ? `- Market Rent: $${body.marketRent.toLocaleString()}/month` : ''}
+${body.capRate ? `- Cap Rate: ${body.capRate}%` : ''}
+- Focus on investment metrics, ROI potential, and cash flow
+- Include the phrase "Numbers available to qualified investors"
+- Use investment terminology (cap rate, cash-on-cash, NOI, etc.)
+- Highlight income potential and value-add opportunities
+- Target sophisticated real estate investors`
+  }
+
   // Build the AI prompt
   const prompt = `You are an expert real estate copywriter. Generate compelling property listing content based on the following details:
 
@@ -323,6 +523,7 @@ REQUIREMENTS:
 - Tone: ${tone}
 - Target Audience: ${targetAudience}
 - Platform: ${body.platform || 'all'}
+${toneInstructions}
 
 Generate the following in JSON format:
 {
