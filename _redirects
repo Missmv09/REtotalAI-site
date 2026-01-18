@@ -1,3 +1,7 @@
+# API rewrites - route to Netlify functions
+/api/property/lookup    /.netlify/functions/property-lookup    200
+/api/listing/generate   /.netlify/functions/listing-generate   200
+
 # Clean URL rewrites
 /signup              /signup.html           200
 /login               /login.html            200
