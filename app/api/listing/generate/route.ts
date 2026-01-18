@@ -237,7 +237,7 @@ Best,
 
   // Investor-focused with metrics
   if (tone === 'investor-focused') {
-    const investorMetrics = []
+    const investorMetrics: string[] = []
     if (currentRent) investorMetrics.push(`Current Rent: $${currentRent.toLocaleString()}/mo`)
     if (marketRent) investorMetrics.push(`Market Rent: $${marketRent.toLocaleString()}/mo`)
     if (capRate) investorMetrics.push(`Cap Rate: ${capRate}%`)
