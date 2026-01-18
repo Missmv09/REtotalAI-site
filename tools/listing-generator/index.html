@@ -1,77 +1,1233 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Property Listing Form</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-xl mx-auto bg-white p-8 rounded shadow">
-    <h1 class="text-2xl font-bold mb-4">Property Listing Form</h1>
-    <form id="listingForm" class="space-y-4">
-      <div>
-        <label for="propertyType" class="block text-sm font-medium text-gray-700">Property Type</label>
-        <select id="propertyType" name="propertyType" class="mt-1 block w-full border-gray-300 rounded">
-          <option value="apartment">Apartment</option>
-          <option value="duplex">Duplex</option>
-          <option value="commercial">Commercial</option>
-          <option value="single_family">Single Family</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-      <div class="flex space-x-4">
-        <div class="w-1/2">
-          <label for="beds" class="block text-sm font-medium text-gray-700">Beds</label>
-          <input type="number" id="beds" name="beds" class="mt-1 block w-full border-gray-300 rounded" min="0" />
-        </div>
-        <div class="w-1/2">
-          <label for="baths" class="block text-sm font-medium text-gray-700">Baths</label>
-          <input type="number" id="baths" name="baths" class="mt-1 block w-full border-gray-300 rounded" min="0" />
-        </div>
-      </div>
-      <div>
-        <label for="sqft" class="block text-sm font-medium text-gray-700">Square Footage</label>
-        <input type="number" id="sqft" name="sqft" class="mt-1 block w-full border-gray-300 rounded" min="0" />
-      </div>
-      <div>
-        <label for="details" class="block text-sm font-medium text-gray-700">Neighborhood & Features</label>
-        <textarea id="details" name="details" class="mt-1 block w-full border-gray-300 rounded" rows="4" placeholder="Describe the neighborhood and notable features"></textarea>
-      </div>
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded">Submit</button>
-    </form>
-  </div>
-
-  <script>
-    document.getElementById('listingForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const data = {
-        propertyType: document.getElementById('propertyType').value,
-        beds: document.getElementById('beds').value,
-        baths: document.getElementById('baths').value,
-        sqft: document.getElementById('sqft').value,
-        details: document.getElementById('details').value,
-      };
-
-      try {
-        const response = await fetch('Paste your OpenAI API URL here', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
-        if (response.ok) {
-          alert('Listing submitted successfully!');
-          e.target.reset();
-        } else {
-          alert('Failed to submit listing.');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Listing Generator - REtotalAI</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-      } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred.');
-      }
-    });
-  </script>
+
+        :root {
+            --primary: #1E3A5F;
+            --primary-dark: #0F2238;
+            --accent: #D4AF37;
+            --accent-hover: #B8941F;
+            --sage: #7C9885;
+            --warm-gray: #8B8680;
+            --dark: #2C2926;
+            --light: #FAFAF8;
+            --cream: #F7F3ED;
+            --gray: #6B6B6B;
+            --success: #7C9885;
+            --warning: #F59E0B;
+            --danger: #DC2626;
+            --card-bg: #FFFFFF;
+            --border: #E5E1DB;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--light) 0%, var(--cream) 100%);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Georgia', 'Playfair Display', serif;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 0.875rem;
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Tool Header */
+        .tool-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .tool-title {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-subtitle {
+            color: var(--gray);
+            font-size: 1.125rem;
+        }
+
+        /* Usage Counter */
+        .usage-counter {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .usage-badge {
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            color: var(--gray);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .usage-badge.warning {
+            background: #FEF3C7;
+            color: var(--warning);
+        }
+
+        .usage-badge a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Panels */
+        .panel {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* Input Sections */
+        .input-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-label {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--gray);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-prefix {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: white;
+            font-family: inherit;
+        }
+
+        input.has-prefix {
+            padding-left: 2rem;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .input-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .input-row-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Address Lookup */
+        .address-lookup-btn {
+            background: var(--sage);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: none;
+            margin-left: 0.5rem;
+        }
+
+        .address-lookup-btn:hover {
+            background: #6a8673;
+        }
+
+        .address-lookup-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .lookup-status {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            color: var(--gray);
+        }
+
+        .lookup-status.success {
+            color: var(--success);
+        }
+
+        .lookup-status.error {
+            color: var(--danger);
+        }
+
+        /* Feature Tags */
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .feature-tag {
+            background: var(--cream);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            color: var(--primary);
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .feature-tag:hover {
+            border-color: var(--accent);
+        }
+
+        .feature-tag.selected {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Generate Button */
+        .generate-btn {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.125rem;
+            margin-top: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+        }
+
+        .generate-btn:hover {
+            background: linear-gradient(135deg, var(--accent-hover), #9a7a15);
+        }
+
+        /* Results Panel */
+        .results-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .result-title {
+            font-size: 1rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .copy-btn {
+            background: var(--cream);
+            color: var(--primary);
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .copy-btn.copied {
+            background: var(--success);
+            color: white;
+        }
+
+        .result-content {
+            background: var(--cream);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .result-content.headline {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            font-family: 'Georgia', serif;
+            text-align: center;
+            max-height: none;
+        }
+
+        /* Keywords */
+        .keywords-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .keyword-tag {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+        }
+
+        /* Alternative Headlines */
+        .alt-headlines {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .alt-headline {
+            background: var(--cream);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .alt-headline:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Loading State */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--primary);
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .loading-subtext {
+            color: var(--gray);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state-title {
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-nav {
+                display: none;
+            }
+
+            .input-row, .input-row-3, .input-row-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .tool-title {
+                font-size: 1.75rem;
+            }
+        }
+
+        /* Tabs */
+        .result-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .result-tab {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        .result-tab:hover {
+            color: var(--primary);
+        }
+
+        .result-tab.active {
+            color: var(--accent);
+            background: var(--cream);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Regenerate */
+        .regenerate-section {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .regenerate-btn {
+            flex: 1;
+            background: var(--primary);
+        }
+
+        .regenerate-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .save-btn {
+            flex: 1;
+            background: var(--sage);
+        }
+
+        .save-btn:hover {
+            background: #6a8673;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                REtotal<span>AI</span>
+            </a>
+            <nav class="header-nav">
+                <a href="/dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/tools.html" class="nav-link">Tools</a>
+                <a href="/tools/deal-analyzer/" class="nav-link">Deal Analyzer</a>
+                <button class="btn" onclick="saveToHistory()">Save Listing</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Generating Your Listing...</div>
+            <div class="loading-subtext">Our AI is crafting compelling copy for your property</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Tool Header -->
+        <div class="tool-header">
+            <h1 class="tool-title">AI Listing Generator</h1>
+            <p class="tool-subtitle">Create professional property listings in seconds with AI</p>
+        </div>
+
+        <!-- Usage Counter -->
+        <div class="usage-counter">
+            <div class="usage-badge" id="usageBadge">
+                <span id="usageCount">0</span> / <span id="usageLimit">5</span> free listings used
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Input Panel -->
+            <div class="panel">
+                <h2 class="panel-title">Property Details</h2>
+
+                <!-- Address Section -->
+                <div class="input-section">
+                    <div class="section-label">
+                        Location
+                        <button type="button" class="address-lookup-btn" id="lookupBtn" onclick="lookupProperty()">
+                            Auto-fill from Address
+                        </button>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Street Address</label>
+                        <input type="text" id="address" placeholder="123 Main St">
+                    </div>
+                    <div class="input-row-3">
+                        <div class="input-group">
+                            <label class="input-label">City</label>
+                            <input type="text" id="city" placeholder="Austin">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">State</label>
+                            <input type="text" id="state" placeholder="TX" maxlength="2">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">ZIP Code</label>
+                            <input type="text" id="zipcode" placeholder="78701" maxlength="5">
+                        </div>
+                    </div>
+                    <div class="lookup-status" id="lookupStatus"></div>
+                </div>
+
+                <!-- Property Info Section -->
+                <div class="input-section">
+                    <div class="section-label">Property Information</div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label class="input-label">Property Type</label>
+                            <select id="propertyType">
+                                <option value="Single Family">Single Family</option>
+                                <option value="Condo">Condo</option>
+                                <option value="Townhouse">Townhouse</option>
+                                <option value="Multi-Family">Multi-Family</option>
+                                <option value="Apartment">Apartment</option>
+                                <option value="Duplex">Duplex</option>
+                                <option value="Commercial">Commercial</option>
+                                <option value="Land">Land</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Year Built</label>
+                            <input type="number" id="yearBuilt" placeholder="2005">
+                        </div>
+                    </div>
+                    <div class="input-row-4">
+                        <div class="input-group">
+                            <label class="input-label">Beds</label>
+                            <input type="number" id="beds" placeholder="3" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Baths</label>
+                            <input type="number" id="baths" placeholder="2" min="0" step="0.5">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Sq Ft</label>
+                            <input type="number" id="sqft" placeholder="1,800">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Lot Size</label>
+                            <input type="number" id="lotSize" placeholder="5,000">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Asking Price</label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="price" placeholder="450,000" class="has-prefix">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Section -->
+                <div class="input-section">
+                    <div class="section-label">Features (click to select)</div>
+                    <div class="feature-tags" id="featureTags">
+                        <span class="feature-tag" data-feature="Central AC">Central AC</span>
+                        <span class="feature-tag" data-feature="Hardwood Floors">Hardwood Floors</span>
+                        <span class="feature-tag" data-feature="Updated Kitchen">Updated Kitchen</span>
+                        <span class="feature-tag" data-feature="Stainless Appliances">Stainless Appliances</span>
+                        <span class="feature-tag" data-feature="Granite Counters">Granite Counters</span>
+                        <span class="feature-tag" data-feature="Open Floor Plan">Open Floor Plan</span>
+                        <span class="feature-tag" data-feature="Attached Garage">Attached Garage</span>
+                        <span class="feature-tag" data-feature="Fenced Yard">Fenced Yard</span>
+                        <span class="feature-tag" data-feature="Pool">Pool</span>
+                        <span class="feature-tag" data-feature="Fireplace">Fireplace</span>
+                        <span class="feature-tag" data-feature="Smart Home">Smart Home</span>
+                        <span class="feature-tag" data-feature="Solar Panels">Solar Panels</span>
+                        <span class="feature-tag" data-feature="New Roof">New Roof</span>
+                        <span class="feature-tag" data-feature="New HVAC">New HVAC</span>
+                        <span class="feature-tag" data-feature="Walk-in Closet">Walk-in Closet</span>
+                    </div>
+                </div>
+
+                <!-- Additional Details -->
+                <div class="input-section">
+                    <div class="section-label">Additional Details</div>
+                    <div class="input-group">
+                        <label class="input-label">Recent Upgrades</label>
+                        <textarea id="recentUpgrades" placeholder="New kitchen in 2023, fresh interior paint, new water heater..."></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Neighborhood Highlights</label>
+                        <textarea id="neighborhood" placeholder="Great schools nearby, walking distance to downtown, quiet cul-de-sac..."></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Unique Selling Points</label>
+                        <textarea id="uniqueSellingPoints" placeholder="Corner lot with extra privacy, amazing sunset views, original owner..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Generation Options -->
+                <div class="input-section">
+                    <div class="section-label">Generation Options</div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label class="input-label">Tone</label>
+                            <select id="tone">
+                                <option value="professional">Professional</option>
+                                <option value="luxury">Luxury / Upscale</option>
+                                <option value="casual">Casual / Friendly</option>
+                                <option value="family-friendly">Family-Friendly</option>
+                                <option value="investor-focused">Investor-Focused</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Target Audience</label>
+                            <select id="targetAudience">
+                                <option value="general">General Buyers</option>
+                                <option value="first-time-buyers">First-Time Buyers</option>
+                                <option value="investors">Investors</option>
+                                <option value="families">Families</option>
+                                <option value="luxury-buyers">Luxury Buyers</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Platform</label>
+                        <select id="platform">
+                            <option value="all">All Platforms</option>
+                            <option value="mls">MLS</option>
+                            <option value="zillow">Zillow</option>
+                            <option value="realtor">Realtor.com</option>
+                            <option value="facebook">Facebook Marketplace</option>
+                            <option value="craigslist">Craigslist</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn generate-btn" onclick="generateListing()">
+                    Generate Listing with AI
+                </button>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="results-panel" id="resultsPanel">
+                <!-- Empty State -->
+                <div class="panel empty-state" id="emptyState">
+                    <div class="empty-state-icon">AI</div>
+                    <div class="empty-state-title">Your AI-Generated Listing Will Appear Here</div>
+                    <p>Fill in the property details and click "Generate Listing" to create professional marketing copy.</p>
+                </div>
+
+                <!-- Results (hidden initially) -->
+                <div id="resultsContent" style="display: none;">
+                    <!-- Headline -->
+                    <div class="result-card">
+                        <div class="result-header">
+                            <span class="result-title">Headline</span>
+                            <div class="result-actions">
+                                <button class="copy-btn" onclick="copyToClipboard('headline', this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="result-content headline" id="resultHeadline"></div>
+                    </div>
+
+                    <!-- Tabbed Content -->
+                    <div class="result-card">
+                        <div class="result-tabs">
+                            <button class="result-tab active" onclick="switchTab('full')">Full Description</button>
+                            <button class="result-tab" onclick="switchTab('short')">Short Summary</button>
+                            <button class="result-tab" onclick="switchTab('social')">Social Media</button>
+                            <button class="result-tab" onclick="switchTab('email')">Email Template</button>
+                        </div>
+
+                        <div class="tab-content active" id="tab-full">
+                            <div class="result-header">
+                                <span class="result-title">Full Property Description</span>
+                                <button class="copy-btn" onclick="copyToClipboard('fullDescription', this)">Copy</button>
+                            </div>
+                            <div class="result-content" id="resultFullDescription"></div>
+                        </div>
+
+                        <div class="tab-content" id="tab-short">
+                            <div class="result-header">
+                                <span class="result-title">Short Summary (50-100 words)</span>
+                                <button class="copy-btn" onclick="copyToClipboard('shortDescription', this)">Copy</button>
+                            </div>
+                            <div class="result-content" id="resultShortDescription"></div>
+                        </div>
+
+                        <div class="tab-content" id="tab-social">
+                            <div class="result-header">
+                                <span class="result-title">Social Media Post</span>
+                                <button class="copy-btn" onclick="copyToClipboard('socialMediaPost', this)">Copy</button>
+                            </div>
+                            <div class="result-content" id="resultSocialMediaPost"></div>
+                        </div>
+
+                        <div class="tab-content" id="tab-email">
+                            <div class="result-header">
+                                <span class="result-title">Email Template</span>
+                                <button class="copy-btn" onclick="copyToClipboard('emailTemplate', this)">Copy</button>
+                            </div>
+                            <div class="result-content" id="resultEmailTemplate"></div>
+                        </div>
+                    </div>
+
+                    <!-- SEO Keywords -->
+                    <div class="result-card">
+                        <div class="result-header">
+                            <span class="result-title">SEO Keywords</span>
+                            <button class="copy-btn" onclick="copyKeywords(this)">Copy All</button>
+                        </div>
+                        <div class="keywords-list" id="resultKeywords"></div>
+                    </div>
+
+                    <!-- Alternative Headlines -->
+                    <div class="result-card">
+                        <div class="result-header">
+                            <span class="result-title">Alternative Headlines</span>
+                        </div>
+                        <div class="alt-headlines" id="resultAltHeadlines"></div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="regenerate-section">
+                        <button class="btn regenerate-btn" onclick="generateListing()">
+                            Regenerate
+                        </button>
+                        <button class="btn save-btn" onclick="saveToHistory()">
+                            Save to History
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/scripts/auth.js"></script>
+    <script>
+        // State
+        let currentListing = null;
+        let selectedFeatures = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Feature tag selection
+            document.querySelectorAll('.feature-tag').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    updateSelectedFeatures();
+                });
+            });
+
+            // Load usage from localStorage
+            updateUsageCounter();
+        });
+
+        function updateSelectedFeatures() {
+            selectedFeatures = Array.from(document.querySelectorAll('.feature-tag.selected'))
+                .map(tag => tag.dataset.feature);
+        }
+
+        // Property Lookup
+        async function lookupProperty() {
+            const address = document.getElementById('address').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const zipcode = document.getElementById('zipcode').value;
+
+            if (!address || !city || !state || !zipcode) {
+                showLookupStatus('Please fill in all address fields', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('lookupBtn');
+            btn.disabled = true;
+            btn.textContent = 'Looking up...';
+            showLookupStatus('Fetching property details...', '');
+
+            try {
+                const response = await fetch('/api/property/lookup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address, city, state, zipcode })
+                });
+
+                const data = await response.json();
+
+                if (data.ok && data.property) {
+                    populateFromLookup(data.property);
+                    showLookupStatus(`Found property details (Source: ${data.property.source})`, 'success');
+                } else {
+                    showLookupStatus(data.error || 'Property not found', 'error');
+                }
+            } catch (error) {
+                console.error('Lookup error:', error);
+                showLookupStatus('Failed to lookup property', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Auto-fill from Address';
+            }
+        }
+
+        function populateFromLookup(property) {
+            if (property.beds) document.getElementById('beds').value = property.beds;
+            if (property.baths) document.getElementById('baths').value = property.baths;
+            if (property.sqft) document.getElementById('sqft').value = property.sqft;
+            if (property.yearBuilt) document.getElementById('yearBuilt').value = property.yearBuilt;
+            if (property.lotSize) document.getElementById('lotSize').value = property.lotSize;
+            if (property.estimatedValue) document.getElementById('price').value = property.estimatedValue;
+
+            // Set property type
+            if (property.propertyType) {
+                const typeSelect = document.getElementById('propertyType');
+                for (let option of typeSelect.options) {
+                    if (option.value.toLowerCase().includes(property.propertyType.toLowerCase()) ||
+                        property.propertyType.toLowerCase().includes(option.value.toLowerCase())) {
+                        typeSelect.value = option.value;
+                        break;
+                    }
+                }
+            }
+
+            // Pre-select features if available
+            if (property.features && property.features.length) {
+                document.querySelectorAll('.feature-tag').forEach(tag => {
+                    const feature = tag.dataset.feature.toLowerCase();
+                    if (property.features.some(f => f.toLowerCase().includes(feature) || feature.includes(f.toLowerCase()))) {
+                        tag.classList.add('selected');
+                    }
+                });
+                updateSelectedFeatures();
+            }
+
+            // Fill neighborhood if available
+            if (property.neighborhood) {
+                document.getElementById('neighborhood').value = property.neighborhood;
+            }
+        }
+
+        function showLookupStatus(message, type) {
+            const status = document.getElementById('lookupStatus');
+            status.textContent = message;
+            status.className = 'lookup-status ' + type;
+        }
+
+        // Generate Listing
+        async function generateListing() {
+            // Check usage limit
+            const usage = getUsage();
+            const limit = getLimit();
+            if (usage >= limit) {
+                alert('You have reached your free listing limit. Please upgrade to continue.');
+                return;
+            }
+
+            // Validate required fields
+            const beds = parseInt(document.getElementById('beds').value);
+            const baths = parseFloat(document.getElementById('baths').value);
+            const sqft = parseInt(document.getElementById('sqft').value);
+            const propertyType = document.getElementById('propertyType').value;
+
+            if (!beds || !baths || !sqft) {
+                alert('Please fill in beds, baths, and square footage.');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loadingOverlay').classList.add('active');
+
+            // Build request
+            const requestData = {
+                address: document.getElementById('address').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                zipcode: document.getElementById('zipcode').value,
+                propertyType,
+                beds,
+                baths,
+                sqft,
+                yearBuilt: parseInt(document.getElementById('yearBuilt').value) || null,
+                lotSize: parseInt(document.getElementById('lotSize').value) || null,
+                price: parseInt(document.getElementById('price').value) || null,
+                features: selectedFeatures,
+                recentUpgrades: document.getElementById('recentUpgrades').value,
+                neighborhood: document.getElementById('neighborhood').value,
+                uniqueSellingPoints: document.getElementById('uniqueSellingPoints').value,
+                tone: document.getElementById('tone').value,
+                targetAudience: document.getElementById('targetAudience').value,
+                platform: document.getElementById('platform').value
+            };
+
+            try {
+                const response = await fetch('/api/listing/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+
+                if (data.ok && data.listing) {
+                    currentListing = data.listing;
+                    displayResults(data.listing);
+                    incrementUsage();
+                } else {
+                    alert(data.error || 'Failed to generate listing');
+                }
+            } catch (error) {
+                console.error('Generate error:', error);
+                alert('Failed to generate listing. Please try again.');
+            } finally {
+                document.getElementById('loadingOverlay').classList.remove('active');
+            }
+        }
+
+        function displayResults(listing) {
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('resultsContent').style.display = 'block';
+
+            document.getElementById('resultHeadline').textContent = listing.headline;
+            document.getElementById('resultFullDescription').textContent = listing.fullDescription;
+            document.getElementById('resultShortDescription').textContent = listing.shortDescription;
+            document.getElementById('resultSocialMediaPost').textContent = listing.socialMediaPost;
+            document.getElementById('resultEmailTemplate').textContent = listing.emailTemplate;
+
+            // Keywords
+            const keywordsContainer = document.getElementById('resultKeywords');
+            keywordsContainer.innerHTML = listing.seoKeywords
+                .map(kw => `<span class="keyword-tag">${kw}</span>`)
+                .join('');
+
+            // Alternative headlines
+            const altContainer = document.getElementById('resultAltHeadlines');
+            altContainer.innerHTML = listing.alternativeHeadlines
+                .map(h => `<div class="alt-headline" onclick="useAltHeadline(this)">${h}<span class="copy-btn">Use</span></div>`)
+                .join('');
+        }
+
+        function useAltHeadline(el) {
+            const headline = el.textContent.replace('Use', '').trim();
+            document.getElementById('resultHeadline').textContent = headline;
+            if (currentListing) currentListing.headline = headline;
+        }
+
+        // Tab switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+
+        // Copy functionality
+        function copyToClipboard(field, btn) {
+            let text = '';
+            if (field === 'headline') {
+                text = document.getElementById('resultHeadline').textContent;
+            } else if (currentListing) {
+                text = currentListing[field] || '';
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function copyKeywords(btn) {
+            if (!currentListing) return;
+            const text = currentListing.seoKeywords.join(', ');
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy All';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Usage tracking
+        function getUsage() {
+            return parseInt(localStorage.getItem('listingUsage') || '0');
+        }
+
+        function getLimit() {
+            // Check if user is subscribed (would need auth integration)
+            return 5; // Free tier limit
+        }
+
+        function incrementUsage() {
+            const usage = getUsage() + 1;
+            localStorage.setItem('listingUsage', usage.toString());
+            updateUsageCounter();
+        }
+
+        function updateUsageCounter() {
+            const usage = getUsage();
+            const limit = getLimit();
+            document.getElementById('usageCount').textContent = usage;
+            document.getElementById('usageLimit').textContent = limit;
+
+            const badge = document.getElementById('usageBadge');
+            if (usage >= limit - 1) {
+                badge.classList.add('warning');
+            }
+            if (usage >= limit) {
+                badge.innerHTML = `Limit reached! <a href="/pricing.html">Upgrade for unlimited</a>`;
+            }
+        }
+
+        // Save to history
+        function saveToHistory() {
+            if (!currentListing) {
+                alert('Generate a listing first!');
+                return;
+            }
+
+            const history = JSON.parse(localStorage.getItem('listingHistory') || '[]');
+            history.unshift({
+                ...currentListing,
+                property: {
+                    address: document.getElementById('address').value,
+                    city: document.getElementById('city').value,
+                    state: document.getElementById('state').value,
+                    beds: document.getElementById('beds').value,
+                    baths: document.getElementById('baths').value
+                },
+                savedAt: new Date().toISOString()
+            });
+
+            // Keep only last 50
+            if (history.length > 50) history.pop();
+
+            localStorage.setItem('listingHistory', JSON.stringify(history));
+            alert('Listing saved to history!');
+        }
+    </script>
 </body>
 </html>
