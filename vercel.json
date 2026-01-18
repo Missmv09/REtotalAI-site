@@ -1,0 +1,16 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/signup", "destination": "/signup.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/deal-analyzer", "destination": "/deal-analyzer.html" },
+    { "source": "/listing-generator", "destination": "/tools/listing-generator/index.html" },
+    { "source": "/app", "destination": "/app.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/pricing", "destination": "/pricing.html" },
+    { "source": "/tools", "destination": "/tools.html" }
+  ]
+}
