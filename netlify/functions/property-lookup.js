@@ -48,46 +48,49 @@ exports.handler = async (event) => {
   const rapidApiKey = process.env.RAPIDAPI_KEY;
 
   if (rapidApiKey) {
-    // Try Zillow API first (more accurate data)
+    // Try Zillow API first (private-zillow - more accurate data)
     try {
-      const encodedAddress = encodeURIComponent(`${address} ${city} ${state} ${zipcode}`);
+      const searchQuery = encodeURIComponent(`${address}, ${city}, ${state} ${zipcode}`);
       const zillowResponse = await fetch(
-        `https://zillow-com1.p.rapidapi.com/property?address=${encodedAddress}`,
+        `https://private-zillow.p.rapidapi.com/search?location=${searchQuery}`,
         {
           headers: {
             'X-RapidAPI-Key': rapidApiKey,
-            'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com'
+            'X-RapidAPI-Host': 'private-zillow.p.rapidapi.com'
           }
         }
       );
 
       if (zillowResponse.ok) {
-        const data = await zillowResponse.json();
-        if (data && data.zpid) {
+        const searchData = await zillowResponse.json();
+        const results = searchData?.props || searchData?.results || searchData?.searchResults?.listResults || [];
+
+        if (results && results.length > 0) {
+          const property = results[0];
           return {
             statusCode: 200,
             headers,
             body: JSON.stringify({
               ok: true,
               property: {
-                address: data.streetAddress || address,
-                city: data.city || city,
-                state: data.state || state,
-                zipcode: data.zipcode || zipcode,
-                propertyType: data.homeType || 'Single Family',
-                beds: data.bedrooms || 0,
-                baths: data.bathrooms || 0,
-                sqft: data.livingArea || 0,
-                lotSize: data.lotSize || 0,
-                yearBuilt: data.yearBuilt || 0,
-                lastSalePrice: data.lastSoldPrice || null,
-                lastSaleDate: data.lastSoldDate || null,
-                estimatedValue: data.zestimate || null,
-                taxAssessedValue: data.taxAssessedValue || null,
-                monthlyRent: data.rentZestimate || null,
-                features: data.resoFacts?.atAGlanceFacts?.map(f => f.factValue) || [],
-                description: data.description || '',
-                neighborhood: data.neighborhoodOverview || '',
+                address: property.streetAddress || property.address || address,
+                city: property.city || city,
+                state: property.state || state,
+                zipcode: property.zipcode || property.zip || zipcode,
+                propertyType: property.homeType || property.propertyType || 'Single Family',
+                beds: property.bedrooms || property.beds || 0,
+                baths: property.bathrooms || property.baths || 0,
+                sqft: property.livingArea || property.area || property.sqft || 0,
+                lotSize: property.lotSize || property.lotAreaValue || 0,
+                yearBuilt: property.yearBuilt || 0,
+                lastSalePrice: property.lastSoldPrice || property.lastSalePrice || null,
+                lastSaleDate: property.lastSoldDate || property.lastSaleDate || null,
+                estimatedValue: property.zestimate || property.price || property.estimatedValue || null,
+                taxAssessedValue: property.taxAssessedValue || null,
+                monthlyRent: property.rentZestimate || property.rentEstimate || null,
+                features: property.homeFeatures || property.features || [],
+                description: property.description || property.homeDescription || '',
+                neighborhood: property.neighborhoodOverview || property.neighborhood || '',
                 source: 'zillow'
               }
             })
