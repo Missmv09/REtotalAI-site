@@ -68,10 +68,11 @@ exports.handler = async (event) => {
 
       if (zillowResponse.ok) {
         const data = await zillowResponse.json();
-        console.log('DEBUG: Zillow data zpid:', data?.zpid);
+        console.log('DEBUG: Zillow data PropertyZPID:', data?.PropertyZPID);
         console.log('DEBUG: Zillow data keys:', Object.keys(data || {}));
 
-        if (data && data.zpid) {
+        // Check for PropertyZPID (API returns this instead of zpid)
+        if (data && (data.PropertyZPID || data.zpid)) {
           console.log('DEBUG: Valid Zillow data found, returning zillow source');
           // Helper function to parse price strings like "$189,200" to number
           const parsePrice = (priceStr) => {
@@ -99,19 +100,19 @@ exports.handler = async (event) => {
             body: JSON.stringify({
               ok: true,
               property: {
-                address: data.streetAddress || ad.streetAddress || address,
+                address: data.PropertyAddress || data.streetAddress || ad.streetAddress || address,
                 city: data.city || ad.city || city,
                 state: data.state || ad.state || state,
                 zipcode: data.zipcode || ad.zipcode || ad.zip || zipcode,
                 propertyType: (data.homeType || ad.homeType || 'Single Family').replace(/_/g, ' '),
-                beds: parseInt(data.bd || ad.bd || data.bedrooms || ad.bedrooms) || 0,
-                baths: parseFloat(data.ba || ad.ba || data.bathrooms || ad.bathrooms) || 0,
-                sqft: parseInt(data.sqft || ad.sqft || data.livingArea || ad.livingArea) || 0,
+                beds: parseInt(data.Bedrooms || data.bd || ad.bd || data.bedrooms || ad.bedrooms) || 0,
+                baths: parseFloat(data.Bathrooms || data.ba || ad.ba || data.bathrooms || ad.bathrooms) || 0,
+                sqft: parseInt(data['Area(sqft)'] || data.sqft || ad.sqft || data.livingArea || ad.livingArea) || 0,
                 lotSize: parseInt(data.lot || ad.lot || data.lotSize || ad.lotSize) || 0,
-                yearBuilt: parseYear(data.yrbit || ad.yrbit || data.yearBuilt || ad.yearBuilt) || 0,
-                lastSalePrice: parsePrice(data.lastSoldPrice || ad.lastSoldPrice || data.price || ad.price) || null,
+                yearBuilt: parseYear(data.yearBuilt || data.yrbit || ad.yrbit || ad.yearBuilt) || 0,
+                lastSalePrice: parsePrice(data.lastSoldPrice || ad.lastSoldPrice || data.Price || data.price || ad.price) || null,
                 lastSaleDate: data.dateSold || ad.dateSold || null,
-                estimatedValue: parsePrice(data.zestimate || ad.zestimate || data.price || ad.price) || null,
+                estimatedValue: parsePrice(data.zestimate || ad.zestimate || data.Price || data.price || ad.price) || null,
                 taxAssessedValue: parsePrice(data.taxAssessedValue || ad.taxAssessedValue) || null,
                 monthlyRent: parsePrice(data.rentZestimate || ad.rentZestimate) || null,
                 features: data.resoFacts?.atAGlanceFacts?.map(f => f.factValue) || [],
@@ -122,7 +123,7 @@ exports.handler = async (event) => {
             })
           };
         } else {
-          console.log('DEBUG: No zpid in Zillow data, falling back');
+          console.log('DEBUG: No PropertyZPID or zpid in Zillow data, falling back');
         }
       } else {
         console.log('DEBUG: Zillow API response not ok:', zillowResponse.status);
