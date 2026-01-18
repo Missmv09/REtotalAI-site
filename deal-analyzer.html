@@ -5,6 +5,35 @@
   <title>Deal Analyzer • REtotalAI</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/scripts/auth.js"></script>
+  <script src="/js/FairHousingScanner.js"></script>
+  <script>
+    // Property Notes Fair Housing Compliance Check
+    document.addEventListener('DOMContentLoaded', function() {
+      const notesField = document.getElementById('propertyNotes');
+      const warningEl = document.getElementById('notesComplianceWarning');
+      const warningText = document.getElementById('notesWarningText');
+
+      if (notesField && typeof FairHousingScanner !== 'undefined') {
+        notesField.addEventListener('blur', function() {
+          const text = this.value.trim();
+          if (!text) {
+            warningEl.style.display = 'none';
+            return;
+          }
+
+          const result = FairHousingScanner.quickScan(text);
+
+          if (!result.isCompliant) {
+            const highRisk = result.hasHighRisk ? ' (includes high-risk issues)' : '';
+            warningText.textContent = `${result.count} potential violation(s) detected${highRisk}. Consider reviewing before sharing this content.`;
+            warningEl.style.display = 'block';
+          } else {
+            warningEl.style.display = 'none';
+          }
+        });
+      }
+    });
+  </script>
   <script>
     const IS_PRODUCTION = window.location.hostname === 'retotalai.com';
     const DEAL_ANALYZER_MONTHLY_URL = 'https://buy.stripe.com/14AbJ0a8RfEP0xZgqg9Ve02';
@@ -365,6 +394,18 @@
       <div><label>Mgmt (% of Rent)</label><input id="mgmtPct" type="number" placeholder="8" value="8"></div>
       <div><label>Maintenance (% of Rent)</label><input id="maintPct" type="number" placeholder="5" value="5"></div>
       <div><label>CapEx (% of Rent)</label><input id="capexPct" type="number" placeholder="5" value="5"></div>
+    </div>
+  </div>
+
+  <!-- Property Notes -->
+  <div class="card">
+    <h3>Property Notes <span style="font-size:12px;color:#666;font-weight:normal">(Optional)</span></h3>
+    <div>
+      <label style="font-size:13px;color:#444;display:block;margin-bottom:6px">Notes about the property, listing details, or marketing copy</label>
+      <textarea id="propertyNotes" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:14px;min-height:80px;resize:vertical" placeholder="Add notes about the property, paste listing descriptions, or any details you want to track..."></textarea>
+      <div id="notesComplianceWarning" style="display:none;margin-top:8px;padding:8px 12px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:6px;font-size:13px;color:#92400E">
+        <strong>Fair Housing Alert:</strong> <span id="notesWarningText"></span>
+      </div>
     </div>
   </div>
 

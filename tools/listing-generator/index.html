@@ -787,7 +787,8 @@
             <nav class="header-nav">
                 <a href="/dashboard.html" class="nav-link">Dashboard</a>
                 <a href="/tools.html" class="nav-link">Tools</a>
-                <a href="/tools/deal-analyzer/" class="nav-link">Deal Analyzer</a>
+                <a href="/deal-analyzer.html" class="nav-link">Deal Analyzer</a>
+                <a href="/compliance-scanner.html" class="nav-link">Compliance Scanner</a>
                 <button class="btn" onclick="saveToHistory()">Save Listing</button>
             </nav>
         </div>
@@ -1006,6 +1007,8 @@
                             </select>
                         </div>
                     </div>
+                    <!-- State for Compliance Check -->
+                    <div class="input-group" id="stateDropdownContainer"></div>
                     <div class="input-group">
                         <label class="input-label">Platform</label>
                         <select id="platform" onchange="updateCharLimit()">
@@ -1066,14 +1069,8 @@
 
                 <!-- Results (hidden initially) -->
                 <div id="resultsContent" style="display: none;">
-                    <!-- Fair Housing Compliance Alert -->
-                    <div class="compliance-alert compliant" id="complianceAlert" style="display: none;">
-                        <span class="compliance-icon" id="complianceIcon">✓</span>
-                        <div>
-                            <span id="complianceText">Fair Housing Compliant</span>
-                            <div class="compliance-details" id="complianceDetails"></div>
-                        </div>
-                    </div>
+                    <!-- Fair Housing Compliance Alert Container -->
+                    <div id="complianceAlertContainer"></div>
 
                     <!-- Headline -->
                     <div class="result-card">
@@ -1178,6 +1175,7 @@
     </div>
 
     <script src="/scripts/auth.js"></script>
+    <script src="/js/FairHousingScanner.js"></script>
     <script>
         // State
         let currentListing = null;
@@ -1195,128 +1193,7 @@
             'craigslist': 0
         };
 
-        // Fair Housing Compliance - prohibited terms and phrases
-        const fairHousingViolations = [
-            // RACE, COLOR, NATIONAL ORIGIN - Critical violations
-            { pattern: /\b(black|white|asian|hispanic|latino|latina|african|chinese|mexican|indian|arab|jewish)\s*(people|families|neighbors|community|neighborhood|area)/gi, category: 'Race/National Origin' },
-            { pattern: /\b(diverse|diversity|ethnic|ethnically|integrated|segregated|changing)\s*(neighborhood|community|area)/gi, category: 'Race (Coded Language)', severity: 'warning' },
-            { pattern: /\b(lots of|many|mostly|predominantly|all)\s*(black|white|asian|hispanic|latino|african|mexican)\b/gi, category: 'Race/National Origin' },
-            { pattern: /\b(no|without)\s*(blacks|whites|asians|hispanics|minorities)/gi, category: 'Race/National Origin' },
-            { pattern: /\b(good|safe|bad|dangerous)\s*(neighborhood|area|community)\b/gi, category: 'Potential Steering', severity: 'warning' },
-
-            // Protected classes - explicit
-            { pattern: /\b(whites?|blacks?|african[- ]?americans?|asians?|hispanics?|latinos?|mexicans?)\s+(only|preferred|welcome|neighborhood|area|community)\b/gi, category: 'Race/Ethnicity' },
-            { pattern: /\b(no|not for|excludes?)\s+(minorities|blacks?|whites?|asians?|hispanics?|latinos?)\b/gi, category: 'Race/Ethnicity' },
-            { pattern: /\b(christian|jewish|muslim|catholic|baptist|protestant|buddhist|hindu)\s+(only|preferred|community|neighborhood)\b/gi, category: 'Religion' },
-            { pattern: /\b(no|not for)\s+(christians?|jews?|muslims?|catholics?)\b/gi, category: 'Religion' },
-            { pattern: /\bnear\s+(church|synagogue|mosque|temple)\b/gi, category: 'Religion (potentially steering)' },
-
-            // Familial status
-            { pattern: /\b(no|not for|excludes?)\s+(children|kids|families|babies|infants)\b/gi, category: 'Familial Status' },
-            { pattern: /\b(adults?|singles?|couples?)\s+only\b/gi, category: 'Familial Status' },
-            { pattern: /\b(perfect for|ideal for|great for)\s+(singles?|retired|elderly|retirees|empty[- ]?nesters?)\b/gi, category: 'Familial Status (potentially)' },
-            { pattern: /\bno\s+roommates?\b/gi, category: 'Familial Status' },
-            { pattern: /\bmature\s+(couple|adults?|persons?)\s+(only|preferred)\b/gi, category: 'Familial Status/Age' },
-
-            // Disability
-            { pattern: /\b(no|not for)\s+(disabled|handicapped|wheelchairs?)\b/gi, category: 'Disability' },
-            { pattern: /\b(able[- ]?bodied|physically fit)\s+(only|required|preferred)\b/gi, category: 'Disability' },
-            { pattern: /\bwalking\s+distance\b/gi, category: 'Disability (potentially)', severity: 'warning' },
-
-            // Sex/Gender
-            { pattern: /\b(females?|males?|women|men)\s+only\b/gi, category: 'Sex' },
-            { pattern: /\b(no|not for)\s+(females?|males?|women|men)\b/gi, category: 'Sex' },
-            { pattern: /\b(bachelor|bachelorette)\s+pad\b/gi, category: 'Sex (potentially)' },
-
-            // Sexual Orientation & Gender Identity
-            { pattern: /\b(gay|lesbian|lgbtq|transgender|straight|heterosexual)\s*(friendly|community|neighborhood|area|couples?)/gi, category: 'Sexual Orientation/Gender Identity' },
-            { pattern: /\b(same.?sex|opposite.?sex)\s*(couples?|partners?)/gi, category: 'Sexual Orientation' },
-            { pattern: /\b(pride|rainbow)\s*(neighborhood|community|district)/gi, category: 'Sexual Orientation (Coded)', severity: 'warning' },
-
-            // National origin
-            { pattern: /\b(americans?|citizens?)\s+only\b/gi, category: 'National Origin' },
-            { pattern: /\benglish\s+(speakers?|speaking)\s+only\b/gi, category: 'National Origin' },
-            { pattern: /\b(no|not for)\s+(immigrants?|foreigners?)\b/gi, category: 'National Origin' },
-
-            // Age (where applicable)
-            { pattern: /\b(young|old)\s+(professionals?|couples?|people)\s+only\b/gi, category: 'Age' },
-            { pattern: /\bseniors?\s+only\b/gi, category: 'Age', note: 'May be valid for 55+ communities with proper exemption' },
-
-            // Coded/dog whistle language
-            { pattern: /\bexclusive\s+(neighborhood|community|area)\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' },
-            { pattern: /\bprestigious\s+neighborhood\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' },
-            { pattern: /\bintegrated\s+(neighborhood|community)\b/gi, category: 'Race (steering)', severity: 'warning' },
-            { pattern: /\btraditional\s+(neighborhood|values)\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' },
-
-            // GENDER-SPECIFIC TERMS
-            { pattern: /\bman\s*cave\b/gi, category: 'Sex (Gender-coded)', severity: 'warning' },
-            { pattern: /\bhis\s+and\s+hers?\b/gi, category: 'Sex (Gender-coded)', severity: 'warning' },
-            { pattern: /\bmaster\s+(bedroom|suite|bath|closet)\b/gi, category: 'Sex (Gender-coded)', severity: 'warning', note: 'Consider using "primary" instead' },
-
-            // FAMILIAL STATUS - In-law/Nanny Suites
-            { pattern: /\b(mother|father|in-law|mother-in-law|father-in-law)\s*(suite|apartment|quarters)\b/gi, category: 'Familial Status', severity: 'warning', note: 'Consider using "guest suite" or "accessory dwelling"' },
-            { pattern: /\b(nanny|au\s*pair)\s*(suite|room|quarters)\b/gi, category: 'Familial Status', severity: 'warning', note: 'Consider using "guest suite" or "additional living space"' },
-
-            // RELIGION - Standalone institutional references (steering)
-            { pattern: /\b(steps?|minutes?|blocks?)\s*(from|to|away from)\s*(church|mosque|synagogue|temple)\b/gi, category: 'Religion (Steering)', severity: 'warning' },
-            { pattern: /\bclose\s+to\s+(church|mosque|synagogue|temple)\b/gi, category: 'Religion (Steering)', severity: 'warning' },
-
-            // DISABILITY - Offensive terminology
-            { pattern: /\bcrippled\b/gi, category: 'Disability (Offensive)' },
-            { pattern: /\bwheelchair[- ]?bound\b/gi, category: 'Disability (Offensive)', note: 'Use "wheelchair user" instead' },
-            { pattern: /\bmentally\s+(ill|retarded|challenged)\b/gi, category: 'Disability (Offensive)' },
-            { pattern: /\b(handicapped|invalid)\s+(person|people|resident)/gi, category: 'Disability (Offensive)', note: 'Use "person with disability" instead' },
-            { pattern: /\bsuffering\s+from\b/gi, category: 'Disability (Potentially Offensive)', severity: 'warning', note: 'Avoid describing medical conditions' },
-
-            // AGE - Standalone demographic references
-            { pattern: /\b(millennials?|gen[- ]?z|boomers?|baby\s*boomers?)\b/gi, category: 'Age (Demographic Targeting)', severity: 'warning' },
-            { pattern: /\b(elderly|senior\s*citizens?|old\s+folks?)\b/gi, category: 'Age', severity: 'warning', note: 'May be valid for 55+ communities with proper exemption' },
-            { pattern: /\bempty[- ]?nesters?\b/gi, category: 'Age/Familial Status', severity: 'warning' },
-            { pattern: /\byoung\s+(urban|professionals?)\b/gi, category: 'Age (Demographic Targeting)', severity: 'warning' },
-
-            // STEERING - Neighborhood language
-            { pattern: /\bup[- ]?and[- ]?coming\s+(neighborhood|area|community)\b/gi, category: 'Potential Steering/Gentrification', severity: 'warning' },
-            { pattern: /\b(gentrifying|gentrified|transitional)\s+(neighborhood|area|community)\b/gi, category: 'Potential Steering', severity: 'warning' },
-
-            // SOURCE OF INCOME (Protected in CA, NY, IL, CO, OR, WA, NJ, MA, etc.)
-            { pattern: /\bno\s+section[- ]?8\b/gi, category: 'Source of Income', note: 'May be illegal in some states - check local laws' },
-            { pattern: /\bno\s+(vouchers?|housing\s+assistance|housing\s+subsidies?)\b/gi, category: 'Source of Income', note: 'May be illegal in some states - check local laws' },
-            { pattern: /\bmust\s+earn\s+\d+x\s+(rent|income)\b/gi, category: 'Source of Income', severity: 'warning', note: 'Income requirements may violate source of income protections' },
-            { pattern: /\b(income\s+requirements?|minimum\s+income|verify\s+income)\b/gi, category: 'Source of Income', severity: 'warning', note: 'May be illegal in some states - check local laws' },
-
-            // MARITAL STATUS (Protected in many states)
-            { pattern: /\b(married|single|divorced|unmarried|widowed)\s*(only|preferred|couples?)\b/gi, category: 'Marital Status', note: 'Protected in many states - remove' },
-            { pattern: /\b(no\s+unmarried|married\s+couples?\s+only)\b/gi, category: 'Marital Status', note: 'Protected in many states - remove' },
-
-            // MILITARY/VETERAN STATUS (Protected in many states)
-            { pattern: /\bno\s+(military|veterans?|service\s*members?)\b/gi, category: 'Military Status', note: 'Protected in many states - remove' },
-            { pattern: /\b(civilians?\s+only|non[- ]?military\s+only)\b/gi, category: 'Military Status', note: 'Protected in many states - remove' }
-        ];
-
-        // Fair Housing Compliance Scanner
-        function scanForFairHousingViolations(text) {
-            const violations = [];
-            const warnings = [];
-
-            for (const rule of fairHousingViolations) {
-                const matches = text.match(rule.pattern);
-                if (matches) {
-                    const item = {
-                        phrase: matches[0],
-                        category: rule.category,
-                        note: rule.note || null
-                    };
-                    if (rule.severity === 'warning') {
-                        warnings.push(item);
-                    } else {
-                        violations.push(item);
-                    }
-                }
-            }
-
-            return { violations, warnings };
-        }
-
+        // Fair Housing Compliance Scanner - uses FairHousingScanner module
         function updateComplianceAlert(listing) {
             const allText = [
                 listing.headline,
@@ -1327,35 +1204,14 @@
                 listing.spanishDescription || ''
             ].join(' ');
 
-            const { violations, warnings } = scanForFairHousingViolations(allText);
+            // Get state from the FHS dropdown or fall back to the state input
+            const stateCode = document.getElementById('fhsStateSelect')?.value ||
+                              document.getElementById('state')?.value?.toUpperCase() ||
+                              null;
 
-            const alertEl = document.getElementById('complianceAlert');
-            const iconEl = document.getElementById('complianceIcon');
-            const textEl = document.getElementById('complianceText');
-            const detailsEl = document.getElementById('complianceDetails');
-
-            alertEl.style.display = 'flex';
-
-            if (violations.length > 0) {
-                alertEl.className = 'compliance-alert warning';
-                iconEl.textContent = '⚠';
-                textEl.textContent = `Fair Housing Warning: ${violations.length} potential violation(s) found`;
-                detailsEl.innerHTML = violations.map(v =>
-                    `<strong>"${v.phrase}"</strong> - ${v.category}${v.note ? ` (${v.note})` : ''}`
-                ).join('<br>');
-            } else if (warnings.length > 0) {
-                alertEl.className = 'compliance-alert warning';
-                iconEl.textContent = '⚡';
-                textEl.textContent = `Review Suggested: ${warnings.length} phrase(s) to review`;
-                detailsEl.innerHTML = warnings.map(w =>
-                    `<strong>"${w.phrase}"</strong> - ${w.category}`
-                ).join('<br>');
-            } else {
-                alertEl.className = 'compliance-alert compliant';
-                iconEl.textContent = '✓';
-                textEl.textContent = 'Fair Housing Compliant';
-                detailsEl.textContent = 'No discriminatory language detected in the listing.';
-            }
+            // Use the FairHousingScanner module
+            const violations = FairHousingScanner.scan(allText, stateCode);
+            FairHousingScanner.renderResults(violations, 'complianceAlertContainer', stateCode);
         }
 
         // Character Counter
@@ -1503,6 +1359,26 @@ Características destacadas incluyen acabados modernos, espacios bien diseñados
 
             // Load usage from localStorage
             updateUsageCounter();
+
+            // Initialize Fair Housing Scanner state dropdown
+            if (typeof FairHousingScanner !== 'undefined') {
+                FairHousingScanner.renderStateDropdown('stateDropdownContainer');
+
+                // Pre-select state if address state is filled
+                const stateInput = document.getElementById('state');
+                if (stateInput) {
+                    stateInput.addEventListener('blur', function() {
+                        const fhsSelect = document.getElementById('fhsStateSelect');
+                        if (fhsSelect && this.value) {
+                            const stateCode = this.value.toUpperCase();
+                            if (fhsSelect.querySelector(`option[value="${stateCode}"]`)) {
+                                fhsSelect.value = stateCode;
+                                fhsSelect.dispatchEvent(new Event('change'));
+                            }
+                        }
+                    });
+                }
+            }
         });
 
         function updateSelectedFeatures() {

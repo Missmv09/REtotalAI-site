@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fair Housing Compliance Scanner - REtotalAI</title>
+    <meta name="description" content="Instantly scan listings, emails, and marketing copy for potential Fair Housing violations. Federal + state-specific protections including California FEHA.">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1E3A5F;
+            --primary-dark: #0F2238;
+            --accent: #D4AF37;
+            --accent-hover: #B8941F;
+            --sage: #7C9885;
+            --warm-gray: #8B8680;
+            --dark: #2C2926;
+            --light: #FAFAF8;
+            --cream: #F7F3ED;
+            --gray: #6B6B6B;
+            --success: #166534;
+            --success-bg: #DCFCE7;
+            --warning: #92400E;
+            --warning-bg: #FEF3C7;
+            --danger: #DC2626;
+            --danger-bg: #FEE2E2;
+            --card-bg: #FFFFFF;
+            --border: #E5E1DB;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--light) 0%, var(--cream) 100%);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Georgia', 'Playfair Display', serif;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Tool Header */
+        .tool-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .tool-badge {
+            display: inline-block;
+            background: var(--sage);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        .tool-title {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-subtitle {
+            color: var(--gray);
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Panel */
+        .panel {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* State Selector */
+        .state-selector {
+            margin-bottom: 1.5rem;
+        }
+
+        .state-selector label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .state-selector select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .state-selector select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        /* State Info */
+        .state-info {
+            background: var(--cream);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .state-info strong {
+            color: var(--primary);
+        }
+
+        .protection-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+            margin-top: 0.5rem;
+        }
+
+        .protection-tag {
+            display: inline-block;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .protection-tag.federal {
+            background: var(--primary);
+            color: white;
+        }
+
+        .protection-tag.state {
+            background: var(--accent);
+            color: white;
+        }
+
+        .state-laws {
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* Text Area */
+        .text-input-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .text-input-section label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .text-area {
+            width: 100%;
+            min-height: 300px;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .text-area:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        .text-area::placeholder {
+            color: var(--warm-gray);
+        }
+
+        /* Example Buttons */
+        .example-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .example-btn {
+            padding: 0.5rem 1rem;
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--primary);
+        }
+
+        .example-btn:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* Scan Button */
+        .scan-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .scan-btn:hover {
+            background: linear-gradient(135deg, var(--accent-hover), #9a7a15);
+            transform: translateY(-1px);
+        }
+
+        /* Results Panel */
+        .results-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--gray);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state-title {
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Results */
+        #scanResults {
+            min-height: 400px;
+        }
+
+        /* Copy Button */
+        .copy-report-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        .copy-report-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .copy-report-btn.copied {
+            background: var(--success);
+        }
+
+        /* Features Section */
+        .features-section {
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-title {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-top: 3rem;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-nav {
+                display: none;
+            }
+
+            .tool-title {
+                font-size: 1.75rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                REtotal<span>AI</span>
+            </a>
+            <nav class="header-nav">
+                <a href="/dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/tools.html" class="nav-link">Tools</a>
+                <a href="/tools/listing-generator" class="nav-link">Listing Generator</a>
+                <a href="/deal-analyzer.html" class="nav-link">Deal Analyzer</a>
+                <a href="/compliance-scanner.html" class="nav-link" style="color: var(--accent)">Compliance Scanner</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Tool Header -->
+        <div class="tool-header">
+            <span class="tool-badge">COMPLIANCE TOOL</span>
+            <h1 class="tool-title">Fair Housing Compliance Scanner</h1>
+            <p class="tool-subtitle">Instantly scan listings, emails, and marketing copy for potential Fair Housing violations. Federal + state-specific protections.</p>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Input Panel -->
+            <div class="panel">
+                <h2 class="panel-title">Scan Content</h2>
+
+                <!-- State Selector -->
+                <div class="state-selector">
+                    <label for="stateSelect">Select State for Compliance Check</label>
+                    <select id="stateSelect">
+                        <option value="">Federal Only (All States)</option>
+                    </select>
+                    <div id="stateInfo" class="state-info"></div>
+                </div>
+
+                <!-- Example Buttons -->
+                <div class="example-buttons">
+                    <button class="example-btn" onclick="loadExample('listing')">Sample Listing</button>
+                    <button class="example-btn" onclick="loadExample('email')">Sample Email</button>
+                    <button class="example-btn" onclick="loadExample('violations')">Multiple Violations</button>
+                    <button class="example-btn" onclick="loadExample('clean')">Clean Example</button>
+                </div>
+
+                <!-- Text Input -->
+                <div class="text-input-section">
+                    <label for="contentInput">Paste your listing, email, or marketing text below:</label>
+                    <textarea
+                        id="contentInput"
+                        class="text-area"
+                        placeholder="Paste your property listing, email, social media post, or any marketing content here...
+
+Example: Beautiful 3-bedroom home in a quiet neighborhood. This charming property features hardwood floors, updated kitchen, and a spacious backyard perfect for entertaining."
+                    ></textarea>
+                </div>
+
+                <!-- Scan Button -->
+                <button class="scan-btn" onclick="runScan()">
+                    <span>Scan for Fair Housing Violations</span>
+                </button>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="panel results-panel">
+                <h2 class="panel-title">Scan Results</h2>
+
+                <div id="scanResults">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🛡️</div>
+                        <div class="empty-state-title">Ready to Scan</div>
+                        <p>Select a state, paste your content, and click "Scan" to check for potential Fair Housing violations.</p>
+                    </div>
+                </div>
+
+                <button id="copyReportBtn" class="copy-report-btn" style="display: none;" onclick="copyReport()">
+                    📋 Copy Compliance Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <section class="features-section">
+            <h2>What This Tool Checks</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🏛️</div>
+                    <h3 class="feature-title">Federal FHA (7 Classes)</h3>
+                    <p class="feature-desc">Race, Color, Religion, National Origin, Sex, Familial Status, Disability</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📍</div>
+                    <h3 class="feature-title">State Protections</h3>
+                    <p class="feature-desc">Source of Income, Marital Status, Sexual Orientation, Military Status + more</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🐻</div>
+                    <h3 class="feature-title">California FEHA</h3>
+                    <p class="feature-desc">Primary Language, Medical Condition, Immigration Status, Unruh Act</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">Severity Levels</h3>
+                    <p class="feature-desc">High, Medium, Low risk ratings with specific fix suggestions</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p><strong>Disclaimer:</strong> This tool uses pattern matching and should not be considered legal advice. Consult with a licensed attorney for definitive Fair Housing compliance guidance.</p>
+        <p style="margin-top: 0.5rem">© 2024 <a href="/">REtotalAI</a>. All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/scripts/auth.js"></script>
+    <script src="/js/FairHousingScanner.js"></script>
+    <script>
+        // State variables
+        let lastViolations = [];
+        let lastStateCode = null;
+
+        // Example texts
+        const examples = {
+            listing: `Beautiful 4-bedroom single-family home in an exclusive neighborhood! This charming property features hardwood floors, granite countertops, and a spacious backyard.
+
+Located in a safe, quiet area with walking distance to great schools. Perfect for families or professionals. The master bedroom has a large walk-in closet and en-suite bath.
+
+Recent upgrades include new HVAC, updated kitchen appliances, and fresh paint. 2-car attached garage with plenty of storage.
+
+Price: $485,000 | 2,400 sq ft | Built 2005
+
+Contact us today to schedule a showing!`,
+
+            email: `Subject: New Listing Alert - Perfect Family Home!
+
+Hi Sarah,
+
+I wanted to let you know about a new listing that just hit the market. This would be ideal for a young professional couple looking to start a family.
+
+The neighborhood is very family-friendly with mostly families living nearby. It's in a good, safe area - you know what I mean.
+
+The home has a mother-in-law suite that could be perfect for hosting guests or providing income. There's also a man cave in the basement for relaxation.
+
+Let me know if you'd like to schedule a showing. No Section 8.
+
+Best,
+Agent Name`,
+
+            violations: `FOR RENT: Beautiful 2BR apartment in diverse, changing neighborhood.
+
+Requirements:
+- Adults only, no children
+- Must speak English
+- No Section 8 or housing vouchers
+- Married couples preferred
+- Must be physically fit for stairs (no wheelchair access)
+- Christians welcome, close to local church
+- No immigrants or foreigners
+- Seniors and elderly need not apply
+
+This exclusive property is perfect for working professionals. Walking distance to downtown. Master bedroom with his and hers closets.
+
+Call today for a showing!`,
+
+            clean: `Charming 3-bedroom, 2-bathroom single-family home in a convenient location.
+
+Property Features:
+- 1,800 square feet of living space
+- Updated kitchen with stainless steel appliances
+- Hardwood floors throughout main level
+- Central air conditioning and heating
+- Attached 2-car garage
+- Fenced backyard with patio
+- Close to shopping, dining, and parks
+
+This well-maintained home offers comfortable living with modern updates. The open floor plan creates a welcoming atmosphere for everyday living.
+
+Available for immediate move-in. Contact us to schedule a private showing.
+
+Price: $2,200/month
+Security Deposit: $2,200`
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeStateDropdown();
+            updateStateInfo('');
+        });
+
+        // Initialize state dropdown
+        function initializeStateDropdown() {
+            const select = document.getElementById('stateSelect');
+            const states = FairHousingScanner.getAllStates();
+
+            // Sort states by name
+            const sortedStates = Object.entries(states)
+                .sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+            for (const [code, info] of sortedStates) {
+                const option = document.createElement('option');
+                option.value = code;
+                const extra = info.additional && info.additional.length > 0
+                    ? ` (+${info.additional.length} protections)`
+                    : '';
+                option.textContent = `${info.name}${extra}`;
+                select.appendChild(option);
+            }
+
+            // Add change handler
+            select.addEventListener('change', function() {
+                updateStateInfo(this.value);
+            });
+        }
+
+        // Update state info display
+        function updateStateInfo(stateCode) {
+            lastStateCode = stateCode;
+            const infoEl = document.getElementById('stateInfo');
+
+            const protectionNames = FairHousingScanner.protectionNames;
+            const federalClasses = FairHousingScanner.federalProtectedClasses;
+
+            if (!stateCode) {
+                infoEl.innerHTML = `
+                    <strong>Federal Protected Classes (FHA §3604):</strong>
+                    <div class="protection-tags">
+                        ${federalClasses.map(p =>
+                            `<span class="protection-tag federal">${protectionNames[p]}</span>`
+                        ).join('')}
+                    </div>
+                `;
+                return;
+            }
+
+            const stateInfo = FairHousingScanner.getStateInfo(stateCode);
+            if (!stateInfo) {
+                infoEl.innerHTML = '<p>State not found.</p>';
+                return;
+            }
+
+            const allProtections = FairHousingScanner.getStateProtections(stateCode);
+
+            let lawsHtml = '';
+            if (stateInfo.laws && stateInfo.laws.length > 0) {
+                lawsHtml = `<div class="state-laws"><strong>Applicable Laws:</strong> ${stateInfo.laws.join(', ')}</div>`;
+            }
+
+            infoEl.innerHTML = `
+                <strong>Protected Classes in ${stateInfo.name}:</strong>
+                <div class="protection-tags">
+                    ${allProtections.map(p => {
+                        const isFederal = federalClasses.includes(p);
+                        const tagClass = isFederal ? 'federal' : 'state';
+                        return `<span class="protection-tag ${tagClass}">${protectionNames[p] || p}</span>`;
+                    }).join('')}
+                </div>
+                ${lawsHtml}
+            `;
+        }
+
+        // Load example text
+        function loadExample(type) {
+            const textArea = document.getElementById('contentInput');
+            textArea.value = examples[type] || '';
+            textArea.focus();
+        }
+
+        // Run the scan
+        function runScan() {
+            const text = document.getElementById('contentInput').value.trim();
+            const stateCode = document.getElementById('stateSelect').value;
+
+            if (!text) {
+                alert('Please enter some text to scan.');
+                return;
+            }
+
+            // Run scan
+            lastViolations = FairHousingScanner.scan(text, stateCode);
+            lastStateCode = stateCode;
+
+            // Render results
+            FairHousingScanner.renderResults(lastViolations, 'scanResults', stateCode);
+
+            // Show/hide copy button
+            const copyBtn = document.getElementById('copyReportBtn');
+            copyBtn.style.display = 'block';
+        }
+
+        // Copy report to clipboard
+        function copyReport() {
+            const report = FairHousingScanner.generateReport(lastViolations, lastStateCode);
+
+            navigator.clipboard.writeText(report).then(() => {
+                const btn = document.getElementById('copyReportBtn');
+                btn.innerHTML = '✓ Report Copied!';
+                btn.classList.add('copied');
+
+                setTimeout(() => {
+                    btn.innerHTML = '📋 Copy Compliance Report';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy report. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>
