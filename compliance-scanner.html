@@ -421,6 +421,81 @@
             text-decoration: none;
         }
 
+        /* Upload Section */
+        .upload-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--cream);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background: #FEF9E7;
+        }
+
+        .upload-zone.drag-over {
+            border-color: var(--accent);
+            background: #FEF9E7;
+            transform: scale(1.01);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-text {
+            font-size: 0.9rem;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .upload-formats {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        .upload-status {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.85rem;
+        }
+
+        .upload-status.loading {
+            background: #EFF6FF;
+            color: #1D4ED8;
+            border: 1px solid #BFDBFE;
+        }
+
+        .upload-status.success {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid #86EFAC;
+        }
+
+        .upload-status.error {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid #FCA5A5;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .header-nav {
@@ -484,6 +559,20 @@
                     <button class="example-btn" onclick="loadExample('email')">Sample Email</button>
                     <button class="example-btn" onclick="loadExample('violations')">Multiple Violations</button>
                     <button class="example-btn" onclick="loadExample('clean')">Clean Example</button>
+                </div>
+
+                <!-- Document Upload -->
+                <div class="upload-section">
+                    <label class="upload-label">Or upload a document:</label>
+                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.rtf" style="display: none" onchange="handleFileUpload(event)">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-text">
+                            <strong>Click to upload</strong> or drag and drop
+                        </div>
+                        <div class="upload-formats">PDF, Word (.docx), or Text files</div>
+                    </div>
+                    <div id="uploadStatus" class="upload-status" style="display: none;"></div>
                 </div>
 
                 <!-- Text Input -->
@@ -559,6 +648,10 @@ Example: Beautiful 3-bedroom home in a quiet neighborhood. This charming propert
     <!-- Scripts -->
     <script src="/scripts/auth.js"></script>
     <script src="/scripts/FairHousingScanner.js"></script>
+    <!-- PDF.js for PDF parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Mammoth.js for Word doc parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <script>
         // State variables
         let lastViolations = [];
@@ -630,7 +723,140 @@ Security Deposit: $2,200`
         document.addEventListener('DOMContentLoaded', function() {
             initializeStateDropdown();
             updateStateInfo('');
+            setupDragAndDrop();
+
+            // Set PDF.js worker
+            if (typeof pdfjsLib !== 'undefined') {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
         });
+
+        // Setup drag and drop
+        function setupDragAndDrop() {
+            const uploadZone = document.getElementById('uploadZone');
+            if (!uploadZone) return;
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, () => uploadZone.classList.add('drag-over'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, () => uploadZone.classList.remove('drag-over'), false);
+            });
+
+            uploadZone.addEventListener('drop', handleDrop, false);
+        }
+
+        function handleDrop(e) {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+
+        // Handle file upload from input
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        // Process uploaded file
+        async function processFile(file) {
+            const statusEl = document.getElementById('uploadStatus');
+            const textArea = document.getElementById('contentInput');
+
+            // Show loading
+            statusEl.style.display = 'block';
+            statusEl.className = 'upload-status loading';
+            statusEl.innerHTML = `<strong>Processing:</strong> ${file.name}...`;
+
+            try {
+                let text = '';
+                const fileName = file.name.toLowerCase();
+
+                if (fileName.endsWith('.pdf')) {
+                    text = await extractTextFromPDF(file);
+                } else if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
+                    text = await extractTextFromWord(file);
+                } else if (fileName.endsWith('.txt') || fileName.endsWith('.rtf')) {
+                    text = await extractTextFromText(file);
+                } else {
+                    throw new Error('Unsupported file format. Please upload PDF, Word, or text files.');
+                }
+
+                if (text.trim()) {
+                    textArea.value = text;
+                    statusEl.className = 'upload-status success';
+                    statusEl.innerHTML = `<strong>Success!</strong> Extracted ${text.length.toLocaleString()} characters from ${file.name}`;
+
+                    // Auto-hide after 3 seconds
+                    setTimeout(() => {
+                        statusEl.style.display = 'none';
+                    }, 3000);
+                } else {
+                    throw new Error('No text content found in the document.');
+                }
+            } catch (error) {
+                console.error('File processing error:', error);
+                statusEl.className = 'upload-status error';
+                statusEl.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
+
+            // Reset file input
+            document.getElementById('fileInput').value = '';
+        }
+
+        // Extract text from PDF using PDF.js
+        async function extractTextFromPDF(file) {
+            if (typeof pdfjsLib === 'undefined') {
+                throw new Error('PDF library not loaded. Please try again.');
+            }
+
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += pageText + '\n\n';
+            }
+
+            return fullText.trim();
+        }
+
+        // Extract text from Word document using Mammoth.js
+        async function extractTextFromWord(file) {
+            if (typeof mammoth === 'undefined') {
+                throw new Error('Word document library not loaded. Please try again.');
+            }
+
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+            return result.value;
+        }
+
+        // Extract text from plain text file
+        async function extractTextFromText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = () => reject(new Error('Failed to read text file.'));
+                reader.readAsText(file);
+            });
+        }
 
         // Initialize state dropdown
         function initializeStateDropdown() {
