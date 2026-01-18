@@ -46,11 +46,14 @@ exports.handler = async (event) => {
 
   // Try RapidAPI if key is set
   const rapidApiKey = process.env.RAPIDAPI_KEY;
+  console.log('DEBUG: RAPIDAPI_KEY exists:', !!rapidApiKey);
 
   if (rapidApiKey) {
     // Try Zillow API first (private-zillow /byaddress endpoint)
     try {
       const fullAddress = encodeURIComponent(`${address}, ${city}, ${state} ${zipcode}`);
+      console.log('DEBUG: Calling Zillow API for:', fullAddress);
+
       const zillowResponse = await fetch(
         `https://private-zillow.p.rapidapi.com/byaddress?propertyaddress=${fullAddress}`,
         {
@@ -61,15 +64,20 @@ exports.handler = async (event) => {
         }
       );
 
+      console.log('DEBUG: Zillow API status:', zillowResponse.status);
+
       if (zillowResponse.ok) {
         const data = await zillowResponse.json();
+        console.log('DEBUG: Zillow data zpid:', data?.zpid);
+        console.log('DEBUG: Zillow data keys:', Object.keys(data || {}));
 
         if (data && data.zpid) {
+          console.log('DEBUG: Valid Zillow data found, returning zillow source');
           // Helper function to parse price strings like "$189,200" to number
           const parsePrice = (priceStr) => {
             if (!priceStr) return null;
             if (typeof priceStr === 'number') return priceStr;
-            const cleaned = priceStr.replace(/[$,]/g, '');
+            const cleaned = String(priceStr).replace(/[$,]/g, '');
             const num = parseFloat(cleaned);
             return isNaN(num) ? null : num;
           };
@@ -78,9 +86,12 @@ exports.handler = async (event) => {
           const parseYear = (yearStr) => {
             if (!yearStr) return 0;
             if (typeof yearStr === 'number') return yearStr;
-            const match = yearStr.match(/(\d{4})/);
+            const match = String(yearStr).match(/(\d{4})/);
             return match ? parseInt(match[1]) : 0;
           };
+
+          // Data might be at top level OR nested in adTargets
+          const ad = data.adTargets || {};
 
           return {
             statusCode: 200,
@@ -88,21 +99,21 @@ exports.handler = async (event) => {
             body: JSON.stringify({
               ok: true,
               property: {
-                address: data.streetAddress || data.address || address,
-                city: data.city || city,
-                state: data.state || state,
-                zipcode: data.zipcode || zipcode,
-                propertyType: (data.homeType || 'Single Family').replace(/_/g, ' '),
-                beds: parseInt(data.bd) || parseInt(data.bedrooms) || 0,
-                baths: parseFloat(data.ba) || parseFloat(data.bathrooms) || 0,
-                sqft: parseInt(data.sqft) || parseInt(data.livingArea) || 0,
-                lotSize: parseInt(data.lot) || parseInt(data.lotSize) || 0,
-                yearBuilt: parseYear(data.yrbit) || parseYear(data.yearBuilt) || 0,
-                lastSalePrice: parsePrice(data.lastSoldPrice) || parsePrice(data.price) || null,
-                lastSaleDate: data.dateSold || data.lastSoldDate || null,
-                estimatedValue: parsePrice(data.zestimate) || parsePrice(data.price) || null,
-                taxAssessedValue: parsePrice(data.taxAssessedValue) || null,
-                monthlyRent: parsePrice(data.rentZestimate) || null,
+                address: data.streetAddress || ad.streetAddress || address,
+                city: data.city || ad.city || city,
+                state: data.state || ad.state || state,
+                zipcode: data.zipcode || ad.zipcode || ad.zip || zipcode,
+                propertyType: (data.homeType || ad.homeType || 'Single Family').replace(/_/g, ' '),
+                beds: parseInt(data.bd || ad.bd || data.bedrooms || ad.bedrooms) || 0,
+                baths: parseFloat(data.ba || ad.ba || data.bathrooms || ad.bathrooms) || 0,
+                sqft: parseInt(data.sqft || ad.sqft || data.livingArea || ad.livingArea) || 0,
+                lotSize: parseInt(data.lot || ad.lot || data.lotSize || ad.lotSize) || 0,
+                yearBuilt: parseYear(data.yrbit || ad.yrbit || data.yearBuilt || ad.yearBuilt) || 0,
+                lastSalePrice: parsePrice(data.lastSoldPrice || ad.lastSoldPrice || data.price || ad.price) || null,
+                lastSaleDate: data.dateSold || ad.dateSold || null,
+                estimatedValue: parsePrice(data.zestimate || ad.zestimate || data.price || ad.price) || null,
+                taxAssessedValue: parsePrice(data.taxAssessedValue || ad.taxAssessedValue) || null,
+                monthlyRent: parsePrice(data.rentZestimate || ad.rentZestimate) || null,
                 features: data.resoFacts?.atAGlanceFacts?.map(f => f.factValue) || [],
                 description: data.description || '',
                 neighborhood: data.neighborhoodOverview || '',
@@ -110,7 +121,11 @@ exports.handler = async (event) => {
               }
             })
           };
+        } else {
+          console.log('DEBUG: No zpid in Zillow data, falling back');
         }
+      } else {
+        console.log('DEBUG: Zillow API response not ok:', zillowResponse.status);
       }
     } catch (error) {
       console.error('Zillow API error:', error);

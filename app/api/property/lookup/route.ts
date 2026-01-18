@@ -126,7 +126,7 @@ async function fetchFromZillow(params: PropertyLookupRequest): Promise<PropertyD
     const parsePrice = (priceStr: string | number | null | undefined): number | null => {
       if (!priceStr) return null
       if (typeof priceStr === 'number') return priceStr
-      const cleaned = priceStr.replace(/[$,]/g, '')
+      const cleaned = String(priceStr).replace(/[$,]/g, '')
       const num = parseFloat(cleaned)
       return isNaN(num) ? null : num
     }
@@ -135,26 +135,29 @@ async function fetchFromZillow(params: PropertyLookupRequest): Promise<PropertyD
     const parseYear = (yearStr: string | number | null | undefined): number => {
       if (!yearStr) return 0
       if (typeof yearStr === 'number') return yearStr
-      const match = yearStr.match(/(\d{4})/)
+      const match = String(yearStr).match(/(\d{4})/)
       return match ? parseInt(match[1]) : 0
     }
 
+    // Data might be at top level OR nested in adTargets
+    const ad = data.adTargets || {}
+
     return {
-      address: data.streetAddress || data.address || params.address,
-      city: data.city || params.city,
-      state: data.state || params.state,
-      zipcode: data.zipcode || params.zipcode,
-      propertyType: data.homeType?.replace(/_/g, ' ') || 'Single Family',
-      beds: parseInt(data.bd) || parseInt(data.bedrooms) || 0,
-      baths: parseFloat(data.ba) || parseFloat(data.bathrooms) || 0,
-      sqft: parseInt(data.sqft) || parseInt(data.livingArea) || 0,
-      lotSize: parseInt(data.lot) || parseInt(data.lotSize) || 0,
-      yearBuilt: parseYear(data.yrbit) || parseYear(data.yearBuilt) || 0,
-      lastSalePrice: parsePrice(data.lastSoldPrice) || parsePrice(data.price) || null,
-      lastSaleDate: data.dateSold || data.lastSoldDate || null,
-      estimatedValue: parsePrice(data.zestimate) || parsePrice(data.price) || null,
-      taxAssessedValue: parsePrice(data.taxAssessedValue) || null,
-      monthlyRent: parsePrice(data.rentZestimate) || null,
+      address: data.streetAddress || ad.streetAddress || params.address,
+      city: data.city || ad.city || params.city,
+      state: data.state || ad.state || params.state,
+      zipcode: data.zipcode || ad.zipcode || ad.zip || params.zipcode,
+      propertyType: (data.homeType || ad.homeType || 'Single Family').replace(/_/g, ' '),
+      beds: parseInt(data.bd || ad.bd || data.bedrooms || ad.bedrooms) || 0,
+      baths: parseFloat(data.ba || ad.ba || data.bathrooms || ad.bathrooms) || 0,
+      sqft: parseInt(data.sqft || ad.sqft || data.livingArea || ad.livingArea) || 0,
+      lotSize: parseInt(data.lot || ad.lot || data.lotSize || ad.lotSize) || 0,
+      yearBuilt: parseYear(data.yrbit || ad.yrbit || data.yearBuilt || ad.yearBuilt) || 0,
+      lastSalePrice: parsePrice(data.lastSoldPrice || ad.lastSoldPrice || data.price || ad.price) || null,
+      lastSaleDate: data.dateSold || ad.dateSold || null,
+      estimatedValue: parsePrice(data.zestimate || ad.zestimate || data.price || ad.price) || null,
+      taxAssessedValue: parsePrice(data.taxAssessedValue || ad.taxAssessedValue) || null,
+      monthlyRent: parsePrice(data.rentZestimate || ad.rentZestimate) || null,
       features: data.resoFacts?.atAGlanceFacts?.map((f: { factValue: string }) => f.factValue) || [],
       description: data.description || '',
       neighborhood: data.neighborhoodOverview || '',
