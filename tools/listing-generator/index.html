@@ -1197,6 +1197,13 @@
 
         // Fair Housing Compliance - prohibited terms and phrases
         const fairHousingViolations = [
+            // RACE, COLOR, NATIONAL ORIGIN - Critical violations
+            { pattern: /\b(black|white|asian|hispanic|latino|latina|african|chinese|mexican|indian|arab|jewish)\s*(people|families|neighbors|community|neighborhood|area)/gi, category: 'Race/National Origin' },
+            { pattern: /\b(diverse|diversity|ethnic|ethnically|integrated|segregated|changing)\s*(neighborhood|community|area)/gi, category: 'Race (Coded Language)', severity: 'warning' },
+            { pattern: /\b(lots of|many|mostly|predominantly|all)\s*(black|white|asian|hispanic|latino|african|mexican)\b/gi, category: 'Race/National Origin' },
+            { pattern: /\b(no|without)\s*(blacks|whites|asians|hispanics|minorities)/gi, category: 'Race/National Origin' },
+            { pattern: /\b(good|safe|bad|dangerous)\s*(neighborhood|area|community)\b/gi, category: 'Potential Steering', severity: 'warning' },
+
             // Protected classes - explicit
             { pattern: /\b(whites?|blacks?|african[- ]?americans?|asians?|hispanics?|latinos?|mexicans?)\s+(only|preferred|welcome|neighborhood|area|community)\b/gi, category: 'Race/Ethnicity' },
             { pattern: /\b(no|not for|excludes?)\s+(minorities|blacks?|whites?|asians?|hispanics?|latinos?)\b/gi, category: 'Race/Ethnicity' },
@@ -1221,6 +1228,11 @@
             { pattern: /\b(no|not for)\s+(females?|males?|women|men)\b/gi, category: 'Sex' },
             { pattern: /\b(bachelor|bachelorette)\s+pad\b/gi, category: 'Sex (potentially)' },
 
+            // Sexual Orientation & Gender Identity
+            { pattern: /\b(gay|lesbian|lgbtq|transgender|straight|heterosexual)\s*(friendly|community|neighborhood|area|couples?)/gi, category: 'Sexual Orientation/Gender Identity' },
+            { pattern: /\b(same.?sex|opposite.?sex)\s*(couples?|partners?)/gi, category: 'Sexual Orientation' },
+            { pattern: /\b(pride|rainbow)\s*(neighborhood|community|district)/gi, category: 'Sexual Orientation (Coded)', severity: 'warning' },
+
             // National origin
             { pattern: /\b(americans?|citizens?)\s+only\b/gi, category: 'National Origin' },
             { pattern: /\benglish\s+(speakers?|speaking)\s+only\b/gi, category: 'National Origin' },
@@ -1234,7 +1246,51 @@
             { pattern: /\bexclusive\s+(neighborhood|community|area)\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' },
             { pattern: /\bprestigious\s+neighborhood\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' },
             { pattern: /\bintegrated\s+(neighborhood|community)\b/gi, category: 'Race (steering)', severity: 'warning' },
-            { pattern: /\btraditional\s+(neighborhood|values)\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' }
+            { pattern: /\btraditional\s+(neighborhood|values)\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' },
+
+            // GENDER-SPECIFIC TERMS
+            { pattern: /\bman\s*cave\b/gi, category: 'Sex (Gender-coded)', severity: 'warning' },
+            { pattern: /\bhis\s+and\s+hers?\b/gi, category: 'Sex (Gender-coded)', severity: 'warning' },
+            { pattern: /\bmaster\s+(bedroom|suite|bath|closet)\b/gi, category: 'Sex (Gender-coded)', severity: 'warning', note: 'Consider using "primary" instead' },
+
+            // FAMILIAL STATUS - In-law/Nanny Suites
+            { pattern: /\b(mother|father|in-law|mother-in-law|father-in-law)\s*(suite|apartment|quarters)\b/gi, category: 'Familial Status', severity: 'warning', note: 'Consider using "guest suite" or "accessory dwelling"' },
+            { pattern: /\b(nanny|au\s*pair)\s*(suite|room|quarters)\b/gi, category: 'Familial Status', severity: 'warning', note: 'Consider using "guest suite" or "additional living space"' },
+
+            // RELIGION - Standalone institutional references (steering)
+            { pattern: /\b(steps?|minutes?|blocks?)\s*(from|to|away from)\s*(church|mosque|synagogue|temple)\b/gi, category: 'Religion (Steering)', severity: 'warning' },
+            { pattern: /\bclose\s+to\s+(church|mosque|synagogue|temple)\b/gi, category: 'Religion (Steering)', severity: 'warning' },
+
+            // DISABILITY - Offensive terminology
+            { pattern: /\bcrippled\b/gi, category: 'Disability (Offensive)' },
+            { pattern: /\bwheelchair[- ]?bound\b/gi, category: 'Disability (Offensive)', note: 'Use "wheelchair user" instead' },
+            { pattern: /\bmentally\s+(ill|retarded|challenged)\b/gi, category: 'Disability (Offensive)' },
+            { pattern: /\b(handicapped|invalid)\s+(person|people|resident)/gi, category: 'Disability (Offensive)', note: 'Use "person with disability" instead' },
+            { pattern: /\bsuffering\s+from\b/gi, category: 'Disability (Potentially Offensive)', severity: 'warning', note: 'Avoid describing medical conditions' },
+
+            // AGE - Standalone demographic references
+            { pattern: /\b(millennials?|gen[- ]?z|boomers?|baby\s*boomers?)\b/gi, category: 'Age (Demographic Targeting)', severity: 'warning' },
+            { pattern: /\b(elderly|senior\s*citizens?|old\s+folks?)\b/gi, category: 'Age', severity: 'warning', note: 'May be valid for 55+ communities with proper exemption' },
+            { pattern: /\bempty[- ]?nesters?\b/gi, category: 'Age/Familial Status', severity: 'warning' },
+            { pattern: /\byoung\s+(urban|professionals?)\b/gi, category: 'Age (Demographic Targeting)', severity: 'warning' },
+
+            // STEERING - Neighborhood language
+            { pattern: /\bup[- ]?and[- ]?coming\s+(neighborhood|area|community)\b/gi, category: 'Potential Steering/Gentrification', severity: 'warning' },
+            { pattern: /\b(gentrifying|gentrified|transitional)\s+(neighborhood|area|community)\b/gi, category: 'Potential Steering', severity: 'warning' },
+
+            // SOURCE OF INCOME (Protected in CA, NY, IL, CO, OR, WA, NJ, MA, etc.)
+            { pattern: /\bno\s+section[- ]?8\b/gi, category: 'Source of Income', note: 'May be illegal in some states - check local laws' },
+            { pattern: /\bno\s+(vouchers?|housing\s+assistance|housing\s+subsidies?)\b/gi, category: 'Source of Income', note: 'May be illegal in some states - check local laws' },
+            { pattern: /\bmust\s+earn\s+\d+x\s+(rent|income)\b/gi, category: 'Source of Income', severity: 'warning', note: 'Income requirements may violate source of income protections' },
+            { pattern: /\b(income\s+requirements?|minimum\s+income|verify\s+income)\b/gi, category: 'Source of Income', severity: 'warning', note: 'May be illegal in some states - check local laws' },
+
+            // MARITAL STATUS (Protected in many states)
+            { pattern: /\b(married|single|divorced|unmarried|widowed)\s*(only|preferred|couples?)\b/gi, category: 'Marital Status', note: 'Protected in many states - remove' },
+            { pattern: /\b(no\s+unmarried|married\s+couples?\s+only)\b/gi, category: 'Marital Status', note: 'Protected in many states - remove' },
+
+            // MILITARY/VETERAN STATUS (Protected in many states)
+            { pattern: /\bno\s+(military|veterans?|service\s*members?)\b/gi, category: 'Military Status', note: 'Protected in many states - remove' },
+            { pattern: /\b(civilians?\s+only|non[- ]?military\s+only)\b/gi, category: 'Military Status', note: 'Protected in many states - remove' }
         ];
 
         // Fair Housing Compliance Scanner
