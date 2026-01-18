@@ -1197,6 +1197,13 @@
 
         // Fair Housing Compliance - prohibited terms and phrases
         const fairHousingViolations = [
+            // RACE, COLOR, NATIONAL ORIGIN - Critical violations
+            { pattern: /\b(black|white|asian|hispanic|latino|latina|african|chinese|mexican|indian|arab|jewish)\s*(people|families|neighbors|community|neighborhood|area)/gi, category: 'Race/National Origin' },
+            { pattern: /\b(diverse|diversity|ethnic|ethnically|integrated|segregated|changing)\s*(neighborhood|community|area)/gi, category: 'Race (Coded Language)', severity: 'warning' },
+            { pattern: /\b(lots of|many|mostly|predominantly|all)\s*(black|white|asian|hispanic|latino|african|mexican)\b/gi, category: 'Race/National Origin' },
+            { pattern: /\b(no|without)\s*(blacks|whites|asians|hispanics|minorities)/gi, category: 'Race/National Origin' },
+            { pattern: /\b(good|safe|bad|dangerous)\s*(neighborhood|area|community)\b/gi, category: 'Potential Steering', severity: 'warning' },
+
             // Protected classes - explicit
             { pattern: /\b(whites?|blacks?|african[- ]?americans?|asians?|hispanics?|latinos?|mexicans?)\s+(only|preferred|welcome|neighborhood|area|community)\b/gi, category: 'Race/Ethnicity' },
             { pattern: /\b(no|not for|excludes?)\s+(minorities|blacks?|whites?|asians?|hispanics?|latinos?)\b/gi, category: 'Race/Ethnicity' },
