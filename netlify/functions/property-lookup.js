@@ -46,11 +46,14 @@ exports.handler = async (event) => {
 
   // Try RapidAPI if key is set
   const rapidApiKey = process.env.RAPIDAPI_KEY;
+  console.log('DEBUG: RAPIDAPI_KEY exists:', !!rapidApiKey);
 
   if (rapidApiKey) {
     // Try Zillow API first (private-zillow /byaddress endpoint)
     try {
       const fullAddress = encodeURIComponent(`${address}, ${city}, ${state} ${zipcode}`);
+      console.log('DEBUG: Calling Zillow API for:', fullAddress);
+
       const zillowResponse = await fetch(
         `https://private-zillow.p.rapidapi.com/byaddress?propertyaddress=${fullAddress}`,
         {
@@ -61,10 +64,15 @@ exports.handler = async (event) => {
         }
       );
 
+      console.log('DEBUG: Zillow API status:', zillowResponse.status);
+
       if (zillowResponse.ok) {
         const data = await zillowResponse.json();
+        console.log('DEBUG: Zillow data zpid:', data?.zpid);
+        console.log('DEBUG: Zillow data keys:', Object.keys(data || {}));
 
         if (data && data.zpid) {
+          console.log('DEBUG: Valid Zillow data found, returning zillow source');
           // Helper function to parse price strings like "$189,200" to number
           const parsePrice = (priceStr) => {
             if (!priceStr) return null;
@@ -113,7 +121,11 @@ exports.handler = async (event) => {
               }
             })
           };
+        } else {
+          console.log('DEBUG: No zpid in Zillow data, falling back');
         }
+      } else {
+        console.log('DEBUG: Zillow API response not ok:', zillowResponse.status);
       }
     } catch (error) {
       console.error('Zillow API error:', error);
