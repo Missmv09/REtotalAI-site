@@ -1246,7 +1246,37 @@
             { pattern: /\bexclusive\s+(neighborhood|community|area)\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' },
             { pattern: /\bprestigious\s+neighborhood\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' },
             { pattern: /\bintegrated\s+(neighborhood|community)\b/gi, category: 'Race (steering)', severity: 'warning' },
-            { pattern: /\btraditional\s+(neighborhood|values)\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' }
+            { pattern: /\btraditional\s+(neighborhood|values)\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' },
+
+            // GENDER-SPECIFIC TERMS
+            { pattern: /\bman\s*cave\b/gi, category: 'Sex (Gender-coded)', severity: 'warning' },
+            { pattern: /\bhis\s+and\s+hers?\b/gi, category: 'Sex (Gender-coded)', severity: 'warning' },
+            { pattern: /\bmaster\s+(bedroom|suite|bath|closet)\b/gi, category: 'Sex (Gender-coded)', severity: 'warning', note: 'Consider using "primary" instead' },
+
+            // FAMILIAL STATUS - In-law/Nanny Suites
+            { pattern: /\b(mother|father|in-law|mother-in-law|father-in-law)\s*(suite|apartment|quarters)\b/gi, category: 'Familial Status', severity: 'warning', note: 'Consider using "guest suite" or "accessory dwelling"' },
+            { pattern: /\b(nanny|au\s*pair)\s*(suite|room|quarters)\b/gi, category: 'Familial Status', severity: 'warning', note: 'Consider using "guest suite" or "additional living space"' },
+
+            // RELIGION - Standalone institutional references (steering)
+            { pattern: /\b(steps?|minutes?|blocks?)\s*(from|to|away from)\s*(church|mosque|synagogue|temple)\b/gi, category: 'Religion (Steering)', severity: 'warning' },
+            { pattern: /\bclose\s+to\s+(church|mosque|synagogue|temple)\b/gi, category: 'Religion (Steering)', severity: 'warning' },
+
+            // DISABILITY - Offensive terminology
+            { pattern: /\bcrippled\b/gi, category: 'Disability (Offensive)' },
+            { pattern: /\bwheelchair[- ]?bound\b/gi, category: 'Disability (Offensive)', note: 'Use "wheelchair user" instead' },
+            { pattern: /\bmentally\s+(ill|retarded|challenged)\b/gi, category: 'Disability (Offensive)' },
+            { pattern: /\b(handicapped|invalid)\s+(person|people|resident)/gi, category: 'Disability (Offensive)', note: 'Use "person with disability" instead' },
+            { pattern: /\bsuffering\s+from\b/gi, category: 'Disability (Potentially Offensive)', severity: 'warning', note: 'Avoid describing medical conditions' },
+
+            // AGE - Standalone demographic references
+            { pattern: /\b(millennials?|gen[- ]?z|boomers?|baby\s*boomers?)\b/gi, category: 'Age (Demographic Targeting)', severity: 'warning' },
+            { pattern: /\b(elderly|senior\s*citizens?|old\s+folks?)\b/gi, category: 'Age', severity: 'warning', note: 'May be valid for 55+ communities with proper exemption' },
+            { pattern: /\bempty[- ]?nesters?\b/gi, category: 'Age/Familial Status', severity: 'warning' },
+            { pattern: /\byoung\s+(urban|professionals?)\b/gi, category: 'Age (Demographic Targeting)', severity: 'warning' },
+
+            // STEERING - Neighborhood language
+            { pattern: /\bup[- ]?and[- ]?coming\s+(neighborhood|area|community)\b/gi, category: 'Potential Steering/Gentrification', severity: 'warning' },
+            { pattern: /\b(gentrifying|gentrified|transitional)\s+(neighborhood|area|community)\b/gi, category: 'Potential Steering', severity: 'warning' }
         ];
 
         // Fair Housing Compliance Scanner
