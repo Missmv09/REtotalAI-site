@@ -619,6 +619,162 @@
         .save-btn:hover {
             background: #6a8673;
         }
+
+        /* Fair Housing Compliance Alert */
+        .compliance-alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+        }
+
+        .compliance-alert.compliant {
+            background: #DCFCE7;
+            color: #166534;
+            border: 1px solid #86EFAC;
+        }
+
+        .compliance-alert.warning {
+            background: #FEE2E2;
+            color: #DC2626;
+            border: 1px solid #FCA5A5;
+        }
+
+        .compliance-icon {
+            font-size: 1.25rem;
+        }
+
+        .compliance-details {
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            font-weight: 400;
+        }
+
+        /* Character Counter */
+        .char-counter {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--cream);
+            border-radius: 0.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .char-counter-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            margin: 0 1rem;
+            overflow: hidden;
+        }
+
+        .char-counter-fill {
+            height: 100%;
+            background: var(--sage);
+            transition: width 0.3s, background-color 0.3s;
+            border-radius: 3px;
+        }
+
+        .char-counter-fill.warning {
+            background: var(--warning);
+        }
+
+        .char-counter-fill.danger {
+            background: var(--danger);
+        }
+
+        /* Toggle Switch */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            background: var(--border);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: var(--sage);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(22px);
+        }
+
+        .toggle-label {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+
+        /* Investor Fields */
+        .investor-fields {
+            display: none;
+            background: #FEF3C7;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            border: 1px solid #FCD34D;
+        }
+
+        .investor-fields.visible {
+            display: block;
+        }
+
+        .investor-fields-label {
+            font-weight: 600;
+            color: var(--warning);
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Spanish Tab Styling */
+        .result-tab.spanish {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+        }
+
+        .result-tab.spanish:hover {
+            background: linear-gradient(135deg, #E55A28, #E08019);
+        }
+
+        .spanish-badge {
+            background: #FF6B35;
+            color: white;
+            font-size: 0.65rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 9999px;
+            margin-left: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -830,12 +986,13 @@
                     <div class="input-row">
                         <div class="input-group">
                             <label class="input-label">Tone</label>
-                            <select id="tone">
+                            <select id="tone" onchange="handleToneChange()">
                                 <option value="professional">Professional</option>
                                 <option value="luxury">Luxury / Upscale</option>
                                 <option value="casual">Casual / Friendly</option>
                                 <option value="family-friendly">Family-Friendly</option>
-                                <option value="investor-focused">Investor-Focused</option>
+                                <option value="investor-focused">Investor-Focused 📈</option>
+                                <option value="fsbo">FSBO (By Owner)</option>
                             </select>
                         </div>
                         <div class="input-group">
@@ -851,14 +1008,45 @@
                     </div>
                     <div class="input-group">
                         <label class="input-label">Platform</label>
-                        <select id="platform">
-                            <option value="all">All Platforms</option>
-                            <option value="mls">MLS</option>
-                            <option value="zillow">Zillow</option>
-                            <option value="realtor">Realtor.com</option>
-                            <option value="facebook">Facebook Marketplace</option>
-                            <option value="craigslist">Craigslist</option>
+                        <select id="platform" onchange="updateCharLimit()">
+                            <option value="all" data-limit="0">All Platforms (No Limit)</option>
+                            <option value="mls" data-limit="1000">MLS (1,000 chars)</option>
+                            <option value="zillow" data-limit="2000">Zillow (2,000 chars)</option>
+                            <option value="realtor" data-limit="0">Realtor.com (No Limit)</option>
+                            <option value="facebook" data-limit="500">Facebook Marketplace (500 chars)</option>
+                            <option value="craigslist" data-limit="0">Craigslist (No Limit)</option>
                         </select>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Spanish Translation</label>
+                        <div class="toggle-group">
+                            <div class="toggle-switch" id="spanishToggle" onclick="toggleSpanish()"></div>
+                            <span class="toggle-label">Generate Spanish version (Español)</span>
+                        </div>
+                    </div>
+                    <!-- Investor Fields (shown when investor-focused tone selected) -->
+                    <div class="investor-fields" id="investorFields">
+                        <div class="investor-fields-label">📈 Investor Metrics</div>
+                        <div class="input-row-3">
+                            <div class="input-group">
+                                <label class="input-label">Current Rent ($/mo)</label>
+                                <div class="input-wrapper">
+                                    <span class="input-prefix">$</span>
+                                    <input type="number" id="currentRent" placeholder="2,500" class="has-prefix">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Market Rent ($/mo)</label>
+                                <div class="input-wrapper">
+                                    <span class="input-prefix">$</span>
+                                    <input type="number" id="marketRent" placeholder="2,800" class="has-prefix">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Cap Rate (%)</label>
+                                <input type="number" id="capRate" placeholder="6.5" step="0.1">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -878,6 +1066,15 @@
 
                 <!-- Results (hidden initially) -->
                 <div id="resultsContent" style="display: none;">
+                    <!-- Fair Housing Compliance Alert -->
+                    <div class="compliance-alert compliant" id="complianceAlert" style="display: none;">
+                        <span class="compliance-icon" id="complianceIcon">✓</span>
+                        <div>
+                            <span id="complianceText">Fair Housing Compliant</span>
+                            <div class="compliance-details" id="complianceDetails"></div>
+                        </div>
+                    </div>
+
                     <!-- Headline -->
                     <div class="result-card">
                         <div class="result-header">
@@ -896,6 +1093,7 @@
                             <button class="result-tab" onclick="switchTab('short')">Short Summary</button>
                             <button class="result-tab" onclick="switchTab('social')">Social Media</button>
                             <button class="result-tab" onclick="switchTab('email')">Email Template</button>
+                            <button class="result-tab spanish" onclick="switchTab('spanish')" id="spanishTab" style="display: none;">Español</button>
                         </div>
 
                         <div class="tab-content active" id="tab-full">
@@ -928,6 +1126,23 @@
                                 <button class="copy-btn" onclick="copyToClipboard('emailTemplate', this)">Copy</button>
                             </div>
                             <div class="result-content" id="resultEmailTemplate"></div>
+                        </div>
+
+                        <div class="tab-content" id="tab-spanish">
+                            <div class="result-header">
+                                <span class="result-title">Descripción en Español</span>
+                                <button class="copy-btn" onclick="copyToClipboard('spanishDescription', this)">Copy</button>
+                            </div>
+                            <div class="result-content" id="resultSpanishDescription"></div>
+                        </div>
+
+                        <!-- Character Counter -->
+                        <div class="char-counter" id="charCounter" style="display: none;">
+                            <span id="charCountLabel">0 characters</span>
+                            <div class="char-counter-bar">
+                                <div class="char-counter-fill" id="charCountFill" style="width: 0%;"></div>
+                            </div>
+                            <span id="charLimitLabel">/ 1000 limit</span>
                         </div>
                     </div>
 
@@ -967,6 +1182,258 @@
         // State
         let currentListing = null;
         let selectedFeatures = [];
+        let spanishEnabled = false;
+        let currentCharLimit = 0;
+
+        // Platform character limits
+        const platformLimits = {
+            'all': 0,
+            'mls': 1000,
+            'zillow': 2000,
+            'realtor': 0,
+            'facebook': 500,
+            'craigslist': 0
+        };
+
+        // Fair Housing Compliance - prohibited terms and phrases
+        const fairHousingViolations = [
+            // Protected classes - explicit
+            { pattern: /\b(whites?|blacks?|african[- ]?americans?|asians?|hispanics?|latinos?|mexicans?)\s+(only|preferred|welcome|neighborhood|area|community)\b/gi, category: 'Race/Ethnicity' },
+            { pattern: /\b(no|not for|excludes?)\s+(minorities|blacks?|whites?|asians?|hispanics?|latinos?)\b/gi, category: 'Race/Ethnicity' },
+            { pattern: /\b(christian|jewish|muslim|catholic|baptist|protestant|buddhist|hindu)\s+(only|preferred|community|neighborhood)\b/gi, category: 'Religion' },
+            { pattern: /\b(no|not for)\s+(christians?|jews?|muslims?|catholics?)\b/gi, category: 'Religion' },
+            { pattern: /\bnear\s+(church|synagogue|mosque|temple)\b/gi, category: 'Religion (potentially steering)' },
+
+            // Familial status
+            { pattern: /\b(no|not for|excludes?)\s+(children|kids|families|babies|infants)\b/gi, category: 'Familial Status' },
+            { pattern: /\b(adults?|singles?|couples?)\s+only\b/gi, category: 'Familial Status' },
+            { pattern: /\b(perfect for|ideal for|great for)\s+(singles?|retired|elderly|retirees|empty[- ]?nesters?)\b/gi, category: 'Familial Status (potentially)' },
+            { pattern: /\bno\s+roommates?\b/gi, category: 'Familial Status' },
+            { pattern: /\bmature\s+(couple|adults?|persons?)\s+(only|preferred)\b/gi, category: 'Familial Status/Age' },
+
+            // Disability
+            { pattern: /\b(no|not for)\s+(disabled|handicapped|wheelchairs?)\b/gi, category: 'Disability' },
+            { pattern: /\b(able[- ]?bodied|physically fit)\s+(only|required|preferred)\b/gi, category: 'Disability' },
+            { pattern: /\bwalking\s+distance\b/gi, category: 'Disability (potentially)', severity: 'warning' },
+
+            // Sex/Gender
+            { pattern: /\b(females?|males?|women|men)\s+only\b/gi, category: 'Sex' },
+            { pattern: /\b(no|not for)\s+(females?|males?|women|men)\b/gi, category: 'Sex' },
+            { pattern: /\b(bachelor|bachelorette)\s+pad\b/gi, category: 'Sex (potentially)' },
+
+            // National origin
+            { pattern: /\b(americans?|citizens?)\s+only\b/gi, category: 'National Origin' },
+            { pattern: /\benglish\s+(speakers?|speaking)\s+only\b/gi, category: 'National Origin' },
+            { pattern: /\b(no|not for)\s+(immigrants?|foreigners?)\b/gi, category: 'National Origin' },
+
+            // Age (where applicable)
+            { pattern: /\b(young|old)\s+(professionals?|couples?|people)\s+only\b/gi, category: 'Age' },
+            { pattern: /\bseniors?\s+only\b/gi, category: 'Age', note: 'May be valid for 55+ communities with proper exemption' },
+
+            // Coded/dog whistle language
+            { pattern: /\bexclusive\s+(neighborhood|community|area)\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' },
+            { pattern: /\bprestigious\s+neighborhood\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' },
+            { pattern: /\bintegrated\s+(neighborhood|community)\b/gi, category: 'Race (steering)', severity: 'warning' },
+            { pattern: /\btraditional\s+(neighborhood|values)\b/gi, category: 'Potentially Discriminatory Language', severity: 'warning' }
+        ];
+
+        // Fair Housing Compliance Scanner
+        function scanForFairHousingViolations(text) {
+            const violations = [];
+            const warnings = [];
+
+            for (const rule of fairHousingViolations) {
+                const matches = text.match(rule.pattern);
+                if (matches) {
+                    const item = {
+                        phrase: matches[0],
+                        category: rule.category,
+                        note: rule.note || null
+                    };
+                    if (rule.severity === 'warning') {
+                        warnings.push(item);
+                    } else {
+                        violations.push(item);
+                    }
+                }
+            }
+
+            return { violations, warnings };
+        }
+
+        function updateComplianceAlert(listing) {
+            const allText = [
+                listing.headline,
+                listing.shortDescription,
+                listing.fullDescription,
+                listing.socialMediaPost,
+                listing.emailTemplate,
+                listing.spanishDescription || ''
+            ].join(' ');
+
+            const { violations, warnings } = scanForFairHousingViolations(allText);
+
+            const alertEl = document.getElementById('complianceAlert');
+            const iconEl = document.getElementById('complianceIcon');
+            const textEl = document.getElementById('complianceText');
+            const detailsEl = document.getElementById('complianceDetails');
+
+            alertEl.style.display = 'flex';
+
+            if (violations.length > 0) {
+                alertEl.className = 'compliance-alert warning';
+                iconEl.textContent = '⚠';
+                textEl.textContent = `Fair Housing Warning: ${violations.length} potential violation(s) found`;
+                detailsEl.innerHTML = violations.map(v =>
+                    `<strong>"${v.phrase}"</strong> - ${v.category}${v.note ? ` (${v.note})` : ''}`
+                ).join('<br>');
+            } else if (warnings.length > 0) {
+                alertEl.className = 'compliance-alert warning';
+                iconEl.textContent = '⚡';
+                textEl.textContent = `Review Suggested: ${warnings.length} phrase(s) to review`;
+                detailsEl.innerHTML = warnings.map(w =>
+                    `<strong>"${w.phrase}"</strong> - ${w.category}`
+                ).join('<br>');
+            } else {
+                alertEl.className = 'compliance-alert compliant';
+                iconEl.textContent = '✓';
+                textEl.textContent = 'Fair Housing Compliant';
+                detailsEl.textContent = 'No discriminatory language detected in the listing.';
+            }
+        }
+
+        // Character Counter
+        function updateCharLimit() {
+            const platform = document.getElementById('platform').value;
+            currentCharLimit = platformLimits[platform] || 0;
+        }
+
+        function updateCharCounter(text) {
+            const charCounter = document.getElementById('charCounter');
+            if (currentCharLimit === 0) {
+                charCounter.style.display = 'none';
+                return;
+            }
+
+            charCounter.style.display = 'flex';
+            const charCount = text.length;
+            const percentage = Math.min((charCount / currentCharLimit) * 100, 100);
+
+            document.getElementById('charCountLabel').textContent = `${charCount.toLocaleString()} characters`;
+            document.getElementById('charLimitLabel').textContent = `/ ${currentCharLimit.toLocaleString()} limit`;
+
+            const fillEl = document.getElementById('charCountFill');
+            fillEl.style.width = `${percentage}%`;
+            fillEl.className = 'char-counter-fill';
+
+            if (percentage >= 100) {
+                fillEl.classList.add('danger');
+            } else if (percentage >= 80) {
+                fillEl.classList.add('warning');
+            }
+        }
+
+        // Spanish Toggle
+        function toggleSpanish() {
+            spanishEnabled = !spanishEnabled;
+            const toggle = document.getElementById('spanishToggle');
+            toggle.classList.toggle('active', spanishEnabled);
+
+            // Show/hide Spanish tab if results are displayed
+            const spanishTab = document.getElementById('spanishTab');
+            if (spanishTab) {
+                spanishTab.style.display = spanishEnabled ? 'inline-block' : 'none';
+            }
+        }
+
+        // Basic Spanish Translation (template-based)
+        function generateSpanishVersion(listing) {
+            // Common translations for real estate terms
+            const translations = {
+                'bedroom': 'habitación',
+                'bedrooms': 'habitaciones',
+                'bathroom': 'baño',
+                'bathrooms': 'baños',
+                'kitchen': 'cocina',
+                'living room': 'sala de estar',
+                'dining room': 'comedor',
+                'garage': 'garaje',
+                'backyard': 'patio trasero',
+                'pool': 'piscina',
+                'square feet': 'pies cuadrados',
+                'sq ft': 'pies cuadrados',
+                'home': 'casa',
+                'house': 'casa',
+                'property': 'propiedad',
+                'new': 'nuevo',
+                'updated': 'actualizado',
+                'modern': 'moderno',
+                'beautiful': 'hermoso',
+                'spacious': 'espacioso',
+                'welcome': 'bienvenido',
+                'located': 'ubicado',
+                'features': 'características',
+                'price': 'precio',
+                'contact': 'contacto',
+                'call': 'llamar',
+                'showing': 'visita',
+                'schedule': 'programar'
+            };
+
+            // Get property info for Spanish template
+            const beds = document.getElementById('beds').value || '?';
+            const baths = document.getElementById('baths').value || '?';
+            const sqft = document.getElementById('sqft').value || '?';
+            const city = document.getElementById('city').value || 'la ciudad';
+            const state = document.getElementById('state').value || '';
+            const price = document.getElementById('price').value;
+            const priceStr = price ? `$${parseInt(price).toLocaleString()}` : 'Contacte para precio';
+            const propertyType = document.getElementById('propertyType').value;
+
+            const typeTranslations = {
+                'Single Family': 'Casa Unifamiliar',
+                'Condo': 'Condominio',
+                'Townhouse': 'Casa Adosada',
+                'Multi-Family': 'Multifamiliar',
+                'Apartment': 'Apartamento',
+                'Duplex': 'Dúplex',
+                'Commercial': 'Comercial',
+                'Land': 'Terreno'
+            };
+
+            const spanishType = typeTranslations[propertyType] || propertyType;
+
+            return `¡NUEVA PROPIEDAD EN VENTA!
+
+${spanishType} en ${city}, ${state}
+
+🏠 ${beds} Habitaciones | 🛁 ${baths} Baños
+📐 ${parseInt(sqft).toLocaleString()} pies cuadrados
+💰 ${priceStr}
+
+Esta hermosa propiedad ofrece ${beds} habitaciones y ${baths} baños con amplio espacio para toda la familia. Ubicada en una zona conveniente de ${city}, esta casa está lista para mudarse.
+
+Características destacadas incluyen acabados modernos, espacios bien diseñados, y una ubicación privilegiada cerca de escuelas, tiendas y transporte.
+
+¡No pierda esta oportunidad! Programe su visita hoy.
+
+📞 Contáctenos para más información
+📩 Se habla español
+
+#Bienes Raíces #${city.replace(/\s+/g, '')} #CasaEnVenta #PropiedadEnVenta`;
+        }
+
+        // Tone Change Handler
+        function handleToneChange() {
+            const tone = document.getElementById('tone').value;
+            const investorFields = document.getElementById('investorFields');
+
+            if (tone === 'investor-focused') {
+                investorFields.classList.add('visible');
+            } else {
+                investorFields.classList.remove('visible');
+            }
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -1096,6 +1563,7 @@
             document.getElementById('loadingOverlay').classList.add('active');
 
             // Build request
+            const tone = document.getElementById('tone').value;
             const requestData = {
                 address: document.getElementById('address').value,
                 city: document.getElementById('city').value,
@@ -1112,10 +1580,18 @@
                 recentUpgrades: document.getElementById('recentUpgrades').value,
                 neighborhood: document.getElementById('neighborhood').value,
                 uniqueSellingPoints: document.getElementById('uniqueSellingPoints').value,
-                tone: document.getElementById('tone').value,
+                tone: tone,
                 targetAudience: document.getElementById('targetAudience').value,
-                platform: document.getElementById('platform').value
+                platform: document.getElementById('platform').value,
+                spanishEnabled: spanishEnabled
             };
+
+            // Add investor fields if investor-focused tone
+            if (tone === 'investor-focused') {
+                requestData.currentRent = parseInt(document.getElementById('currentRent').value) || null;
+                requestData.marketRent = parseInt(document.getElementById('marketRent').value) || null;
+                requestData.capRate = parseFloat(document.getElementById('capRate').value) || null;
+            }
 
             try {
                 const response = await fetch('/api/listing/generate', {
@@ -1151,6 +1627,16 @@
             document.getElementById('resultSocialMediaPost').textContent = listing.socialMediaPost;
             document.getElementById('resultEmailTemplate').textContent = listing.emailTemplate;
 
+            // Generate Spanish version if enabled
+            if (spanishEnabled) {
+                const spanishVersion = listing.spanishDescription || generateSpanishVersion(listing);
+                listing.spanishDescription = spanishVersion;
+                document.getElementById('resultSpanishDescription').textContent = spanishVersion;
+                document.getElementById('spanishTab').style.display = 'inline-block';
+            } else {
+                document.getElementById('spanishTab').style.display = 'none';
+            }
+
             // Keywords
             const keywordsContainer = document.getElementById('resultKeywords');
             keywordsContainer.innerHTML = listing.seoKeywords
@@ -1162,6 +1648,13 @@
             altContainer.innerHTML = listing.alternativeHeadlines
                 .map(h => `<div class="alt-headline" onclick="useAltHeadline(this)">${h}<span class="copy-btn">Use</span></div>`)
                 .join('');
+
+            // Update Fair Housing Compliance Alert
+            updateComplianceAlert(listing);
+
+            // Update Character Counter based on selected platform
+            updateCharLimit();
+            updateCharCounter(listing.fullDescription);
         }
 
         function useAltHeadline(el) {
@@ -1184,6 +1677,8 @@
             let text = '';
             if (field === 'headline') {
                 text = document.getElementById('resultHeadline').textContent;
+            } else if (field === 'spanishDescription') {
+                text = document.getElementById('resultSpanishDescription').textContent;
             } else if (currentListing) {
                 text = currentListing[field] || '';
             }
