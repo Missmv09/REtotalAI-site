@@ -127,6 +127,76 @@ function StatusBadge({ status }: { status?: Plan['status'] }) {
   )
 }
 
+function ListingGeneratorCard() {
+  return (
+    <div className="bg-white rounded-2xl p-8 shadow-lg max-w-sm">
+      <div className="mb-4">
+        <span className="bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide">
+          Live Now
+        </span>
+      </div>
+
+      <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-400 rounded-xl flex items-center justify-center mb-5">
+        <span className="text-2xl">✍️</span>
+      </div>
+
+      <h3 className="text-2xl font-bold text-slate-800 mb-2">
+        Listing Generator
+      </h3>
+
+      <p className="text-xs font-semibold text-indigo-500 uppercase tracking-wider mb-4">
+        For Agents, Teams & Investors
+      </p>
+
+      <p className="text-slate-500 leading-relaxed mb-6">
+        Turn property details into MLS-ready descriptions and social media
+        posts—with <strong className="text-slate-800">built-in Fair Housing compliance</strong> and{' '}
+        <strong className="text-slate-800">investor-grade metrics</strong>.
+      </p>
+
+      <ul className="space-y-3 mb-7">
+        <li className="flex items-start gap-3">
+          <span className="text-emerald-500 mt-0.5">✓</span>
+          <span className="text-sm text-slate-600">
+            Fair Housing compliance scanner 🛡️
+          </span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-emerald-500 mt-0.5">✓</span>
+          <span className="text-sm text-slate-600">
+            Investor copy with cap rate & rent upside 📈
+          </span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-emerald-500 mt-0.5">✓</span>
+          <span className="text-sm text-slate-600">
+            One-click Spanish translation 🌐
+          </span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-emerald-500 mt-0.5">✓</span>
+          <span className="text-sm text-slate-600">
+            Platform-optimized (MLS, Zillow, Facebook)
+          </span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-emerald-500 mt-0.5">✓</span>
+          <span className="text-sm text-slate-600">
+            Social media hooks & email templates
+          </span>
+        </li>
+      </ul>
+
+      <a
+        href="/listing-generator"
+        className="block w-full py-4 px-6 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-center font-semibold rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all"
+      >
+        Try Listing Generator
+      </a>
+    </div>
+  )
+}
+
 function PlanCard({ plan }: { plan: Plan }) {
   return (
     <div className="rounded-3xl border border-amber-50 bg-white p-6 flex flex-col justify-between shadow-sm">
@@ -181,6 +251,11 @@ export default function PricingPage() {
             ready to scale your deals, doors, and data.
           </p>
         </header>
+
+        {/* Featured Tool: Listing Generator */}
+        <div className="flex justify-center md:justify-start">
+          <ListingGeneratorCard />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {PLANS.map((plan) => (
