@@ -196,11 +196,11 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // Try real APIs first, fall back to mock data
-  let propertyData = await fetchFromRealtyMole(body)
+  // Try real APIs first, fall back to mock data (Zillow first for better accuracy)
+  let propertyData = await fetchFromZillow(body)
 
   if (!propertyData) {
-    propertyData = await fetchFromZillow(body)
+    propertyData = await fetchFromRealtyMole(body)
   }
 
   if (!propertyData) {
@@ -229,10 +229,10 @@ export async function GET(req: NextRequest) {
 
   const params = { address, city, state, zipcode }
 
-  let propertyData = await fetchFromRealtyMole(params)
+  let propertyData = await fetchFromZillow(params)
 
   if (!propertyData) {
-    propertyData = await fetchFromZillow(params)
+    propertyData = await fetchFromRealtyMole(params)
   }
 
   if (!propertyData) {

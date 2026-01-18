@@ -48,6 +48,57 @@ exports.handler = async (event) => {
   const rapidApiKey = process.env.RAPIDAPI_KEY;
 
   if (rapidApiKey) {
+    // Try Zillow API first (more accurate data)
+    try {
+      const encodedAddress = encodeURIComponent(`${address} ${city} ${state} ${zipcode}`);
+      const zillowResponse = await fetch(
+        `https://zillow-com1.p.rapidapi.com/property?address=${encodedAddress}`,
+        {
+          headers: {
+            'X-RapidAPI-Key': rapidApiKey,
+            'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com'
+          }
+        }
+      );
+
+      if (zillowResponse.ok) {
+        const data = await zillowResponse.json();
+        if (data && data.zpid) {
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({
+              ok: true,
+              property: {
+                address: data.streetAddress || address,
+                city: data.city || city,
+                state: data.state || state,
+                zipcode: data.zipcode || zipcode,
+                propertyType: data.homeType || 'Single Family',
+                beds: data.bedrooms || 0,
+                baths: data.bathrooms || 0,
+                sqft: data.livingArea || 0,
+                lotSize: data.lotSize || 0,
+                yearBuilt: data.yearBuilt || 0,
+                lastSalePrice: data.lastSoldPrice || null,
+                lastSaleDate: data.lastSoldDate || null,
+                estimatedValue: data.zestimate || null,
+                taxAssessedValue: data.taxAssessedValue || null,
+                monthlyRent: data.rentZestimate || null,
+                features: data.resoFacts?.atAGlanceFacts?.map(f => f.factValue) || [],
+                description: data.description || '',
+                neighborhood: data.neighborhoodOverview || '',
+                source: 'zillow'
+              }
+            })
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Zillow API error:', error);
+    }
+
+    // Fallback to Realty Mole API
     try {
       const encodedAddress = encodeURIComponent(`${address}, ${city}, ${state} ${zipcode}`);
       const response = await fetch(
@@ -95,7 +146,7 @@ exports.handler = async (event) => {
         }
       }
     } catch (error) {
-      console.error('RapidAPI error:', error);
+      console.error('Realty Mole API error:', error);
     }
   }
 
