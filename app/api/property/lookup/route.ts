@@ -104,16 +104,17 @@ async function fetchFromZillow(params: PropertyLookupRequest): Promise<PropertyD
     )
 
     if (!searchResponse.ok) {
-      console.error('Zillow search error:', searchResponse.status)
+      console.error('Zillow search error:', searchResponse.status, await searchResponse.text())
       return null
     }
 
     const searchData = await searchResponse.json()
+    console.log('Zillow API response:', JSON.stringify(searchData, null, 2))
 
-    // Get the first property result
-    const results = searchData?.props || searchData?.results || searchData?.searchResults?.listResults || []
+    // Get the first property result - try multiple possible response structures
+    const results = searchData?.props || searchData?.results || searchData?.searchResults?.listResults || searchData?.data || []
     if (!results || results.length === 0) {
-      console.log('No Zillow results found for address')
+      console.log('No Zillow results found for address. Response keys:', Object.keys(searchData || {}))
       return null
     }
 
