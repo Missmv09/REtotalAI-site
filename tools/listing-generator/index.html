@@ -1228,6 +1228,11 @@
             { pattern: /\b(no|not for)\s+(females?|males?|women|men)\b/gi, category: 'Sex' },
             { pattern: /\b(bachelor|bachelorette)\s+pad\b/gi, category: 'Sex (potentially)' },
 
+            // Sexual Orientation & Gender Identity
+            { pattern: /\b(gay|lesbian|lgbtq|transgender|straight|heterosexual)\s*(friendly|community|neighborhood|area|couples?)/gi, category: 'Sexual Orientation/Gender Identity' },
+            { pattern: /\b(same.?sex|opposite.?sex)\s*(couples?|partners?)/gi, category: 'Sexual Orientation' },
+            { pattern: /\b(pride|rainbow)\s*(neighborhood|community|district)/gi, category: 'Sexual Orientation (Coded)', severity: 'warning' },
+
             // National origin
             { pattern: /\b(americans?|citizens?)\s+only\b/gi, category: 'National Origin' },
             { pattern: /\benglish\s+(speakers?|speaking)\s+only\b/gi, category: 'National Origin' },
