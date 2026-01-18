@@ -88,30 +88,38 @@ async function fetchFromRealtyMole(params: PropertyLookupRequest): Promise<Prope
 // Zillow API via RapidAPI (private-zillow) - using /byaddress endpoint
 async function fetchFromZillow(params: PropertyLookupRequest): Promise<PropertyDetails | null> {
   const apiKey = process.env.RAPIDAPI_KEY
-  if (!apiKey) return null
+  if (!apiKey) {
+    console.log('DEBUG: No RAPIDAPI_KEY found')
+    return null
+  }
 
   try {
     // Use the /byaddress endpoint for direct property lookup
     const fullAddress = encodeURIComponent(`${params.address}, ${params.city}, ${params.state} ${params.zipcode}`)
-    const response = await fetch(
-      `https://private-zillow.p.rapidapi.com/byaddress?propertyaddress=${fullAddress}`,
-      {
-        headers: {
-          'X-RapidAPI-Key': apiKey,
-          'X-RapidAPI-Host': 'private-zillow.p.rapidapi.com'
-        }
+    const url = `https://private-zillow.p.rapidapi.com/byaddress?propertyaddress=${fullAddress}`
+    console.log('DEBUG: Calling Zillow API:', url)
+
+    const response = await fetch(url, {
+      headers: {
+        'X-RapidAPI-Key': apiKey,
+        'X-RapidAPI-Host': 'private-zillow.p.rapidapi.com'
       }
-    )
+    })
+
+    console.log('DEBUG: Zillow API status:', response.status)
 
     if (!response.ok) {
-      console.error('Zillow API error:', response.status)
+      const errorText = await response.text()
+      console.error('Zillow API error:', response.status, errorText)
       return null
     }
 
     const data = await response.json()
+    console.log('DEBUG: Zillow API response keys:', Object.keys(data || {}))
+    console.log('DEBUG: Zillow API full response:', JSON.stringify(data, null, 2).substring(0, 1000))
 
     if (!data || data.error || !data.zpid) {
-      console.log('No Zillow data found for address')
+      console.log('DEBUG: No valid Zillow data - error:', data?.error, 'zpid:', data?.zpid)
       return null
     }
 
