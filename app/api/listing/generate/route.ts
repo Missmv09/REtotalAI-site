@@ -121,7 +121,22 @@ async function generateWithOpenAI(prompt: string): Promise<string | null> {
 
 // Template-based fallback when no AI is available
 function generateFromTemplate(input: ListingGenerateRequest): GeneratedListing {
-  const { propertyType, beds, baths, sqft, yearBuilt, city, state, features, recentUpgrades, neighborhood, uniqueSellingPoints, tone, price } = input
+  const {
+    propertyType,
+    beds,
+    baths,
+    sqft,
+    yearBuilt,
+    city = 'Your City',
+    state = '',
+    features,
+    recentUpgrades,
+    neighborhood,
+    uniqueSellingPoints,
+    tone,
+    price,
+    zipcode = ''
+  } = input
 
   const priceStr = price ? `$${price.toLocaleString()}` : 'Contact for pricing'
   const yearStr = yearBuilt ? `, built in ${yearBuilt}` : ''
@@ -234,11 +249,11 @@ function parseAIResponse(response: string, input: ListingGenerateRequest): Gener
   // Parse sections from text
   const sections: Record<string, string> = {}
   const sectionPatterns = [
-    { key: 'headline', pattern: /(?:headline|title)[:\s]*(.+?)(?=\n\n|\n[A-Z]|$)/is },
-    { key: 'shortDescription', pattern: /(?:short\s*description|summary|teaser)[:\s]*(.+?)(?=\n\n|\n[A-Z]|$)/is },
-    { key: 'fullDescription', pattern: /(?:full\s*description|description|listing)[:\s]*(.+?)(?=\n\n(?:social|email|seo|alternative)|$)/is },
-    { key: 'socialMediaPost', pattern: /(?:social\s*media|facebook|instagram)[:\s]*(.+?)(?=\n\n|\n[A-Z]|$)/is },
-    { key: 'emailTemplate', pattern: /(?:email|outreach)[:\s]*(.+?)(?=\n\n(?:seo|alternative)|$)/is },
+    { key: 'headline', pattern: /(?:headline|title)[:\s]*([\s\S]+?)(?=\n\n|\n[A-Z]|$)/i },
+    { key: 'shortDescription', pattern: /(?:short\s*description|summary|teaser)[:\s]*([\s\S]+?)(?=\n\n|\n[A-Z]|$)/i },
+    { key: 'fullDescription', pattern: /(?:full\s*description|description|listing)[:\s]*([\s\S]+?)(?=\n\n(?:social|email|seo|alternative)|$)/i },
+    { key: 'socialMediaPost', pattern: /(?:social\s*media|facebook|instagram)[:\s]*([\s\S]+?)(?=\n\n|\n[A-Z]|$)/i },
+    { key: 'emailTemplate', pattern: /(?:email|outreach)[:\s]*([\s\S]+?)(?=\n\n(?:seo|alternative)|$)/i },
   ]
 
   for (const { key, pattern } of sectionPatterns) {
