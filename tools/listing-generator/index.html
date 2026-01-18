@@ -1276,7 +1276,21 @@
 
             // STEERING - Neighborhood language
             { pattern: /\bup[- ]?and[- ]?coming\s+(neighborhood|area|community)\b/gi, category: 'Potential Steering/Gentrification', severity: 'warning' },
-            { pattern: /\b(gentrifying|gentrified|transitional)\s+(neighborhood|area|community)\b/gi, category: 'Potential Steering', severity: 'warning' }
+            { pattern: /\b(gentrifying|gentrified|transitional)\s+(neighborhood|area|community)\b/gi, category: 'Potential Steering', severity: 'warning' },
+
+            // SOURCE OF INCOME (Protected in CA, NY, IL, CO, OR, WA, NJ, MA, etc.)
+            { pattern: /\bno\s+section[- ]?8\b/gi, category: 'Source of Income', note: 'May be illegal in some states - check local laws' },
+            { pattern: /\bno\s+(vouchers?|housing\s+assistance|housing\s+subsidies?)\b/gi, category: 'Source of Income', note: 'May be illegal in some states - check local laws' },
+            { pattern: /\bmust\s+earn\s+\d+x\s+(rent|income)\b/gi, category: 'Source of Income', severity: 'warning', note: 'Income requirements may violate source of income protections' },
+            { pattern: /\b(income\s+requirements?|minimum\s+income|verify\s+income)\b/gi, category: 'Source of Income', severity: 'warning', note: 'May be illegal in some states - check local laws' },
+
+            // MARITAL STATUS (Protected in many states)
+            { pattern: /\b(married|single|divorced|unmarried|widowed)\s*(only|preferred|couples?)\b/gi, category: 'Marital Status', note: 'Protected in many states - remove' },
+            { pattern: /\b(no\s+unmarried|married\s+couples?\s+only)\b/gi, category: 'Marital Status', note: 'Protected in many states - remove' },
+
+            // MILITARY/VETERAN STATUS (Protected in many states)
+            { pattern: /\bno\s+(military|veterans?|service\s*members?)\b/gi, category: 'Military Status', note: 'Protected in many states - remove' },
+            { pattern: /\b(civilians?\s+only|non[- ]?military\s+only)\b/gi, category: 'Military Status', note: 'Protected in many states - remove' }
         ];
 
         // Fair Housing Compliance Scanner
