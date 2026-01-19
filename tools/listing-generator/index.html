@@ -775,6 +775,86 @@
             border-radius: 9999px;
             margin-left: 0.25rem;
         }
+
+        /* Variations Selector */
+        .variations-container {
+            display: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .variations-container.visible {
+            display: block;
+        }
+
+        .variations-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .variation-tab {
+            flex: 1;
+            padding: 1rem;
+            background: var(--cream);
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .variation-tab:hover {
+            border-color: var(--accent);
+        }
+
+        .variation-tab.active {
+            background: white;
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+        }
+
+        .variation-tab-label {
+            font-weight: 600;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .variation-tab-style {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        .variation-tab .selected-badge {
+            display: none;
+            background: var(--sage);
+            color: white;
+            font-size: 0.65rem;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            margin-top: 0.5rem;
+        }
+
+        .variation-tab.selected .selected-badge {
+            display: inline-block;
+        }
+
+        .use-variation-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .use-variation-btn:hover {
+            background: var(--accent-hover);
+        }
     </style>
 </head>
 <body>
@@ -990,9 +1070,12 @@
                             <select id="tone" onchange="handleToneChange()">
                                 <option value="professional">Professional</option>
                                 <option value="luxury">Luxury / Upscale</option>
+                                <option value="modern">Modern / Contemporary</option>
                                 <option value="casual">Casual / Friendly</option>
                                 <option value="family-friendly">Family-Friendly</option>
+                                <option value="renter-focused">Renter-Focused 🏠</option>
                                 <option value="investor-focused">Investor-Focused 📈</option>
+                                <option value="fixer-wholesale">Fixer / Wholesale 🔧</option>
                                 <option value="fsbo">FSBO (By Owner)</option>
                             </select>
                         </div>
@@ -1025,6 +1108,13 @@
                         <div class="toggle-group">
                             <div class="toggle-switch" id="spanishToggle" onclick="toggleSpanish()"></div>
                             <span class="toggle-label">Generate Spanish version (Español)</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Multiple Variations</label>
+                        <div class="toggle-group">
+                            <div class="toggle-switch" id="variationsToggle" onclick="toggleVariations()"></div>
+                            <span class="toggle-label">Generate 3 variations to choose from</span>
                         </div>
                     </div>
                     <!-- Investor Fields (shown when investor-focused tone selected) -->
@@ -1069,6 +1159,33 @@
 
                 <!-- Results (hidden initially) -->
                 <div id="resultsContent" style="display: none;">
+                    <!-- Variations Selector (shown when multiple variations generated) -->
+                    <div class="variations-container" id="variationsContainer">
+                        <div class="result-card">
+                            <div class="result-header">
+                                <span class="result-title">Choose Your Favorite Variation</span>
+                            </div>
+                            <div class="variations-tabs" id="variationsTabs">
+                                <div class="variation-tab active" onclick="selectVariation(0)">
+                                    <span class="variation-tab-label">Option A</span>
+                                    <span class="variation-tab-style" id="variationStyle0">Professional</span>
+                                    <span class="selected-badge">✓ Selected</span>
+                                </div>
+                                <div class="variation-tab" onclick="selectVariation(1)">
+                                    <span class="variation-tab-label">Option B</span>
+                                    <span class="variation-tab-style" id="variationStyle1">Engaging</span>
+                                    <span class="selected-badge">✓ Selected</span>
+                                </div>
+                                <div class="variation-tab" onclick="selectVariation(2)">
+                                    <span class="variation-tab-label">Option C</span>
+                                    <span class="variation-tab-style" id="variationStyle2">Concise</span>
+                                    <span class="selected-badge">✓ Selected</span>
+                                </div>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--gray); text-align: center;">Click a variation to preview it below. The selected variation will be used when you copy.</p>
+                        </div>
+                    </div>
+
                     <!-- Fair Housing Compliance Alert Container -->
                     <div id="complianceAlertContainer"></div>
 
@@ -1181,6 +1298,9 @@
         let currentListing = null;
         let selectedFeatures = [];
         let spanishEnabled = false;
+        let variationsEnabled = false;
+        let allVariations = [];
+        let selectedVariationIndex = 0;
         let currentCharLimit = 0;
 
         // Platform character limits
@@ -1256,6 +1376,68 @@
             if (spanishTab) {
                 spanishTab.style.display = spanishEnabled ? 'inline-block' : 'none';
             }
+        }
+
+        // Variations Toggle
+        function toggleVariations() {
+            variationsEnabled = !variationsEnabled;
+            const toggle = document.getElementById('variationsToggle');
+            toggle.classList.toggle('active', variationsEnabled);
+        }
+
+        // Select Variation
+        function selectVariation(index) {
+            if (!allVariations || allVariations.length === 0) return;
+
+            selectedVariationIndex = index;
+            currentListing = allVariations[index];
+
+            // Update tab UI
+            document.querySelectorAll('.variation-tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+                tab.classList.toggle('selected', i === index);
+            });
+
+            // Re-display the selected variation
+            displayListingContent(currentListing);
+        }
+
+        // Display listing content (used by both single and variation modes)
+        function displayListingContent(listing) {
+            document.getElementById('resultHeadline').textContent = listing.headline;
+            document.getElementById('resultFullDescription').textContent = listing.fullDescription;
+            document.getElementById('resultShortDescription').textContent = listing.shortDescription;
+            document.getElementById('resultSocialMediaPost').textContent = listing.socialMediaPost;
+            document.getElementById('resultEmailTemplate').textContent = listing.emailTemplate;
+
+            // Generate Spanish version if enabled
+            if (spanishEnabled) {
+                const spanishVersion = listing.spanishDescription || generateSpanishVersion(listing);
+                listing.spanishDescription = spanishVersion;
+                document.getElementById('resultSpanishDescription').textContent = spanishVersion;
+                document.getElementById('spanishTab').style.display = 'inline-block';
+            } else {
+                document.getElementById('spanishTab').style.display = 'none';
+            }
+
+            // Keywords
+            const keywordsContainer = document.getElementById('resultKeywords');
+            keywordsContainer.innerHTML = listing.seoKeywords
+                .map(kw => `<span class="keyword-tag">${kw}</span>`)
+                .join('');
+
+            // Alternative headlines
+            const altContainer = document.getElementById('resultAltHeadlines');
+            altContainer.innerHTML = listing.alternativeHeadlines
+                .map(h => `<div class="alt-headline" onclick="useAltHeadline(this)">${h}<span class="copy-btn">Use</span></div>`)
+                .join('');
+
+            // Update Fair Housing Compliance Alert
+            updateComplianceAlert(listing);
+
+            // Update Character Counter based on selected platform
+            updateCharLimit();
+            updateCharCounter(listing.fullDescription);
         }
 
         // Basic Spanish Translation (template-based)
@@ -1515,7 +1697,8 @@ Características destacadas incluyen acabados modernos, espacios bien diseñados
                 tone: tone,
                 targetAudience: document.getElementById('targetAudience').value,
                 platform: document.getElementById('platform').value,
-                spanishEnabled: spanishEnabled
+                spanishEnabled: spanishEnabled,
+                generateVariations: variationsEnabled
             };
 
             // Add investor fields if investor-focused tone
@@ -1535,8 +1718,14 @@ Características destacadas incluyen acabados modernos, espacios bien diseñados
                 const data = await response.json();
 
                 if (data.ok && data.listing) {
-                    currentListing = data.listing;
-                    displayResults(data.listing);
+                    // Handle variations if provided
+                    if (data.variations && data.variations.length > 1) {
+                        currentListing = data.variations[0];
+                        displayResults(data.variations[0], data.variations);
+                    } else {
+                        currentListing = data.listing;
+                        displayResults(data.listing);
+                    }
                     incrementUsage();
                 } else {
                     alert(data.error || 'Failed to generate listing');
@@ -1549,44 +1738,38 @@ Características destacadas incluyen acabados modernos, espacios bien diseñados
             }
         }
 
-        function displayResults(listing) {
+        function displayResults(listing, variations = null) {
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('resultsContent').style.display = 'block';
 
-            document.getElementById('resultHeadline').textContent = listing.headline;
-            document.getElementById('resultFullDescription').textContent = listing.fullDescription;
-            document.getElementById('resultShortDescription').textContent = listing.shortDescription;
-            document.getElementById('resultSocialMediaPost').textContent = listing.socialMediaPost;
-            document.getElementById('resultEmailTemplate').textContent = listing.emailTemplate;
+            // Handle variations mode
+            const variationsContainer = document.getElementById('variationsContainer');
+            if (variations && variations.length > 1) {
+                allVariations = variations;
+                selectedVariationIndex = 0;
+                variationsContainer.classList.add('visible');
 
-            // Generate Spanish version if enabled
-            if (spanishEnabled) {
-                const spanishVersion = listing.spanishDescription || generateSpanishVersion(listing);
-                listing.spanishDescription = spanishVersion;
-                document.getElementById('resultSpanishDescription').textContent = spanishVersion;
-                document.getElementById('spanishTab').style.display = 'inline-block';
+                // Update variation tab labels
+                const variationStyles = ['Professional', 'Engaging', 'Concise'];
+                variations.forEach((v, i) => {
+                    const styleEl = document.getElementById(`variationStyle${i}`);
+                    if (styleEl) {
+                        styleEl.textContent = variationStyles[i] || `Style ${i + 1}`;
+                    }
+                });
+
+                // Reset tab selection
+                document.querySelectorAll('.variation-tab').forEach((tab, i) => {
+                    tab.classList.toggle('active', i === 0);
+                    tab.classList.toggle('selected', i === 0);
+                });
             } else {
-                document.getElementById('spanishTab').style.display = 'none';
+                allVariations = [];
+                variationsContainer.classList.remove('visible');
             }
 
-            // Keywords
-            const keywordsContainer = document.getElementById('resultKeywords');
-            keywordsContainer.innerHTML = listing.seoKeywords
-                .map(kw => `<span class="keyword-tag">${kw}</span>`)
-                .join('');
-
-            // Alternative headlines
-            const altContainer = document.getElementById('resultAltHeadlines');
-            altContainer.innerHTML = listing.alternativeHeadlines
-                .map(h => `<div class="alt-headline" onclick="useAltHeadline(this)">${h}<span class="copy-btn">Use</span></div>`)
-                .join('');
-
-            // Update Fair Housing Compliance Alert
-            updateComplianceAlert(listing);
-
-            // Update Character Counter based on selected platform
-            updateCharLimit();
-            updateCharCounter(listing.fullDescription);
+            // Display the listing content
+            displayListingContent(listing);
         }
 
         function useAltHeadline(el) {
