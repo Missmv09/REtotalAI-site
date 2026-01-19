@@ -608,12 +608,24 @@
     // ============================================
 
     /**
-     * Scan text for Fair Housing violations
+     * Scan text for Fair Housing violations (with usage limit enforcement)
      * @param {string} text - The text to scan
      * @param {string|null} stateCode - Optional 2-letter state code for state-specific checks
-     * @returns {Array} Array of violation objects
+     * @param {Object} options - Optional settings { skipLimitCheck: boolean }
+     * @returns {Array|Object} Array of violation objects, or { blocked: true, reason: string } if limit reached
      */
-    function scan(text, stateCode = null) {
+    function scan(text, stateCode = null, options = {}) {
+        // Check usage limits unless explicitly skipped (for internal use)
+        if (!options.skipLimitCheck) {
+            resetMonthlyUsage();
+            const usage = checkUsageLimit();
+
+            if (!usage.allowed) {
+                showUpgradeModal();
+                return { blocked: true, reason: 'limit_reached', tier: usage.tier };
+            }
+        }
+
         if (!text || typeof text !== 'string') {
             return [];
         }
@@ -670,6 +682,11 @@
         const severityOrder = { 'high': 0, 'medium': 1, 'low': 2 };
         violations.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
+        // Increment usage count after successful scan (unless skipped)
+        if (!options.skipLimitCheck) {
+            incrementUsage();
+        }
+
         return violations;
     }
 
@@ -689,13 +706,19 @@
     }
 
     /**
-     * Quick scan for compliance check
+     * Quick scan for compliance check (with usage limit enforcement)
      * @param {string} text - The text to scan
      * @param {string|null} stateCode - Optional state code
-     * @returns {Object} { isCompliant, count, hasHighRisk, highCount, mediumCount, lowCount }
+     * @param {Object} options - Optional settings { skipLimitCheck: boolean }
+     * @returns {Object} { isCompliant, count, hasHighRisk, highCount, mediumCount, lowCount, violations } or { blocked: true, reason: string }
      */
-    function quickScan(text, stateCode = null) {
-        const violations = scan(text, stateCode);
+    function quickScan(text, stateCode = null, options = {}) {
+        const violations = scan(text, stateCode, options);
+
+        // If scan was blocked, return the blocked result
+        if (violations.blocked) {
+            return violations;
+        }
 
         const highCount = violations.filter(v => v.severity === 'high').length;
         const mediumCount = violations.filter(v => v.severity === 'medium').length;
@@ -1168,6 +1191,568 @@
         `;
     }
 
+    // ============================================
+    // USAGE TRACKING & TIER MANAGEMENT
+    // ============================================
+
+    const TIER_LIMITS = {
+        free: 5,
+        pro: Infinity,
+        brokerage: Infinity
+    };
+
+    const STRIPE_LINKS = {
+        pro: 'https://buy.stripe.com/4gMeVcgxf8cndkLde49Ve0c',
+        brokerage: 'https://buy.stripe.com/8x25kCftbgIT3Kb7TK9Ve0b'
+    };
+
+    /**
+     * Get the first day of the current month as ISO string
+     * @returns {string} ISO date string for first of current month
+     */
+    function getFirstOfMonth() {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    }
+
+    /**
+     * Get the first day of next month as formatted string
+     * @returns {string} Formatted date string (e.g., "February 1, 2026")
+     */
+    function getFirstOfNextMonth() {
+        const now = new Date();
+        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        return nextMonth.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+
+    /**
+     * Reset monthly usage if we're in a new month
+     */
+    function resetMonthlyUsage() {
+        const currentFirstOfMonth = getFirstOfMonth();
+        const storedResetDate = localStorage.getItem('fhs_scanResetDate');
+
+        if (storedResetDate !== currentFirstOfMonth) {
+            localStorage.setItem('fhs_scanCount', '0');
+            localStorage.setItem('fhs_scanResetDate', currentFirstOfMonth);
+        }
+    }
+
+    /**
+     * Get the current user tier
+     * @returns {string} 'free', 'pro', or 'brokerage'
+     */
+    function getTier() {
+        return localStorage.getItem('fhs_userTier') || 'free';
+    }
+
+    /**
+     * Set the user tier (for admin/testing purposes)
+     * @param {string} tier - 'free', 'pro', or 'brokerage'
+     */
+    function setTier(tier) {
+        const validTiers = ['free', 'pro', 'brokerage'];
+        if (validTiers.includes(tier)) {
+            localStorage.setItem('fhs_userTier', tier);
+            console.log(`[FairHousingScanner] Tier set to: ${tier}`);
+            // Update badge if it exists
+            updateTierBadge();
+            return true;
+        }
+        console.error(`[FairHousingScanner] Invalid tier: ${tier}. Must be one of: ${validTiers.join(', ')}`);
+        return false;
+    }
+
+    /**
+     * Get current scan count
+     * @returns {number} Current number of scans this month
+     */
+    function getScanCount() {
+        resetMonthlyUsage();
+        return parseInt(localStorage.getItem('fhs_scanCount') || '0', 10);
+    }
+
+    /**
+     * Check if user can perform a scan
+     * @returns {Object} { allowed: boolean, remaining: number, tier: string, limit: number }
+     */
+    function checkUsageLimit() {
+        resetMonthlyUsage();
+        const tier = getTier();
+        const limit = TIER_LIMITS[tier];
+        const count = getScanCount();
+        const remaining = Math.max(0, limit - count);
+        const allowed = limit === Infinity || count < limit;
+
+        return {
+            allowed,
+            remaining: limit === Infinity ? Infinity : remaining,
+            tier,
+            limit: limit === Infinity ? 'unlimited' : limit,
+            count
+        };
+    }
+
+    /**
+     * Increment the scan usage count
+     */
+    function incrementUsage() {
+        resetMonthlyUsage();
+        const currentCount = getScanCount();
+        localStorage.setItem('fhs_scanCount', String(currentCount + 1));
+        // Update badge if it exists
+        updateTierBadge();
+    }
+
+    /**
+     * Check URL parameters for admin tier override
+     */
+    function checkAdminTierOverride() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAdmin = urlParams.get('fhs_admin') === 'true';
+        const tierOverride = urlParams.get('fhs_tier');
+
+        if (isAdmin && tierOverride) {
+            const validTiers = ['free', 'pro', 'brokerage'];
+            if (validTiers.includes(tierOverride)) {
+                localStorage.setItem('fhs_userTier', tierOverride);
+                console.log(`[FairHousingScanner] Admin override: tier set to ${tierOverride}`);
+            }
+        }
+    }
+
+    // Check for admin override on load
+    if (typeof window !== 'undefined') {
+        checkAdminTierOverride();
+    }
+
+    // ============================================
+    // UPGRADE MODAL
+    // ============================================
+
+    /**
+     * Show the upgrade modal
+     */
+    function showUpgradeModal() {
+        // Remove existing modal if present
+        const existingModal = document.getElementById('fhs-upgrade-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        const resetDate = getFirstOfNextMonth();
+
+        const modalHtml = `
+            <div id="fhs-upgrade-modal" class="fhs-modal-overlay">
+                <div class="fhs-modal">
+                    <button class="fhs-modal-close" onclick="FairHousingScanner.hideUpgradeModal()">&times;</button>
+
+                    <div class="fhs-modal-header">
+                        <div class="fhs-modal-icon">🛡️</div>
+                        <h2 class="fhs-modal-title">Upgrade to Continue Scanning</h2>
+                        <p class="fhs-modal-subtitle">You've used all 5 free scans this month.</p>
+                    </div>
+
+                    <div class="fhs-pricing-cards">
+                        <!-- Pro Card -->
+                        <div class="fhs-pricing-card">
+                            <div class="fhs-card-header">
+                                <h3 class="fhs-card-title">Pro</h3>
+                                <div class="fhs-card-price">$9.99<span>/month</span></div>
+                            </div>
+                            <ul class="fhs-card-features">
+                                <li><span class="fhs-check">✓</span> Unlimited scans</li>
+                                <li><span class="fhs-check">✓</span> State-specific protections (50 states)</li>
+                                <li><span class="fhs-check">✓</span> California FEHA/Unruh compliance</li>
+                                <li><span class="fhs-check">✓</span> Priority support</li>
+                            </ul>
+                            <a href="${STRIPE_LINKS.pro}" class="fhs-upgrade-btn fhs-btn-pro" target="_blank">
+                                Upgrade to Pro
+                            </a>
+                        </div>
+
+                        <!-- Brokerage Card -->
+                        <div class="fhs-pricing-card fhs-card-featured">
+                            <div class="fhs-card-badge">BEST FOR TEAMS</div>
+                            <div class="fhs-card-header">
+                                <h3 class="fhs-card-title">Brokerage</h3>
+                                <div class="fhs-card-price">$99<span>/month</span></div>
+                            </div>
+                            <ul class="fhs-card-features">
+                                <li><span class="fhs-check">✓</span> Everything in Pro</li>
+                                <li><span class="fhs-check">✓</span> Team accounts (up to 25 users)</li>
+                                <li><span class="fhs-check">✓</span> API access</li>
+                                <li><span class="fhs-check">✓</span> PDF compliance reports</li>
+                                <li><span class="fhs-check">✓</span> Dedicated support</li>
+                            </ul>
+                            <a href="${STRIPE_LINKS.brokerage}" class="fhs-upgrade-btn fhs-btn-brokerage" target="_blank">
+                                Upgrade to Brokerage
+                            </a>
+                        </div>
+                    </div>
+
+                    <p class="fhs-modal-footer">Your free scans reset on ${resetDate}</p>
+                </div>
+            </div>
+        `;
+
+        // Add modal styles if not present
+        if (!document.getElementById('fhs-modal-styles')) {
+            const styleEl = document.createElement('style');
+            styleEl.id = 'fhs-modal-styles';
+            styleEl.textContent = getModalStyles();
+            document.head.appendChild(styleEl);
+        }
+
+        // Add modal to page
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Close modal when clicking overlay
+        const modal = document.getElementById('fhs-upgrade-modal');
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                hideUpgradeModal();
+            }
+        });
+
+        // Close on escape key
+        document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    /**
+     * Hide the upgrade modal
+     */
+    function hideUpgradeModal() {
+        const modal = document.getElementById('fhs-upgrade-modal');
+        if (modal) {
+            modal.remove();
+        }
+        document.removeEventListener('keydown', handleEscapeKey);
+    }
+
+    /**
+     * Handle escape key to close modal
+     */
+    function handleEscapeKey(e) {
+        if (e.key === 'Escape') {
+            hideUpgradeModal();
+        }
+    }
+
+    /**
+     * Get modal CSS styles
+     */
+    function getModalStyles() {
+        return `
+            .fhs-modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                padding: 1rem;
+            }
+
+            .fhs-modal {
+                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                border-radius: 1rem;
+                padding: 2rem;
+                max-width: 700px;
+                width: 100%;
+                position: relative;
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .fhs-modal-close {
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+                background: rgba(255, 255, 255, 0.1);
+                border: none;
+                color: #fff;
+                font-size: 1.5rem;
+                width: 2.5rem;
+                height: 2.5rem;
+                border-radius: 50%;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+            }
+
+            .fhs-modal-close:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            .fhs-modal-header {
+                text-align: center;
+                margin-bottom: 1.5rem;
+            }
+
+            .fhs-modal-icon {
+                font-size: 3rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .fhs-modal-title {
+                color: #fff;
+                font-size: 1.5rem;
+                margin: 0 0 0.5rem 0;
+                font-family: Georgia, serif;
+            }
+
+            .fhs-modal-subtitle {
+                color: #ff6b6b;
+                font-size: 1rem;
+                margin: 0;
+            }
+
+            .fhs-pricing-cards {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
+                margin: 1.5rem 0;
+            }
+
+            @media (max-width: 600px) {
+                .fhs-pricing-cards {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .fhs-pricing-card {
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 0.75rem;
+                padding: 1.5rem;
+                position: relative;
+            }
+
+            .fhs-pricing-card.fhs-card-featured {
+                background: rgba(212, 175, 55, 0.1);
+                border-color: #D4AF37;
+            }
+
+            .fhs-card-badge {
+                position: absolute;
+                top: -0.75rem;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #D4AF37;
+                color: #1a1a2e;
+                font-size: 0.65rem;
+                font-weight: 700;
+                padding: 0.25rem 0.75rem;
+                border-radius: 9999px;
+                letter-spacing: 0.05em;
+            }
+
+            .fhs-card-header {
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+
+            .fhs-card-title {
+                color: #fff;
+                font-size: 1.25rem;
+                margin: 0 0 0.5rem 0;
+            }
+
+            .fhs-card-price {
+                color: #D4AF37;
+                font-size: 2rem;
+                font-weight: 700;
+            }
+
+            .fhs-card-price span {
+                font-size: 0.875rem;
+                font-weight: 400;
+                color: rgba(255, 255, 255, 0.6);
+            }
+
+            .fhs-card-features {
+                list-style: none;
+                padding: 0;
+                margin: 1rem 0;
+            }
+
+            .fhs-card-features li {
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 0.875rem;
+                padding: 0.5rem 0;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .fhs-check {
+                color: #4ade80;
+                font-weight: 600;
+            }
+
+            .fhs-upgrade-btn {
+                display: block;
+                width: 100%;
+                padding: 0.875rem;
+                border-radius: 0.5rem;
+                font-size: 0.9rem;
+                font-weight: 600;
+                text-align: center;
+                text-decoration: none;
+                transition: all 0.2s;
+                cursor: pointer;
+            }
+
+            .fhs-btn-pro {
+                background: #3b82f6;
+                color: #fff;
+            }
+
+            .fhs-btn-pro:hover {
+                background: #2563eb;
+            }
+
+            .fhs-btn-brokerage {
+                background: linear-gradient(135deg, #D4AF37, #b8941f);
+                color: #1a1a2e;
+            }
+
+            .fhs-btn-brokerage:hover {
+                background: linear-gradient(135deg, #e5c04a, #D4AF37);
+            }
+
+            .fhs-modal-footer {
+                text-align: center;
+                color: rgba(255, 255, 255, 0.5);
+                font-size: 0.8rem;
+                margin: 0;
+            }
+
+            /* Tier Badge Styles */
+            .fhs-tier-badge-container {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.5rem 1rem;
+                background: rgba(0, 0, 0, 0.05);
+                border-radius: 0.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .fhs-tier-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+                padding: 0.25rem 0.75rem;
+                border-radius: 0.25rem;
+                font-size: 0.75rem;
+                font-weight: 700;
+                letter-spacing: 0.05em;
+            }
+
+            .fhs-tier-badge.fhs-tier-free {
+                background: #6B7280;
+                color: #fff;
+            }
+
+            .fhs-tier-badge.fhs-tier-pro {
+                background: #3b82f6;
+                color: #fff;
+            }
+
+            .fhs-tier-badge.fhs-tier-brokerage {
+                background: linear-gradient(135deg, #D4AF37, #b8941f);
+                color: #1a1a2e;
+            }
+
+            .fhs-usage-text {
+                font-size: 0.85rem;
+                color: #4B5563;
+            }
+
+            .fhs-upgrade-link {
+                font-size: 0.8rem;
+                color: #3b82f6;
+                text-decoration: none;
+                cursor: pointer;
+                margin-left: auto;
+            }
+
+            .fhs-upgrade-link:hover {
+                text-decoration: underline;
+            }
+        `;
+    }
+
+    // ============================================
+    // TIER BADGE UI
+    // ============================================
+
+    /**
+     * Render tier badge into a container
+     * @param {string} containerId - ID of container element
+     */
+    function renderTierBadge(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const usage = checkUsageLimit();
+        let badgeHtml = '';
+
+        if (usage.tier === 'free') {
+            badgeHtml = `
+                <div class="fhs-tier-badge-container" id="fhs-tier-badge-ui">
+                    <span class="fhs-tier-badge fhs-tier-free">FREE</span>
+                    <span class="fhs-usage-text">${usage.remaining} of ${usage.limit} scans remaining</span>
+                    <a class="fhs-upgrade-link" onclick="FairHousingScanner.showUpgradeModal()">Upgrade</a>
+                </div>
+            `;
+        } else if (usage.tier === 'pro') {
+            badgeHtml = `
+                <div class="fhs-tier-badge-container" id="fhs-tier-badge-ui">
+                    <span class="fhs-tier-badge fhs-tier-pro">PRO ✓</span>
+                </div>
+            `;
+        } else if (usage.tier === 'brokerage') {
+            badgeHtml = `
+                <div class="fhs-tier-badge-container" id="fhs-tier-badge-ui">
+                    <span class="fhs-tier-badge fhs-tier-brokerage">BROKERAGE ✓</span>
+                </div>
+            `;
+        }
+
+        // Add modal styles if not present
+        if (!document.getElementById('fhs-modal-styles')) {
+            const styleEl = document.createElement('style');
+            styleEl.id = 'fhs-modal-styles';
+            styleEl.textContent = getModalStyles();
+            document.head.appendChild(styleEl);
+        }
+
+        container.innerHTML = badgeHtml;
+    }
+
+    /**
+     * Update existing tier badge UI
+     */
+    function updateTierBadge() {
+        const existingBadge = document.getElementById('fhs-tier-badge-ui');
+        if (existingBadge) {
+            const container = existingBadge.parentElement;
+            if (container) {
+                renderTierBadge(container.id);
+            }
+        }
+    }
+
     /**
      * Generate a text-based compliance report
      * @param {Array} violations - Array of violations
@@ -1237,16 +1822,39 @@ attorney for definitive Fair Housing compliance guidance.
     // PUBLIC API
     // ============================================
     const FairHousingScanner = {
+        // Core scanning
         scan: scan,
         quickScan: quickScan,
+
+        // Rendering
         renderResults: renderResults,
         renderStateDropdown: renderStateDropdown,
+        renderTierBadge: renderTierBadge,
+
+        // State information
         getStateProtections: getStateProtections,
         getStateInfo: getStateInfo,
         getAllStates: getAllStates,
+
+        // Reporting
         generateReport: generateReport,
+
+        // Usage tracking & tier management
+        checkUsageLimit: checkUsageLimit,
+        incrementUsage: incrementUsage,
+        resetMonthlyUsage: resetMonthlyUsage,
+        getTier: getTier,
+        setTier: setTier,
+        getScanCount: getScanCount,
+
+        // Upgrade modal
+        showUpgradeModal: showUpgradeModal,
+        hideUpgradeModal: hideUpgradeModal,
+
+        // Data
         federalProtectedClasses: federalProtectedClasses,
-        protectionNames: protectionNames
+        protectionNames: protectionNames,
+        STRIPE_LINKS: STRIPE_LINKS
     };
 
     // Export for different module systems

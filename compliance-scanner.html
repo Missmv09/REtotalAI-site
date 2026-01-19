@@ -544,6 +544,9 @@
             <div class="panel">
                 <h2 class="panel-title">Scan Content</h2>
 
+                <!-- Tier Badge -->
+                <div id="tierBadgeContainer"></div>
+
                 <!-- State Selector -->
                 <div class="state-selector">
                     <label for="stateSelect">Select State for Compliance Check</label>
@@ -724,6 +727,9 @@ Security Deposit: $2,200`
             initializeStateDropdown();
             updateStateInfo('');
             setupDragAndDrop();
+
+            // Initialize tier badge
+            FairHousingScanner.renderTierBadge('tierBadgeContainer');
 
             // Set PDF.js worker
             if (typeof pdfjsLib !== 'undefined') {
@@ -947,11 +953,22 @@ Security Deposit: $2,200`
             }
 
             // Run scan
-            lastViolations = FairHousingScanner.scan(text, stateCode);
+            const result = FairHousingScanner.scan(text, stateCode);
+
+            // Check if scan was blocked due to usage limit
+            if (result.blocked) {
+                // Modal is already shown by the scan function
+                return;
+            }
+
+            lastViolations = result;
             lastStateCode = stateCode;
 
             // Render results
             FairHousingScanner.renderResults(lastViolations, 'scanResults', stateCode);
+
+            // Update tier badge to reflect new usage count
+            FairHousingScanner.renderTierBadge('tierBadgeContainer');
 
             // Show/hide copy button
             const copyBtn = document.getElementById('copyReportBtn');
