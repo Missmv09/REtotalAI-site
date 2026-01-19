@@ -36,8 +36,6 @@
   </script>
   <script>
     const IS_PRODUCTION = window.location.hostname === 'retotalai.com';
-    const DEAL_ANALYZER_MONTHLY_URL = 'https://buy.stripe.com/14AbJ0a8RfEP0xZgqg9Ve02';
-    const DEAL_ANALYZER_ANNUAL_URL  = 'https://buy.stripe.com/fZu3cu80JcsDfsT4Hy9Ve01';
   </script>
   <style>
     body { font-family:sans-serif; max-width:1100px; margin:40px auto; line-height:1.5; }
@@ -83,40 +81,6 @@
     }
     .plan-dot.pro { background:#0f7b3a; }
     .plan-dot.free { background:#d97706; }
-
-    /* Upgrade modal */
-    .upgrade-backdrop {
-      position:fixed; inset:0; background:rgba(0,0,0,0.4);
-      display:none; align-items:center; justify-content:center; z-index:50;
-    }
-    .upgrade-modal {
-      background:#fff; max-width:420px; width:90%;
-      border-radius:18px; padding:20px 20px 16px;
-      box-shadow:0 18px 40px rgba(0,0,0,0.18);
-    }
-    .upgrade-modal h3 { margin:0 0 6px; font-size:18px; }
-    .upgrade-modal p { margin:4px 0; font-size:14px; }
-    .chip-row { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 4px; }
-    .chip {
-      font-size:11px; padding:4px 8px; border-radius:999px;
-      background:#f3f4ff; color:#3730a3; border:1px solid #e0e7ff;
-    }
-    .upgrade-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
-    .btn-text { background:transparent; border:none; color:#555; padding:8px 10px; border-radius:8px; cursor:pointer; }
-    .btn-primary {
-      background:#111827; color:#fff; border-radius:999px;
-      padding:8px 16px; border:none; cursor:pointer; font-size:14px;
-    }
-    .btn-primary a { color:inherit; text-decoration:none; }
-
-    .locked-label {
-      font-size:11px; text-transform:uppercase; letter-spacing:0.08em;
-      color:#b45309; display:inline-flex; align-items:center; gap:4px;
-    }
-    .lock-icon {
-      width:12px; height:12px; border-radius:3px; border:1px solid #b45309;
-      display:inline-flex; align-items:center; justify-content:center; font-size:9px;
-    }
 
     /* Logged-out "save your deals" row on Deal Analyzer */
     .recent-login-message-row td {
@@ -602,66 +566,56 @@
     <button class="ghost" onclick="snapshotBaseline()">Save as Baseline for Comparison</button>
   </div>
 
-  <!-- Deal Analyzer: free limit reached upsell (hidden by default) -->
+  <!-- Free trial limit message (hidden by default) -->
   <div
-    id="deal-upsell-banner"
+    id="deal-limit-banner"
     style="
-    display:none;
-    margin: 18px 0;
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid #facc15;
-    background: #fffbeb;
-    font-size: 13px;
-    color: #78350f;
-    display: none;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    justify-content: space-between;
-  "
+      display: none;
+      margin: 18px 0;
+      padding: 14px 18px;
+      border-radius: 10px;
+      border: 1px solid #facc15;
+      background: #fffbeb;
+      font-size: 14px;
+      color: #78350f;
+    "
   >
-    <div>
-      <strong>You've hit your free Deal Analyzer limit.</strong>
-      <span style="margin-left: 4px;">
-        Upgrade to <strong>Deal Analyzer Pro</strong> for unlimited deal runs, scenario comparisons, and DSCR guidance.
-      </span>
+    <div style="margin-bottom: 10px;">
+      <strong>You've used your 3 free Deal Analyzer analyses.</strong>
+      <span style="margin-left: 4px;">Upgrade for unlimited deal runs, saved scenarios, and more.</span>
     </div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
       <a
-        id="upsell-monthly-btn"
-        href="#"
-        onclick="window.location.href=DEAL_ANALYZER_MONTHLY_URL; return false;"
+        href="https://buy.stripe.com/00wdR894NfEPcgH5LC9Ve03"
+        target="_blank"
+        rel="noopener noreferrer"
         style="
-        padding: 6px 12px;
-        border-radius: 999px;
-        border: 1px solid #111827;
-        background: #111827;
-        color: #f9fafb;
-        font-size: 12px;
-        font-weight: 500;
-        text-decoration: none;
-        cursor: pointer;
-      "
+          padding: 8px 16px;
+          border-radius: 999px;
+          background: #111827;
+          color: #fff;
+          font-size: 13px;
+          font-weight: 500;
+          text-decoration: none;
+        "
       >
-        Upgrade – $9/mo
+        Upgrade to Growth – $149/mo
       </a>
       <a
-        id="upsell-annual-btn"
-        href="#"
-        onclick="window.location.href=DEAL_ANALYZER_ANNUAL_URL; return false;"
+        href="https://buy.stripe.com/28E5kCcgZ50b2G7ei89Ve05"
+        target="_blank"
+        rel="noopener noreferrer"
         style="
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid #e5e7eb;
-        background: #ffffff;
-        color: #78350f;
-        font-size: 11px;
-        text-decoration: none;
-        cursor: pointer;
-      "
+          padding: 8px 16px;
+          border-radius: 999px;
+          border: 1px solid #d1d5db;
+          background: #fff;
+          color: #374151;
+          font-size: 13px;
+          text-decoration: none;
+        "
       >
-        Save with annual – $79/yr
+        Professional – $299/mo
       </a>
     </div>
   </div>
@@ -759,43 +713,6 @@
     </table>
   </section>
 
-  <!-- Upgrade modal -->
-  <div class="upgrade-backdrop" id="upgradeModal" onclick="backdropClick(event)">
-    <div class="upgrade-modal">
-      <h3 id="upgradeTitle">Unlock full Deal Analyzer power</h3>
-      <p id="upgradeMessage">
-        Upgrade to Deal Analyzer Monthly or Annual to save unlimited deals, run Scenario A/B comparisons, and get DSCR & CoC guidance on every property.
-      </p>
-      <div class="chip-row">
-        <span class="chip">Unlimited saved deals</span>
-        <span class="chip">Scenario A/B compare</span>
-        <span class="chip">DSCR & CoC guidance</span>
-      </div>
-      <p class="muted">Monthly is perfect if you’re testing a few deals. Annual gives you the same power at a better rate if you’re analyzing deals all year.</p>
-      <div class="upgrade-actions upgrade-modal-actions">
-        <button
-          id="da-upgrade-monthly-btn"
-          type="button"
-          class="btn-primary primary-upgrade-btn">
-          Upgrade – Deal Analyzer Monthly ($9/mo)
-        </button>
-
-        <button
-          id="da-upgrade-annual-btn"
-          type="button"
-          class="btn-text secondary-upgrade-btn">
-          Go Annual – Deal Analyzer ($79/yr)
-        </button>
-
-        <button
-          id="da-upgrade-later-btn"
-          type="button"
-          class="btn-text tertiary-upgrade-btn">
-          Maybe later
-        </button>
-      </div>
-    </div>
-  </div>
 
   <script>
     let lastCalc = null;
@@ -844,33 +761,15 @@
     }
 
     function applyPlanGating(){
-      const badgeText = document.getElementById("planBadgeText");
-      const dot = document.getElementById("planDot");
-      if (badgeText && dot) {
-        if (currentPlan === "free") {
-          badgeText.textContent = "Free plan";
-          dot.classList.remove("pro");
-          dot.classList.add("free");
-        } else if (currentPlan === "pro") {
-          badgeText.textContent = "Pro plan";
-          dot.classList.remove("free");
-          dot.classList.add("pro");
-        } else {
-          badgeText.textContent = "Starter plan";
-          dot.classList.remove("free");
-          dot.classList.add("pro");
-        }
-      }
+      // Hide plan badge since there's no paid tier
+      const planBadge = document.getElementById("planBadge");
+      if (planBadge) planBadge.style.display = "none";
 
+      // Hide lock labels since all features are available
       const scenarioLock = document.getElementById("scenarioLockLabel");
       const tweakLock = document.getElementById("tweakLockLabel");
-      if (currentPlan === "free") {
-        if (scenarioLock) scenarioLock.style.display = "inline-flex";
-        if (tweakLock) tweakLock.style.display = "inline-flex";
-      } else {
-        if (scenarioLock) scenarioLock.style.display = "none";
-        if (tweakLock) tweakLock.style.display = "none";
-      }
+      if (scenarioLock) scenarioLock.style.display = "none";
+      if (tweakLock) tweakLock.style.display = "none";
     }
 
     // Auto-fill Renovation Budget from Renovation Estimator (if present)
@@ -896,76 +795,6 @@
         console.warn("Unable to read reno estimate from localStorage", e);
       }
     })();
-
-    // ---------- Modal ----------
-    function openUpgradeModal(reason){
-      const modal = document.getElementById("upgradeModal");
-      const title = document.getElementById("upgradeTitle");
-      const msg = document.getElementById("upgradeMessage");
-
-      if (!modal) return;
-      if (reason === "save") {
-        title.textContent = "Unlock saved deal history";
-        msg.textContent = "Saving deals and building a portfolio history is part of the REtotalAI premium toolkit.";
-      } else if (reason === "baseline" || reason === "scenario") {
-        title.textContent = "Unlock full Deal Analyzer power";
-        msg.textContent = "Upgrade to Deal Analyzer Monthly or Annual to save unlimited deals, run Scenario A/B comparisons, and get DSCR & CoC guidance on every property.";
-      } else if (reason === "tweaks") {
-        title.textContent = "Unlock pro tweak suggestions";
-        msg.textContent = "Dynamic DSCR, CoC, and cash flow tweak suggestions are part of the REtotalAI premium toolkit.";
-      } else {
-        title.textContent = "Unlock pro investor tools";
-        msg.textContent = "REtotalAI Pro unlocks saved deals, scenario comparison, and pro guidance for just $9/mo or $79/yr.";
-      }
-
-      modal.style.display = "flex";
-      wireDealAnalyzerUpgradeButtons();
-    }
-
-    function closeUpgradeModal(){
-      const modal = document.getElementById("upgradeModal");
-      if (modal) modal.style.display = "none";
-    }
-
-    function backdropClick(e){
-      if (e.target && e.target.id === "upgradeModal") {
-        closeUpgradeModal();
-      }
-    }
-
-    function wireDealAnalyzerUpgradeButtons() {
-      const monthlyBtn = document.getElementById('da-upgrade-monthly-btn');
-      const annualBtn  = document.getElementById('da-upgrade-annual-btn');
-      const laterBtn   = document.getElementById('da-upgrade-later-btn');
-
-      if (monthlyBtn) {
-        monthlyBtn.onclick = () => {
-          window.location.href = DEAL_ANALYZER_MONTHLY_URL;
-        };
-      }
-
-      if (annualBtn) {
-        annualBtn.onclick = () => {
-          window.location.href = DEAL_ANALYZER_ANNUAL_URL;
-        };
-      }
-
-      if (laterBtn) {
-        laterBtn.onclick = () => {
-          // Close the modal without navigating.
-          // Use the existing modal close function if one exists.
-          if (typeof closeScenarioUpgradeModal === 'function') {
-            closeScenarioUpgradeModal();
-          } else if (typeof closeUpgradeModal === 'function') {
-            closeUpgradeModal();
-          } else {
-            // fallback: remove modal element if needed
-            const modalEl = laterBtn.closest('.upgrade-modal, .modal');
-            if (modalEl) modalEl.remove();
-          }
-        };
-      }
-    }
 
     // ---------- I/O ----------
     function readInputs(){
@@ -1088,9 +917,7 @@
       const saveBtn = document.getElementById("saveBtn");
       if (saveBtn) {
         saveBtn.disabled = false;
-        saveBtn.title = currentPlan === "free"
-          ? "Premium feature: upgrade to save your deals."
-          : "";
+        saveBtn.title = "";
       }
     }
 
@@ -1108,14 +935,6 @@
 
     // ---------- What to tweak ----------
     function buildTweaks(ctx) {
-      if (currentPlan === "free") {
-        // Show lock label but still show a single teaser suggestion
-        const list = [`Upgrade to unlock full tweak suggestions for DSCR, CoC, and cash flow tuning.`];
-        document.getElementById("tweakList").innerHTML = list.map(li=>`<li>${li}</li>`).join("");
-        document.getElementById("tweakBox").style.display = "block";
-        return;
-      }
-
       const T_DSCR=1.25, T_COC=8, T_CF=100;
       const effRentFactor = Math.max(0.01, 1 - ctx.vacancyPct - ctx.mgmtPct - ctx.maintPct - ctx.capexPct);
       const list = [];
@@ -1209,10 +1028,6 @@
 
     // ---------- Baseline & Scenario B ----------
     function snapshotBaseline(){
-      if (currentPlan === "free") {
-        openUpgradeModal("baseline");
-        return;
-      }
       const ctx = readInputs();
       if (!ctx.price || !ctx.rent) {
         alert("Enter Price and Rent first, then click Analyze (optional) and Save as Baseline.");
@@ -1261,10 +1076,6 @@
     }
 
     function recalcScenarioB(){
-      if (currentPlan === "free") {
-        openUpgradeModal("scenario");
-        return;
-      }
       if (!baseline) {
         alert("Click “Save as Baseline for Comparison” first.");
         return;
@@ -1290,10 +1101,6 @@
     }
 
     function applyScenarioB(){
-      if (currentPlan === "free") {
-        openUpgradeModal("scenario");
-        return;
-      }
       if (!baseline) {
         alert("Click “Save as Baseline for Comparison” first, then Preview B.");
         return;
@@ -1306,10 +1113,6 @@
     }
 
     async function saveScenarioB() {
-      if (currentPlan === "free") {
-        openUpgradeModal("scenario");
-        return;
-      }
       if (!baseline) {
         alert("Capture a baseline first, then set Scenario B tweaks.");
         return;
@@ -1370,10 +1173,6 @@
 
     // ---------- Save / Load ----------
     async function saveDeal() {
-      if (currentPlan === "free") {
-        openUpgradeModal("save");
-        return;
-      }
       if (!lastCalc) {
         alert("Analyze a deal first.");
         return;
@@ -1524,12 +1323,13 @@
   </script>
 
   <script>
+    // Free trial limit enforcement (3 runs per browser)
     (function () {
-      const LIMIT = 3; // free runs per browser
+      const LIMIT = 3;
       const STORAGE_KEY = 'retotal_deal_runs';
 
       const analyzeBtn = document.getElementById('analyze-btn');
-      const upsell = document.getElementById('deal-upsell-banner');
+      const limitBanner = document.getElementById('deal-limit-banner');
 
       if (!analyzeBtn) return;
 
@@ -1543,18 +1343,13 @@
         localStorage.setItem(STORAGE_KEY, String(n));
       }
 
-      function showUpsell() {
-        if (!upsell) return;
-        upsell.style.display = 'flex';
+      function showLimitBanner() {
+        if (!limitBanner) return;
+        limitBanner.style.display = 'block';
       }
 
-      function hideUpsell() {
-        if (!upsell) return;
-        upsell.style.display = 'none';
-      }
-
-      async function checkDealAnalyzerLimit() {
-        // In dev or staging, do not enforce limits so we can test freely
+      function checkLimit() {
+        // Only enforce in production
         if (!IS_PRODUCTION) {
           return { allowed: true, remaining: Infinity };
         }
@@ -1565,43 +1360,37 @@
         return { allowed, remaining };
       }
 
-      // initial state: if they already used up their runs, block the button immediately
-      checkDealAnalyzerLimit().then(({ allowed }) => {
-        if (!allowed) {
-          analyzeBtn.disabled = true;
-          analyzeBtn.style.opacity = '0.6';
-          analyzeBtn.style.cursor = 'not-allowed';
-          showUpsell();
-        }
-      });
+      // Initial state: if they already used up their runs, block the button
+      const { allowed } = checkLimit();
+      if (!allowed) {
+        analyzeBtn.disabled = true;
+        analyzeBtn.style.opacity = '0.6';
+        analyzeBtn.style.cursor = 'not-allowed';
+        showLimitBanner();
+      }
 
-      analyzeBtn.addEventListener('click', async function (e) {
-        const { allowed } = await checkDealAnalyzerLimit();
+      analyzeBtn.addEventListener('click', function (e) {
+        const { allowed } = checkLimit();
 
         if (!allowed) {
-          // block further use, show upsell
           e.preventDefault();
           analyzeBtn.disabled = true;
           analyzeBtn.style.opacity = '0.6';
           analyzeBtn.style.cursor = 'not-allowed';
-          showUpsell();
+          showLimitBanner();
           return;
         }
 
-        // allow this run and increment (production only)
+        // Increment run count (production only)
         if (IS_PRODUCTION) {
           let runs = getRunCount();
           runs += 1;
           setRunCount(runs);
 
-          // optional: soft warning when they hit 2/3
-          if (runs === LIMIT) {
-            showUpsell();
-          } else {
-            hideUpsell();
+          // Show message when limit reached
+          if (runs >= LIMIT) {
+            showLimitBanner();
           }
-        } else {
-          hideUpsell();
         }
       });
     })();
