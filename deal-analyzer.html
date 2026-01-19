@@ -36,8 +36,8 @@
   </script>
   <script>
     const IS_PRODUCTION = window.location.hostname === 'retotalai.com';
-    const DEAL_ANALYZER_MONTHLY_URL = 'https://buy.stripe.com/14AbJ0a8RfEP0xZgqg9Ve02';
-    const DEAL_ANALYZER_ANNUAL_URL  = 'https://buy.stripe.com/fZu3cu80JcsDfsT4Hy9Ve01';
+    const GROWTH_MONTHLY_URL = 'https://buy.stripe.com/00wdR894NfEPcgH5LC9Ve03';
+    const GROWTH_ANNUAL_URL  = 'https://buy.stripe.com/00w4gy2GpakvfsTei89Ve04';
   </script>
   <style>
     body { font-family:sans-serif; max-width:1100px; margin:40px auto; line-height:1.5; }
@@ -588,14 +588,14 @@
           id="da-upgrade-monthly-btn"
           type="button"
           class="btn-primary primary-upgrade-btn">
-          Upgrade – Deal Analyzer Monthly ($9/mo)
+          Upgrade to Growth ($149/mo)
         </button>
 
         <button
           id="da-upgrade-annual-btn"
           type="button"
           class="btn-text secondary-upgrade-btn">
-          Go Annual – Deal Analyzer ($79/yr)
+          Save with yearly billing
         </button>
 
         <button
@@ -726,7 +726,7 @@
         msg.textContent = "Dynamic DSCR, CoC, and cash flow tweak suggestions are part of the REtotalAI premium toolkit.";
       } else {
         title.textContent = "Unlock pro investor tools";
-        msg.textContent = "REtotalAI Pro unlocks saved deals, scenario comparison, and pro guidance for just $9/mo or $79/yr.";
+        msg.textContent = "Upgrade to Growth for saved deals, scenario comparison, and pro guidance.";
       }
 
       modal.style.display = "flex";
@@ -751,13 +751,13 @@
 
       if (monthlyBtn) {
         monthlyBtn.onclick = () => {
-          window.location.href = DEAL_ANALYZER_MONTHLY_URL;
+          window.location.href = GROWTH_MONTHLY_URL;
         };
       }
 
       if (annualBtn) {
         annualBtn.onclick = () => {
-          window.location.href = DEAL_ANALYZER_ANNUAL_URL;
+          window.location.href = GROWTH_ANNUAL_URL;
         };
       }
 
