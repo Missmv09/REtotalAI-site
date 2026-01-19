@@ -34,6 +34,9 @@
       }
     });
   </script>
+  <script>
+    const IS_PRODUCTION = window.location.hostname === 'retotalai.com';
+  </script>
   <style>
     body { font-family:sans-serif; max-width:1100px; margin:40px auto; line-height:1.5; }
     h2 { margin:0 0 4px }
@@ -563,6 +566,22 @@
     <button class="ghost" onclick="snapshotBaseline()">Save as Baseline for Comparison</button>
   </div>
 
+  <!-- Free trial limit message (hidden by default) -->
+  <div
+    id="deal-limit-banner"
+    style="
+      display: none;
+      margin: 18px 0;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      font-size: 14px;
+      color: #374151;
+    "
+  >
+    You've used your 3 free Deal Analyzer analyses.
+  </div>
 
   <div id="results" class="result">
     <h3>Results</h3>
@@ -1266,5 +1285,78 @@
     }
   </script>
 
+  <script>
+    // Free trial limit enforcement (3 runs per browser)
+    (function () {
+      const LIMIT = 3;
+      const STORAGE_KEY = 'retotal_deal_runs';
+
+      const analyzeBtn = document.getElementById('analyze-btn');
+      const limitBanner = document.getElementById('deal-limit-banner');
+
+      if (!analyzeBtn) return;
+
+      function getRunCount() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const n = parseInt(raw, 10);
+        return Number.isNaN(n) ? 0 : n;
+      }
+
+      function setRunCount(n) {
+        localStorage.setItem(STORAGE_KEY, String(n));
+      }
+
+      function showLimitBanner() {
+        if (!limitBanner) return;
+        limitBanner.style.display = 'block';
+      }
+
+      function checkLimit() {
+        // Only enforce in production
+        if (!IS_PRODUCTION) {
+          return { allowed: true, remaining: Infinity };
+        }
+
+        const runs = getRunCount();
+        const allowed = runs < LIMIT;
+        const remaining = Math.max(0, LIMIT - runs);
+        return { allowed, remaining };
+      }
+
+      // Initial state: if they already used up their runs, block the button
+      const { allowed } = checkLimit();
+      if (!allowed) {
+        analyzeBtn.disabled = true;
+        analyzeBtn.style.opacity = '0.6';
+        analyzeBtn.style.cursor = 'not-allowed';
+        showLimitBanner();
+      }
+
+      analyzeBtn.addEventListener('click', function (e) {
+        const { allowed } = checkLimit();
+
+        if (!allowed) {
+          e.preventDefault();
+          analyzeBtn.disabled = true;
+          analyzeBtn.style.opacity = '0.6';
+          analyzeBtn.style.cursor = 'not-allowed';
+          showLimitBanner();
+          return;
+        }
+
+        // Increment run count (production only)
+        if (IS_PRODUCTION) {
+          let runs = getRunCount();
+          runs += 1;
+          setRunCount(runs);
+
+          // Show message when limit reached
+          if (runs >= LIMIT) {
+            showLimitBanner();
+          }
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
